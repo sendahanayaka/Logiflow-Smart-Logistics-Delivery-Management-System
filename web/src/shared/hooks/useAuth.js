@@ -1,7 +1,9 @@
 import { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { api } from '../../app/api'
+import { useLogoutMutation } from '../../features/auth/authApi'
 import {
+  AUTH_STATUS,
   clearCredentials,
   selectAuth,
   setCredentials,
@@ -11,14 +13,9 @@ import {
 export default function useAuth() {
   const dispatch = useDispatch()
   const auth = useSelector(selectAuth)
-  // Authentication expiry is intentionally evaluated against the current clock.
-  const expiryTime = auth.expiresAt
-    ? new Date(auth.expiresAt).getTime()
-    : null
-  // oxlint-disable-next-line react/purity
-  const currentTime = Date.now()
-  const isExpired = expiryTime !== null && expiryTime <= currentTime
-  const isAuthenticated = Boolean(auth.accessToken) && !isExpired
+  const [requestLogout, logoutState] = useLogoutMutation()
+  const isAuthenticated = auth.status === AUTH_STATUS.AUTHENTICATED
+  const isInitializing = auth.status === AUTH_STATUS.INITIALIZING
 
   const signIn = useCallback(
     (payload) => dispatch(setCredentials(payload)),
@@ -30,10 +27,11 @@ export default function useAuth() {
     [dispatch],
   )
 
-  const signOut = useCallback(() => {
+  const logout = useCallback(async () => {
+    await requestLogout().unwrap()
     dispatch(clearCredentials())
     dispatch(api.util.resetApiState())
-  }, [dispatch])
+  }, [dispatch, requestLogout])
 
   const hasRole = useCallback(
     (role) => isAuthenticated && auth.user?.role === role,
@@ -43,11 +41,11 @@ export default function useAuth() {
   return {
     ...auth,
     isAuthenticated,
-    isExpired,
+    isInitializing,
     hasRole,
     signIn,
-    signOut,
-    logout: signOut,
+    logout,
+    logoutState,
     updateUser,
   }
 }

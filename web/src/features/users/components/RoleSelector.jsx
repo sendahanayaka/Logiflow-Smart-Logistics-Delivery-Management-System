@@ -1,18 +1,18 @@
 import { useId } from 'react'
+import {
+  ALL_USER_ROLES,
+  getRoleLabel,
+} from '../../auth/roles'
 
-// Role metadata intentionally lives with the required RoleSelector component.
+// Exports are retained for existing user-management imports.
 // oxlint-disable react/only-export-components
 
-export const USER_ROLES = [
-  { value: 'Customer', label: 'Customer' },
-  { value: 'Driver', label: 'Driver' },
-  { value: 'WarehouseStaff', label: 'Warehouse Staff' },
-  { value: 'OperationsManager', label: 'Operations Manager' },
-]
+export const USER_ROLES = ALL_USER_ROLES.map((role) => ({
+  value: role,
+  label: getRoleLabel(role),
+}))
 
-export function getRoleLabel(role) {
-  return USER_ROLES.find((option) => option.value === role)?.label ?? role ?? '—'
-}
+export { getRoleLabel }
 
 export default function RoleSelector({
   value,

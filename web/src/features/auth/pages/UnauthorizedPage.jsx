@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
-import Button from '../../../shared/components/Button'
 import useAuth from '../../../shared/hooks/useAuth'
+import { getRoleLabel } from '../roles'
 
 export default function UnauthorizedPage() {
-  const { isAuthenticated, signOut, user } = useAuth()
+  const { user } = useAuth()
 
   return (
     <main className="auth-state-page">
@@ -13,18 +13,13 @@ export default function UnauthorizedPage() {
         <h1>You do not have permission to view this page.</h1>
         <p>
           {user?.role
-            ? `Your current ${user.role} role does not include access to this area.`
+            ? `Your current ${getRoleLabel(user.role)} role does not include access to this area.`
             : 'Your current account does not include access to this area.'}
         </p>
         <div className="auth-state-card__actions">
-          <Link className="button button--primary button-link" to="/">
-            Return home
+          <Link className="button button--primary button-link" to="/app">
+            Back to App
           </Link>
-          {isAuthenticated && (
-            <Button variant="secondary" onClick={signOut}>
-              Log out
-            </Button>
-          )}
         </div>
       </section>
     </main>

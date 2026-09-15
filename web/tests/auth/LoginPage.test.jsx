@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import LoginPage from '../../src/features/auth/pages/LoginPage'
 
@@ -20,10 +20,15 @@ vi.mock('../../src/features/auth/authApi', () => ({
   getAuthErrorMessage: (error, fallback) => error?.data?.title ?? fallback,
 }))
 
-function renderPage() {
+function renderPage(initialEntry = '/login') {
   return render(
-    <MemoryRouter initialEntries={['/login']}>
-      <LoginPage />
+    <MemoryRouter initialEntries={[initialEntry]}>
+      <Routes>
+        <Route path="/" element={<h1>Home</h1>} />
+        <Route path="/app" element={<h1>App Home</h1>} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/users" element={<h1>User Management</h1>} />
+      </Routes>
     </MemoryRouter>,
   )
 }
@@ -34,6 +39,7 @@ describe('LoginPage', () => {
     mocks.signIn.mockReset()
     mocks.useAuth.mockReturnValue({
       isAuthenticated: false,
+      isInitializing: false,
       signIn: mocks.signIn,
     })
     mocks.useLoginMutation.mockReturnValue([
@@ -67,6 +73,40 @@ describe('LoginPage', () => {
       password: 'Test123!',
     })
     await waitFor(() => expect(mocks.signIn).toHaveBeenCalledWith(credentials))
+    expect(screen.getByRole('heading', { name: 'App Home' })).toBeInTheDocument()
+  })
+
+  it('returns to the originally requested protected route after login', async () => {
+    const user = userEvent.setup()
+    const credentials = {
+      accessToken: 'test-token',
+      expiresAt: '2099-01-01T00:00:00Z',
+      user: { id: 'user-1', role: 'OperationsManager' },
+    }
+    mocks.login.mockReturnValue({ unwrap: () => Promise.resolve(credentials) })
+    renderPage({
+      pathname: '/login',
+      state: { from: { pathname: '/users', search: '?page=2', hash: '' } },
+    })
+
+    await user.type(screen.getByLabelText('Email'), 'manager@example.com')
+    await user.type(screen.getByLabelText('Password'), 'Test123!')
+    await user.click(screen.getByRole('button', { name: 'Login' }))
+
+    expect(
+      await screen.findByRole('heading', { name: 'User Management' }),
+    ).toBeInTheDocument()
+  })
+
+  it('redirects an initialized authenticated user away from login', () => {
+    mocks.useAuth.mockReturnValue({
+      isAuthenticated: true,
+      isInitializing: false,
+    })
+
+    renderPage()
+
+    expect(screen.getByRole('heading', { name: 'App Home' })).toBeInTheDocument()
   })
 
   it('shows client-side errors for missing credentials', async () => {

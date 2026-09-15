@@ -29,7 +29,19 @@ function validate(values) {
   } else if (!phonePattern.test(values.phoneNumber)) {
     errors.phoneNumber = 'Enter a reasonable phone number.'
   }
-  if (!values.password) errors.password = 'Password is required.'
+  if (!values.password) {
+    errors.password = 'Password is required.'
+  } else if (values.password.length < 8) {
+    errors.password = 'Password must be at least 8 characters.'
+  } else if (!/[A-Z]/.test(values.password)) {
+    errors.password = 'Password must include an uppercase letter.'
+  } else if (!/[a-z]/.test(values.password)) {
+    errors.password = 'Password must include a lowercase letter.'
+  } else if (!/[0-9]/.test(values.password)) {
+    errors.password = 'Password must include a number.'
+  } else if (!/[^A-Za-z0-9]/.test(values.password)) {
+    errors.password = 'Password must include a special character.'
+  }
   if (!values.confirmPassword) {
     errors.confirmPassword = 'Confirm Password is required.'
   } else if (values.confirmPassword !== values.password) {
@@ -43,11 +55,11 @@ export default function RegisterPage() {
   const [values, setValues] = useState(initialValues)
   const [errors, setErrors] = useState({})
   const [register, { isLoading, error: requestError }] = useRegisterMutation()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isInitializing } = useAuth()
   const navigate = useNavigate()
 
-  if (isAuthenticated) {
-    return <Navigate to="/login" replace />
+  if (!isInitializing && isAuthenticated) {
+    return <Navigate to="/app" replace />
   }
 
   const handleChange = (event) => {
@@ -123,7 +135,10 @@ export default function RegisterPage() {
     <main className="auth-page auth-page--register">
       <section className="auth-brand-panel" aria-label="LogiFlow">
         <div className="auth-brand-panel__content">
-          <img src="/logo.png" alt="" />
+          <Link className="auth-home-link" to="/" aria-label="Back to LogiFlow home">
+            <img src="/logo.png" alt="" />
+            <span>LogiFlow</span>
+          </Link>
           <span className="eyebrow eyebrow--light">Customer registration</span>
           <h1>Start with a secure LogiFlow account.</h1>
           <p>
@@ -167,7 +182,9 @@ export default function RegisterPage() {
                     aria-describedby={
                       errors[field.name]
                         ? `register-${field.name}-error`
-                        : undefined
+                        : field.name === 'password'
+                          ? 'register-password-help'
+                          : undefined
                     }
                     disabled={isLoading}
                   />
@@ -177,6 +194,12 @@ export default function RegisterPage() {
                       className="form-field__error"
                     >
                       {errors[field.name]}
+                    </span>
+                  )}
+                  {field.name === 'password' && !errors.password && (
+                    <span id="register-password-help" className="form-field__help">
+                      Use 8+ characters with uppercase, lowercase, number, and
+                      special character.
                     </span>
                   )}
                 </div>

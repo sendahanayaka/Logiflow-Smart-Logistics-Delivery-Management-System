@@ -63,4 +63,25 @@ describe('public routes', () => {
     expect(router.state.location.pathname).toBe('/')
   })
 
+  it('keeps the existing login route available', () => {
+    renderRoute('/login')
+
+    expect(
+      screen.getByRole('heading', { name: 'Sign in to LogiFlow' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Back to LogiFlow home' }),
+    ).toHaveAttribute('href', '/')
+  })
+
+  it('keeps the existing register route available', () => {
+    renderRoute('/register')
+
+    expect(
+      screen.getByRole('heading', { name: 'Create your Customer account' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Back to LogiFlow home' }),
+    ).toHaveAttribute('href', '/')
+  })
 })

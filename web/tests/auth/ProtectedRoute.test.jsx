@@ -28,8 +28,25 @@ function renderProtectedRoute() {
 describe('ProtectedRoute', () => {
   beforeEach(() => mocks.useAuth.mockReset())
 
+  it('waits for session initialization before redirecting', () => {
+    mocks.useAuth.mockReturnValue({
+      isAuthenticated: false,
+      isInitializing: true,
+      user: null,
+    })
+
+    renderProtectedRoute()
+
+    expect(screen.getByText('Restoring your session')).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Login page' })).toBeNull()
+  })
+
   it('redirects an unauthenticated visitor to login', () => {
-    mocks.useAuth.mockReturnValue({ isAuthenticated: false, user: null })
+    mocks.useAuth.mockReturnValue({
+      isAuthenticated: false,
+      isInitializing: false,
+      user: null,
+    })
 
     renderProtectedRoute()
 

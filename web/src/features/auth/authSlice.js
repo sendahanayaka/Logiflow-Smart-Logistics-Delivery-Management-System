@@ -1,35 +1,27 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-export const AUTH_STORAGE_KEY = 'logiflow.auth'
-
-function readStoredAuth() {
-  if (typeof window === 'undefined') {
-    return null
-  }
-
-  try {
-    const storedValue = window.sessionStorage.getItem(AUTH_STORAGE_KEY)
-    return storedValue ? JSON.parse(storedValue) : null
-  } catch {
-    window.sessionStorage.removeItem(AUTH_STORAGE_KEY)
-    return null
-  }
+export const AUTH_STATUS = {
+  INITIALIZING: 'initializing',
+  AUTHENTICATED: 'authenticated',
+  UNAUTHENTICATED: 'unauthenticated',
 }
 
-const storedAuth = readStoredAuth()
+export const initialAuthState = {
+  accessToken: null,
+  expiresAt: null,
+  user: null,
+  status: AUTH_STATUS.INITIALIZING,
+}
 
 const authSlice = createSlice({
   name: 'auth',
-  initialState: {
-    accessToken: storedAuth?.accessToken ?? null,
-    expiresAt: storedAuth?.expiresAt ?? null,
-    user: storedAuth?.user ?? null,
-  },
+  initialState: initialAuthState,
   reducers: {
     setCredentials: (state, action) => {
       state.accessToken = action.payload.accessToken
       state.expiresAt = action.payload.expiresAt
       state.user = action.payload.user
+      state.status = AUTH_STATUS.AUTHENTICATED
     },
     setCurrentUser: (state, action) => {
       state.user = action.payload
@@ -38,6 +30,7 @@ const authSlice = createSlice({
       state.accessToken = null
       state.expiresAt = null
       state.user = null
+      state.status = AUTH_STATUS.UNAUTHENTICATED
     },
   },
 })
@@ -48,5 +41,6 @@ export const { setCredentials, setCurrentUser, clearCredentials } =
 export const selectAuth = (state) => state.auth
 export const selectCurrentUser = (state) => state.auth.user
 export const selectAccessToken = (state) => state.auth.accessToken
+export const selectAuthStatus = (state) => state.auth.status
 
 export default authSlice.reducer

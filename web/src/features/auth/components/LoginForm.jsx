@@ -53,7 +53,11 @@ export default function LoginForm() {
       }).unwrap()
 
       signIn(credentials)
-      navigate('/login', { replace: true })
+      const requestedLocation = location.state?.from
+      const destination = requestedLocation
+        ? `${requestedLocation.pathname}${requestedLocation.search ?? ''}${requestedLocation.hash ?? ''}`
+        : '/app'
+      navigate(destination, { replace: true })
     } catch {
       // RTK Query exposes the backend ProblemDetails response through requestError.
     }

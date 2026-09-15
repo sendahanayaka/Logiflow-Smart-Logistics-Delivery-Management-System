@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import LogoutButton from '../../auth/components/LogoutButton'
+import useAuth from '../../../shared/hooks/useAuth'
 import './LandingPage.css'
 
 const features = [
@@ -53,6 +55,7 @@ const roles = [
 
 export default function LandingPage() {
   const [isMenuOpen, setMenuOpen] = useState(false)
+  const { isAuthenticated, isInitializing } = useAuth()
   const closeMenu = () => setMenuOpen(false)
 
   return (
@@ -88,12 +91,23 @@ export default function LandingPage() {
               <a href="#how-it-works" onClick={closeMenu}>How It Works</a>
             </div>
             <div className="public-navigation__actions">
-              <Link className="public-sign-in" to="/login" onClick={closeMenu}>
-                Sign In
-              </Link>
-              <Link className="button button--primary button-link" to="/register" onClick={closeMenu}>
-                Get Started
-              </Link>
+              {!isInitializing && isAuthenticated ? (
+                <>
+                  <Link className="public-sign-in" to="/app" onClick={closeMenu}>
+                    Open App
+                  </Link>
+                  <LogoutButton onLoggedOut={closeMenu} />
+                </>
+              ) : (
+                <>
+                  <Link className="public-sign-in" to="/login" onClick={closeMenu}>
+                    Sign In
+                  </Link>
+                  <Link className="button button--primary button-link" to="/register" onClick={closeMenu}>
+                    Get Started
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         </div>
