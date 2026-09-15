@@ -42,6 +42,13 @@ public sealed class LogiFlowApiFactory : WebApplicationFactory<Program>
             "LogiFlow.TestClient");
         Environment.SetEnvironmentVariable("Jwt__SigningKey", TestSigningKey);
         Environment.SetEnvironmentVariable("Jwt__ExpiryMinutes", "30");
+        Environment.SetEnvironmentVariable("Jwt__RefreshTokenExpiryDays", "7");
+        Environment.SetEnvironmentVariable(
+            "AuthCookies__RefreshTokenSecure",
+            "true");
+        Environment.SetEnvironmentVariable(
+            "Cors__AllowedOrigins__0",
+            "https://allowed.logiflow.test");
 
         RecreateDatabaseBeforeApplicationStarts();
     }
@@ -59,7 +66,10 @@ public sealed class LogiFlowApiFactory : WebApplicationFactory<Program>
                 ["Jwt:Issuer"] = "LogiFlow.Api.Tests",
                 ["Jwt:Audience"] = "LogiFlow.TestClient",
                 ["Jwt:SigningKey"] = TestSigningKey,
-                ["Jwt:ExpiryMinutes"] = "30"
+                ["Jwt:ExpiryMinutes"] = "30",
+                ["Jwt:RefreshTokenExpiryDays"] = "7",
+                ["AuthCookies:RefreshTokenSecure"] = "true",
+                ["Cors:AllowedOrigins:0"] = "https://allowed.logiflow.test"
             });
         });
     }

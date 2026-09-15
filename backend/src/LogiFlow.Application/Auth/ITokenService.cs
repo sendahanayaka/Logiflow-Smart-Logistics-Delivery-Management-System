@@ -10,9 +10,3 @@ public interface ITokenService
 public sealed record AccessToken(
     string Value,
     DateTimeOffset ExpiresAt);
-
-public sealed record JwtOptions(
-    string Issuer,
-    string Audience,
-    string SigningKey,
-    int ExpiryMinutes);

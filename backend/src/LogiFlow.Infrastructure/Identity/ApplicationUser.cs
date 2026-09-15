@@ -12,4 +12,7 @@ public sealed class ApplicationUser : IdentityUser<Guid>
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
+
+    public ICollection<RefreshTokenSession> RefreshTokenSessions { get; set; } =
+        new List<RefreshTokenSession>();
 }

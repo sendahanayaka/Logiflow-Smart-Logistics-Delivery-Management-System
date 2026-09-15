@@ -1,10 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using LogiFlow.Application.Auth;
 using LogiFlow.Domain.Entities;
 using Microsoft.IdentityModel.Tokens;
 
-namespace LogiFlow.Application.Auth;
+namespace LogiFlow.Infrastructure.Auth;
 
 public sealed class TokenService : ITokenService
 {

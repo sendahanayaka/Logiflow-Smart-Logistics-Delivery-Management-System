@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
+using LogiFlow.Application.Auth;
 using LogiFlow.Application.Common;
 using LogiFlow.Domain.Entities;
 using LogiFlow.Domain.Enums;
@@ -80,10 +81,15 @@ public sealed class UserService : IUserService
             return Task.FromResult(Result<User>.Failure(validationError));
         }
 
-        if (string.IsNullOrWhiteSpace(command.Password))
+        var passwordErrors = PasswordPolicy.Validate(command.Password);
+
+        if (passwordErrors.Count > 0)
         {
-            return Task.FromResult(
-                ValidationFailure<User>("Password is required."));
+            return Task.FromResult(Result<User>.Failure(new ResultError(
+                "users.passwordPolicy",
+                "Password does not meet the security requirements.",
+                ResultErrorType.Validation,
+                passwordErrors)));
         }
 
         if (!Enum.IsDefined(command.Role))

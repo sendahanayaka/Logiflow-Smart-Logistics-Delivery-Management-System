@@ -187,6 +187,31 @@ public sealed class UsersEndpointsTests : ApiTestBase
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
+    [Theory]
+    [InlineData("lowercase1!")]
+    [InlineData("UPPERCASE1!")]
+    [InlineData("NoNumber!")]
+    [InlineData("NoSpecial1")]
+    [InlineData("Aa1!xyz")]
+    public async Task CreateUser_WithPasswordOutsideSharedPolicy_ReturnsBadRequest(
+        string password)
+    {
+        await Factory.ResetDatabaseAsync();
+        using var client = await CreateAuthorizedClientAsync(
+            UserRole.OperationsManager);
+
+        var response = await client.PostAsJsonAsync("/api/users", new
+        {
+            FullName = "Invalid Password User",
+            Email = $"invalid-password-{Guid.NewGuid():N}@example.com",
+            PhoneNumber = "+94772223344",
+            Password = password,
+            Role = "Driver"
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     [Fact]
     public async Task UpdateUser_ChangesEditableProfile()
     {

@@ -13,6 +13,9 @@ public sealed class AppDbContext
     {
     }
 
+    public DbSet<RefreshTokenSession> RefreshTokenSessions =>
+        Set<RefreshTokenSession>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

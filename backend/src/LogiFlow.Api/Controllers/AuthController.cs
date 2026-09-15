@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using FluentValidation;
 using FluentValidation.Results;
+using LogiFlow.Api.Configuration;
 using LogiFlow.Api.DTOs.Auth;
 using LogiFlow.Application.Auth;
 using LogiFlow.Domain.Entities;
@@ -13,18 +14,23 @@ namespace LogiFlow.Api.Controllers;
 [Route("api/auth")]
 public sealed class AuthController : ControllerBase
 {
+    private const string RefreshCookieName = "logiflow.refresh";
+
     private readonly IAuthService _authService;
     private readonly IValidator<RegisterRequest> _registerValidator;
     private readonly IValidator<LoginRequest> _loginValidator;
+    private readonly RefreshCookieOptions _refreshCookieOptions;
 
     public AuthController(
         IAuthService authService,
         IValidator<RegisterRequest> registerValidator,
-        IValidator<LoginRequest> loginValidator)
+        IValidator<LoginRequest> loginValidator,
+        RefreshCookieOptions refreshCookieOptions)
     {
         _authService = authService;
         _registerValidator = registerValidator;
         _loginValidator = loginValidator;
+        _refreshCookieOptions = refreshCookieOptions;
     }
 
     [AllowAnonymous]
@@ -92,6 +98,8 @@ public sealed class AuthController : ControllerBase
 
         if (result.Succeeded)
         {
+            SetRefreshCookie(result.RefreshToken!);
+
             return Ok(new LoginResponse(
                 result.AccessToken!,
                 result.ExpiresAt!.Value,
@@ -119,6 +127,59 @@ public sealed class AuthController : ControllerBase
         return Unauthorized(CreateProblem(
             StatusCodes.Status401Unauthorized,
             "Invalid email or password"));
+    }
+
+    [AllowAnonymous]
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh(
+        CancellationToken cancellationToken)
+    {
+        if (!Request.Cookies.TryGetValue(
+                RefreshCookieName,
+                out var refreshToken)
+            || string.IsNullOrWhiteSpace(refreshToken))
+        {
+            ClearRefreshCookie();
+            return Unauthorized(CreateProblem(
+                StatusCodes.Status401Unauthorized,
+                "Invalid refresh session"));
+        }
+
+        var result = await _authService.RefreshAsync(
+            refreshToken,
+            cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            ClearRefreshCookie();
+            return Unauthorized(CreateProblem(
+                StatusCodes.Status401Unauthorized,
+                "Invalid refresh session"));
+        }
+
+        SetRefreshCookie(result.RefreshToken!);
+
+        return Ok(new LoginResponse(
+            result.AccessToken!,
+            result.ExpiresAt!.Value,
+            ToResponse(result.User!)));
+    }
+
+    [AllowAnonymous]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout(
+        CancellationToken cancellationToken)
+    {
+        Request.Cookies.TryGetValue(
+            RefreshCookieName,
+            out var refreshToken);
+
+        await _authService.RevokeRefreshTokenAsync(
+            refreshToken,
+            cancellationToken);
+        ClearRefreshCookie();
+
+        return NoContent();
     }
 
     [Authorize]
@@ -187,5 +248,33 @@ public sealed class AuthController : ControllerBase
             user.Status,
             user.CreatedAt,
             user.UpdatedAt);
+    }
+
+    private void SetRefreshCookie(IssuedRefreshToken refreshToken)
+    {
+        Response.Cookies.Append(
+            RefreshCookieName,
+            refreshToken.Value,
+            CookieOptions(refreshToken.ExpiresAt));
+    }
+
+    private void ClearRefreshCookie()
+    {
+        Response.Cookies.Delete(
+            RefreshCookieName,
+            CookieOptions(DateTimeOffset.UnixEpoch));
+    }
+
+    private CookieOptions CookieOptions(DateTimeOffset expiresAt)
+    {
+        return new CookieOptions
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.Lax,
+            Path = "/api/auth",
+            Secure = _refreshCookieOptions.Secure,
+            IsEssential = true,
+            Expires = expiresAt
+        };
     }
 }

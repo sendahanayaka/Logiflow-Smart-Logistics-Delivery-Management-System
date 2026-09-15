@@ -2,11 +2,13 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using FluentValidation;
+using LogiFlow.Api.Configuration;
 using LogiFlow.Api.Validators.Auth;
 using LogiFlow.Application.Auth;
 using LogiFlow.Application.Users;
 using LogiFlow.Domain.Enums;
 using LogiFlow.Infrastructure;
+using LogiFlow.Infrastructure.Auth;
 using LogiFlow.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -14,6 +16,8 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 var jwtOptions = GetJwtOptions(builder.Configuration);
+var refreshCookieOptions = GetRefreshCookieOptions(builder.Configuration);
+var corsAllowedOrigins = GetCorsAllowedOrigins(builder.Configuration);
 
 builder.Services
     .AddControllers()
@@ -50,6 +54,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>()
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddSingleton(jwtOptions);
+builder.Services.AddSingleton(refreshCookieOptions);
 builder.Services.AddSingleton<ITokenService, TokenService>();
 
 builder.Services
@@ -95,12 +100,43 @@ builder.Services
                 if (user is null || user.Status != UserStatus.Active)
                 {
                     context.Fail("The user account is not active.");
+                    return;
+                }
+
+                var roleClaims = context.Principal?
+                    .FindAll(ClaimTypes.Role)
+                    .Select(claim => claim.Value)
+                    .ToArray()
+                    ?? Array.Empty<string>();
+
+                if (roleClaims.Length != 1
+                    || !string.Equals(
+                        roleClaims[0],
+                        user.Role.ToString(),
+                        StringComparison.Ordinal))
+                {
+                    context.Fail(
+                        "The token role does not match the user's current role.");
                 }
             }
         };
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy.AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+
+        if (corsAllowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(corsAllowedOrigins);
+        }
+    });
+});
 
 var app = builder.Build();
 
@@ -112,6 +148,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -133,6 +170,7 @@ static JwtOptions GetJwtOptions(IConfiguration configuration)
     var audience = configuration["Jwt:Audience"];
     var signingKey = configuration["Jwt:SigningKey"];
     var expiryValue = configuration["Jwt:ExpiryMinutes"];
+    var refreshExpiryValue = configuration["Jwt:RefreshTokenExpiryDays"];
 
     if (string.IsNullOrWhiteSpace(issuer))
     {
@@ -158,11 +196,44 @@ static JwtOptions GetJwtOptions(IConfiguration configuration)
             "Jwt:ExpiryMinutes must be a positive integer.");
     }
 
+    if (!int.TryParse(refreshExpiryValue, out var refreshTokenExpiryDays)
+        || refreshTokenExpiryDays <= 0)
+    {
+        throw new InvalidOperationException(
+            "Jwt:RefreshTokenExpiryDays must be a positive integer.");
+    }
+
     return new JwtOptions(
         issuer,
         audience,
         signingKey,
-        expiryMinutes);
+        expiryMinutes,
+        refreshTokenExpiryDays);
+}
+
+static RefreshCookieOptions GetRefreshCookieOptions(
+    IConfiguration configuration)
+{
+    var secureValue = configuration["AuthCookies:RefreshTokenSecure"];
+
+    if (!bool.TryParse(secureValue, out var secure))
+    {
+        throw new InvalidOperationException(
+            "AuthCookies:RefreshTokenSecure must be configured as true or false.");
+    }
+
+    return new RefreshCookieOptions(secure);
+}
+
+static string[] GetCorsAllowedOrigins(IConfiguration configuration)
+{
+    return configuration.GetSection("Cors:AllowedOrigins")
+        .Get<string[]>()?
+        .Select(origin => origin.Trim().TrimEnd('/'))
+        .Where(origin => !string.IsNullOrWhiteSpace(origin))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToArray()
+        ?? Array.Empty<string>();
 }
 
 public partial class Program;

@@ -1,5 +1,6 @@
 using FluentValidation;
 using LogiFlow.Api.DTOs.Auth;
+using LogiFlow.Application.Auth;
 
 namespace LogiFlow.Api.Validators.Auth;
 
@@ -23,7 +24,13 @@ public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest
             .WithMessage("PhoneNumber must be a valid phone number.");
 
         RuleFor(request => request.Password)
-            .NotEmpty();
+            .Custom((password, context) =>
+            {
+                foreach (var error in PasswordPolicy.Validate(password))
+                {
+                    context.AddFailure(error);
+                }
+            });
 
         RuleFor(request => request.ConfirmPassword)
             .NotEmpty()
