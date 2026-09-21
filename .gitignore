@@ -1,0 +1,33 @@
+# --- OS ---
+.DS_Store
+Thumbs.db
+# --- Secrets ---
+.env
+**/.env
+!**/.env.example
+# --- .NET ---
+bin/
+obj/
+*.user
+# --- Node / web ---
+node_modules/
+web/dist/
+*.log
+# --- Python / agent-service ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+# --- Flutter ---
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins*
+# --- IDE ---
+.idea/
+.vs/
+.vscode/
+
+# --- Local planning docs (not part of the repo) ---
+docs/*.pdf
+docs/*.docx

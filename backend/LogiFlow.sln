@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C21F18C2-9F61-42D3-BABF-AC47992C1FD0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogiFlow.Domain", "src\LogiFlow.Domain\LogiFlow.Domain.csproj", "{393406B8-745F-4937-8F55-2BB3AEDC9F40}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogiFlow.Application", "src\LogiFlow.Application\LogiFlow.Application.csproj", "{F05DCFDB-6046-4021-A1BE-078812270E5D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogiFlow.Infrastructure", "src\LogiFlow.Infrastructure\LogiFlow.Infrastructure.csproj", "{B06F7758-4976-4BCA-9FDA-A66A51165E95}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogiFlow.Api", "src\LogiFlow.Api\LogiFlow.Api.csproj", "{EF88AD62-07DB-4D92-B5C5-E019D7F0E169}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{47C55A78-D564-49ED-89E5-020A21BBF943}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogiFlow.UnitTests", "tests\LogiFlow.UnitTests\LogiFlow.UnitTests.csproj", "{01C15642-245E-40AD-A8E8-08865A931E23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogiFlow.IntegrationTests", "tests\LogiFlow.IntegrationTests\LogiFlow.IntegrationTests.csproj", "{FE3E8ADD-3A24-4326-9B2B-8712D5FFAF50}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{393406B8-745F-4937-8F55-2BB3AEDC9F40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{393406B8-745F-4937-8F55-2BB3AEDC9F40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{393406B8-745F-4937-8F55-2BB3AEDC9F40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{393406B8-745F-4937-8F55-2BB3AEDC9F40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F05DCFDB-6046-4021-A1BE-078812270E5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F05DCFDB-6046-4021-A1BE-078812270E5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F05DCFDB-6046-4021-A1BE-078812270E5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F05DCFDB-6046-4021-A1BE-078812270E5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B06F7758-4976-4BCA-9FDA-A66A51165E95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B06F7758-4976-4BCA-9FDA-A66A51165E95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B06F7758-4976-4BCA-9FDA-A66A51165E95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B06F7758-4976-4BCA-9FDA-A66A51165E95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF88AD62-07DB-4D92-B5C5-E019D7F0E169}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF88AD62-07DB-4D92-B5C5-E019D7F0E169}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF88AD62-07DB-4D92-B5C5-E019D7F0E169}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF88AD62-07DB-4D92-B5C5-E019D7F0E169}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01C15642-245E-40AD-A8E8-08865A931E23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01C15642-245E-40AD-A8E8-08865A931E23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01C15642-245E-40AD-A8E8-08865A931E23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01C15642-245E-40AD-A8E8-08865A931E23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE3E8ADD-3A24-4326-9B2B-8712D5FFAF50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE3E8ADD-3A24-4326-9B2B-8712D5FFAF50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE3E8ADD-3A24-4326-9B2B-8712D5FFAF50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE3E8ADD-3A24-4326-9B2B-8712D5FFAF50}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{393406B8-745F-4937-8F55-2BB3AEDC9F40} = {C21F18C2-9F61-42D3-BABF-AC47992C1FD0}
+		{F05DCFDB-6046-4021-A1BE-078812270E5D} = {C21F18C2-9F61-42D3-BABF-AC47992C1FD0}
+		{B06F7758-4976-4BCA-9FDA-A66A51165E95} = {C21F18C2-9F61-42D3-BABF-AC47992C1FD0}
+		{EF88AD62-07DB-4D92-B5C5-E019D7F0E169} = {C21F18C2-9F61-42D3-BABF-AC47992C1FD0}
+		{01C15642-245E-40AD-A8E8-08865A931E23} = {47C55A78-D564-49ED-89E5-020A21BBF943}
+		{FE3E8ADD-3A24-4326-9B2B-8712D5FFAF50} = {47C55A78-D564-49ED-89E5-020A21BBF943}
+	EndGlobalSection
+EndGlobal

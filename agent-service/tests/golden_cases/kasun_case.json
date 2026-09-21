@@ -1,0 +1,21 @@
+{
+  "workflow_id": "wf-kasun-001",
+  "objective": "Deliver Kasun's 3 packages to 2 Kandy addresses by tomorrow 5PM",
+  "order_ids": ["ord-1001", "ord-1002", "ord-1003"],
+  "packages": [
+    {"package_id": "pkg-1", "weight_kg": 5.0, "volume_m3": 0.03, "fragile": true, "special_handling": ["fragile"]},
+    {"package_id": "pkg-2", "weight_kg": 12.0, "volume_m3": 0.08},
+    {"package_id": "pkg-3", "weight_kg": 8.0, "volume_m3": 0.05}
+  ],
+  "pickup_address": "Colombo Warehouse A",
+  "delivery_addresses": ["Kandy Address 1", "Kandy Address 2"],
+  "requested_priority": "EXPRESS",
+  "delivery_window_start": "2026-09-22T09:00:00",
+  "delivery_window_end": "2026-09-22T17:00:00",
+  "vehicle_type": "VAN",
+  "stops": [
+    {"stop_id": "s1", "order_id": "ord-1001", "address": "Kandy Address 1", "lat": 7.2906, "lng": 80.6337, "window_start": "2026-09-22T09:00:00", "window_end": "2026-09-22T17:00:00"},
+    {"stop_id": "s2", "order_id": "ord-1002", "address": "Kandy Address 2", "lat": 7.2950, "lng": 80.6350, "window_start": "2026-09-22T09:00:00", "window_end": "2026-09-22T17:00:00"}
+  ],
+  "customer_notes": "Please handle the fragile item carefully."
+}
