@@ -1,0 +1,2 @@
+# [ALL] Frozen dependency set — pin exact versions in Phase 2. Python 3.11.
+# TODO(Phase 2): pin langgraph, langchain, ollama, fastapi, uvicorn, pydantic, httpx, pytest.
