@@ -1,6 +1,6 @@
 namespace LogiFlow.Api.DTOs.Warehouse;
 
-public sealed record CreateWarehouseRequest(
+public sealed record CreateStorageZoneRequest(
     string Name,
-    string Location,
+    string Code,
     decimal TotalVolumeM3);
