@@ -17,6 +17,15 @@ OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
 # The ASP.NET Core backend the agents reach for allow-listed tool endpoints.
 BACKEND_API_BASE_URL: str = os.getenv("BACKEND_API_BASE_URL", "http://localhost:5080")
 
+# Maps / routing for the S4 distance-matrix tool. Speaks the OSRM protocol.
+# In production point this at a self-hosted OSRM (or the backend MapsGateway that
+# proxies it); the default public demo server is for local dev only. Whenever OSRM
+# is unreachable the tool falls back to straight-line haversine (FALLBACK_AVG_SPEED
+# turns that distance into a duration), so the workflow never breaks — free either
+# way, satisfying the no-paid-service rule.
+OSRM_BASE_URL: str = os.getenv("OSRM_BASE_URL", "http://router.project-osrm.org")
+FALLBACK_AVG_SPEED_KMH: float = float(os.getenv("FALLBACK_AVG_SPEED_KMH", "40"))
+
 # Shared secret so ONLY the backend can call this internal service. When unset
 # (local dev) the guard is disabled; set it in staging/demo.
 AGENT_SERVICE_API_KEY: str | None = os.getenv("AGENT_SERVICE_API_KEY") or None

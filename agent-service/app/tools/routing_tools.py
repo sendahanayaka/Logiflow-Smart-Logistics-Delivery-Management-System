@@ -9,6 +9,10 @@ import math
 from datetime import datetime, timedelta
 from typing import Any
 
+import httpx
+
+from app import config
+
 EARTH_RADIUS_KM = 6371.0
 
 
@@ -29,9 +33,88 @@ def _haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
     return 2 * EARTH_RADIUS_KM * math.asin(math.sqrt(a))
 
 
-def distance_matrix(origins: list[dict], destinations: list[dict]) -> dict[str, Any]:
-    """Distances/durations between stops. Backed by the API's MapsGateway (OSRM/OSM)."""
-    raise NotImplementedError("Phase 3 [S4]: call backend distance-matrix endpoint")
+def distance_matrix(
+    points: list[dict],
+    *,
+    base_url: str | None = None,
+    profile: str = "driving",
+    timeout: float = 5.0,
+) -> dict[str, Any]:
+    """Full N×N travel distance/duration matrix between ``points``.
+
+    Tries OSRM (real road network) first; on ANY failure — network error, timeout,
+    non-OK response — it falls back to straight-line haversine so the workflow never
+    breaks. Either way it's free (no paid maps API).
+
+    Args:
+        points: dicts each with ``lat`` and ``lng``.
+        base_url: override the OSRM endpoint (defaults to ``config.OSRM_BASE_URL``).
+        profile: OSRM routing profile (``driving`` / ``cycling`` / ``walking``).
+        timeout: seconds to wait on the OSRM call before falling back.
+
+    Returns:
+        ``{"distances_km": [[...]], "durations_min": [[...]], "source": ...}`` where
+        ``source`` is ``"osrm"``, ``"haversine"``, or ``"empty"``. The diagonal is 0.
+    """
+    if not points:
+        return {"distances_km": [], "durations_min": [], "source": "empty"}
+    try:
+        return _osrm_table(points, base_url or config.OSRM_BASE_URL, profile, timeout)
+    except Exception:  # noqa: BLE001 — any OSRM failure degrades to the offline fallback
+        return _haversine_matrix(points)
+
+
+def _osrm_table(points: list[dict], base_url: str, profile: str, timeout: float) -> dict[str, Any]:
+    """Call the OSRM `table` service (coords are lng,lat; distances m, durations s)."""
+    coords = ";".join(f"{p['lng']},{p['lat']}" for p in points)
+    url = f"{base_url}/table/v1/{profile}/{coords}"
+    resp = httpx.get(url, params={"annotations": "distance,duration"}, timeout=timeout)
+    resp.raise_for_status()
+    data = resp.json()
+    if data.get("code") != "Ok":
+        raise ValueError(f"OSRM returned code {data.get('code')!r}")
+    return {
+        "distances_km": [[round((m or 0) / 1000, 3) for m in row] for row in data["distances"]],
+        "durations_min": [[round((s or 0) / 60, 2) for s in row] for row in data["durations"]],
+        "source": "osrm",
+    }
+
+
+def _haversine_matrix(points: list[dict]) -> dict[str, Any]:
+    """Offline fallback: straight-line distances, durations at a fixed average speed."""
+    n = len(points)
+    distances = [[0.0] * n for _ in range(n)]
+    durations = [[0.0] * n for _ in range(n)]
+    for i in range(n):
+        for j in range(n):
+            if i == j:
+                continue
+            km = _haversine_km(points[i]["lat"], points[i]["lng"], points[j]["lat"], points[j]["lng"])
+            distances[i][j] = round(km, 3)
+            durations[i][j] = round(km / config.FALLBACK_AVG_SPEED_KMH * 60, 2)
+    return {"distances_km": distances, "durations_min": durations, "source": "haversine"}
+
+
+def route_legs(ordered_points: list[dict], **kwargs: Any) -> dict[str, Any]:
+    """Sequential leg distances/durations along an ordered route (point 0 → 1 → …).
+
+    Reuses :func:`distance_matrix`, then reads the consecutive legs off it. A leading
+    ``0.0`` leg represents "already at the first point", so for N points there are N
+    entries and the arrays line up with the stop list that :func:`eta_calculator`
+    expects (``leg[i]`` = time to reach stop *i*).
+
+    Returns:
+        ``{"leg_distances_km": [...], "leg_durations_min": [...], "source": ...}``.
+    """
+    if not ordered_points:
+        return {"leg_distances_km": [], "leg_durations_min": [], "source": "empty"}
+    matrix = distance_matrix(ordered_points, **kwargs)
+    leg_km = [0.0]
+    leg_min = [0.0]
+    for i in range(1, len(ordered_points)):
+        leg_km.append(matrix["distances_km"][i - 1][i])
+        leg_min.append(matrix["durations_min"][i - 1][i])
+    return {"leg_distances_km": leg_km, "leg_durations_min": leg_min, "source": matrix["source"]}
 
 
 def route_sequencer(stops: list[dict], start: dict | None = None) -> list[dict]:
