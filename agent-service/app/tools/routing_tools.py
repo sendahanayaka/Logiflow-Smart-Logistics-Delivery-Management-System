@@ -228,6 +228,30 @@ def eta_calculator(
     return out
 
 
-def notification_composer(stops: list[dict]) -> list[dict]:
-    """Draft 'on the way' / '10 min out' / 'delivered' messages per stop."""
-    raise NotImplementedError("Phase 3 [S4]: implement notification composer")
+def notification_composer(stops: list[dict], *, fragile: bool = False) -> list[dict]:
+    """Draft the customer notification set for a delivery run.
+
+    Returns the three lifecycle messages (on-the-way / ten-minutes-out / delivered)
+    shaped for the ``NotificationPlan`` schema. Wording is deterministic here — the
+    LLM only polishes/summarises elsewhere — so the message set is testable without
+    Ollama. When ``fragile`` is set, the on-the-way message reflects careful handling
+    (derived from the order's special-handling flags, treated as data).
+
+    Args:
+        stops: the sequenced stops (kept for future per-stop messaging; the frozen
+            ``NotificationPlan`` schema carries no stop reference, so messages are
+            run-level).
+        fragile: whether the load includes a fragile item.
+
+    Returns:
+        list of dicts ``{"trigger", "channel", "message"}``.
+    """
+    care = " Your fragile item will be handled with extra care." if fragile else ""
+    return [
+        {"trigger": "ON_THE_WAY", "channel": "PUSH",
+         "message": f"Your delivery is on the way.{care}"},
+        {"trigger": "TEN_MIN_OUT", "channel": "PUSH",
+         "message": "Your driver is about 10 minutes away."},
+        {"trigger": "DELIVERED", "channel": "PUSH",
+         "message": "Your package has been delivered. Thank you!"},
+    ]
