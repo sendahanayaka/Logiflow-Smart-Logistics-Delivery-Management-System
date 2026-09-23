@@ -66,4 +66,4 @@ class BatchCandidate(BaseModel):
     # S3 needs the persisted dispatch batch to retrieve deterministic warehouse
     # context. Optional preserves existing S1/S2/S4 contract payloads; S3 returns
     # REVISE until upstream allocation supplies it.
-    batch_id: str | None = None
+    batch_id: str | None = Field(default=None, min_length=1, strict=True)
