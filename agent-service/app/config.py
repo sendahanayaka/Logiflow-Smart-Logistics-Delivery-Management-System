@@ -3,6 +3,21 @@ from __future__ import annotations
 
 import os
 
+
+def _env_positive_float(name: str, default: float) -> float:
+    """Read a positive float from the environment, falling back on bad input.
+
+    A non-numeric or non-positive value would otherwise crash the haversine
+    fallback (ZeroDivisionError) or the module import (ValueError) — defeating the
+    whole point of a fallback that must never break. We coerce those to ``default``.
+    """
+    try:
+        value = float(os.getenv(name, str(default)))
+    except (TypeError, ValueError):
+        return default
+    return value if value > 0 else default
+
+
 try:
     from dotenv import load_dotenv
 
@@ -24,7 +39,7 @@ BACKEND_API_BASE_URL: str = os.getenv("BACKEND_API_BASE_URL", "http://localhost:
 # turns that distance into a duration), so the workflow never breaks — free either
 # way, satisfying the no-paid-service rule.
 OSRM_BASE_URL: str = os.getenv("OSRM_BASE_URL", "http://router.project-osrm.org")
-FALLBACK_AVG_SPEED_KMH: float = float(os.getenv("FALLBACK_AVG_SPEED_KMH", "40"))
+FALLBACK_AVG_SPEED_KMH: float = _env_positive_float("FALLBACK_AVG_SPEED_KMH", 40.0)
 
 # Shared secret so ONLY the backend can call this internal service. When unset
 # (local dev) the guard is disabled; set it in staging/demo.

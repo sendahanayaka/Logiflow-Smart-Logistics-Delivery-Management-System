@@ -82,6 +82,9 @@ def _osrm_table(points: list[dict], base_url: str, profile: str, timeout: float)
 
 def _haversine_matrix(points: list[dict]) -> dict[str, Any]:
     """Offline fallback: straight-line distances, durations at a fixed average speed."""
+    # This fallback exists to guarantee the workflow survives, so it must never
+    # divide by zero — guard the speed locally even though config already sanitises it.
+    speed = config.FALLBACK_AVG_SPEED_KMH if config.FALLBACK_AVG_SPEED_KMH > 0 else 40.0
     n = len(points)
     distances = [[0.0] * n for _ in range(n)]
     durations = [[0.0] * n for _ in range(n)]
@@ -91,7 +94,7 @@ def _haversine_matrix(points: list[dict]) -> dict[str, Any]:
                 continue
             km = _haversine_km(points[i]["lat"], points[i]["lng"], points[j]["lat"], points[j]["lng"])
             distances[i][j] = round(km, 3)
-            durations[i][j] = round(km / config.FALLBACK_AVG_SPEED_KMH * 60, 2)
+            durations[i][j] = round(km / speed * 60, 2)
     return {"distances_km": distances, "durations_min": durations, "source": "haversine"}
 
 
@@ -171,6 +174,49 @@ def route_sequencer(stops: list[dict], start: dict | None = None) -> list[dict]:
     return ordered
 
 
+def _parse_iso(value: str) -> datetime:
+    """Parse an ISO-8601 timestamp, tolerating a trailing 'Z' (UTC).
+
+    ``datetime.fromisoformat`` only learned to accept 'Z' in Python 3.11, so we
+    normalise it first to stay portable.
+    """
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def _align_tz(a: datetime, b: datetime) -> tuple[datetime, datetime]:
+    """Make two datetimes safely comparable.
+
+    If exactly one side is timezone-aware, assume the naive side is in the same
+    zone as the aware side (this system runs in a single local timezone). This
+    prevents the "can't compare offset-naive and offset-aware datetimes" TypeError
+    that would otherwise force the whole routing node into safe-failure.
+    """
+    if (a.tzinfo is None) != (b.tzinfo is None):
+        tz = a.tzinfo or b.tzinfo
+        a = a if a.tzinfo else a.replace(tzinfo=tz)
+        b = b if b.tzinfo else b.replace(tzinfo=tz)
+    return a, b
+
+
+def _within_window(eta: datetime, window_start: str | None, window_end: str | None) -> bool | None:
+    """Feasibility flag: is the ETA inside the delivery window [start, end]?
+
+    Returns ``None`` when there is no ``window_end`` to check against. Both bounds
+    are honoured: an ETA *before* ``window_start`` (the driver reaches the stop
+    before the customer's window even opens) is flagged not-on-time rather than
+    silently accepted, so early-arrival infeasibility is visible on the approval
+    screen. Timezone differences are reconciled by :func:`_align_tz`.
+    """
+    if not window_end:
+        return None
+    if window_start:
+        start_dt, eta_s = _align_tz(_parse_iso(window_start), eta)
+        if eta_s < start_dt:
+            return False
+    end_dt, eta_e = _align_tz(_parse_iso(window_end), eta)
+    return eta_e <= end_dt
+
+
 def eta_calculator(
     sequenced_stops: list[dict],
     leg_durations_min: list[float],
@@ -191,7 +237,8 @@ def eta_calculator(
 
     Args:
         sequenced_stops: ordered stops from :func:`route_sequencer`; an optional
-            ``window_end`` (ISO-8601) enables the on-time feasibility flag.
+            ``window_end`` (ISO-8601) enables the on-time feasibility flag, and an
+            optional ``window_start`` additionally flags too-early arrivals.
         leg_durations_min: minutes for each leg; ``leg[i]`` is the travel time to
             reach stop *i* (``leg[0]`` = origin/depot -> stop 0). Must have the same
             length as ``sequenced_stops``.
@@ -200,7 +247,8 @@ def eta_calculator(
 
     Returns:
         Copies of the stops, each with ``eta`` (ISO-8601), ``cumulative_min``, and
-        ``on_time`` (``bool`` when ``window_end`` is present, else ``None``).
+        ``on_time`` — ``True`` only when the ETA falls within ``[window_start,
+        window_end]``; ``None`` when no ``window_end`` is present.
 
     Raises:
         ValueError: if the leg-duration count doesn't match the stop count.
@@ -211,19 +259,17 @@ def eta_calculator(
             f"{len(sequenced_stops)} stop(s)"
         )
 
-    origin = datetime.fromisoformat(start_time)
+    origin = _parse_iso(start_time)
     out: list[dict] = []
     cumulative = 0.0
     for i, stop in enumerate(sequenced_stops):
         cumulative += leg_durations_min[i] + (service_min if i > 0 else 0.0)
         eta_dt = origin + timedelta(minutes=cumulative)
-        window_end = stop.get("window_end")
-        on_time = None if not window_end else eta_dt <= datetime.fromisoformat(window_end)
         out.append({
             **stop,
             "eta": eta_dt.isoformat(),
             "cumulative_min": round(cumulative, 2),
-            "on_time": on_time,
+            "on_time": _within_window(eta_dt, stop.get("window_start"), stop.get("window_end")),
         })
     return out
 

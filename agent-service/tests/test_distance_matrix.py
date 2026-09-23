@@ -8,9 +8,11 @@ from pathlib import Path
 
 import pytest
 
+from app import config
 from app.tools import routing_tools
 from app.tools.routing_tools import (
     _haversine_km,
+    _haversine_matrix,
     distance_matrix,
     eta_calculator,
     route_legs,
@@ -78,6 +80,27 @@ def test_empty_points():
     out = distance_matrix([])
     assert out["source"] == "empty"
     assert out["distances_km"] == []
+
+
+# --- fallback speed guard (never divide by zero) -----------------------------
+def test_haversine_matrix_survives_zero_fallback_speed(monkeypatch):
+    # A misconfigured speed must NOT crash the fallback that guarantees survival.
+    monkeypatch.setattr(config, "FALLBACK_AVG_SPEED_KMH", 0)
+    out = _haversine_matrix(P)  # would ZeroDivisionError before the guard
+    assert out["source"] == "haversine"
+    assert out["durations_min"][0][1] >= 0
+
+
+def test_env_positive_float_coerces_bad_values(monkeypatch):
+    assert config._env_positive_float("SPEED_UNSET", 40.0) == 40.0   # missing -> default
+    monkeypatch.setenv("SPEED_BAD", "not-a-number")
+    monkeypatch.setenv("SPEED_ZERO", "0")
+    monkeypatch.setenv("SPEED_NEG", "-5")
+    monkeypatch.setenv("SPEED_OK", "55")
+    assert config._env_positive_float("SPEED_BAD", 40.0) == 40.0     # non-numeric -> default
+    assert config._env_positive_float("SPEED_ZERO", 40.0) == 40.0    # zero -> default
+    assert config._env_positive_float("SPEED_NEG", 40.0) == 40.0     # negative -> default
+    assert config._env_positive_float("SPEED_OK", 40.0) == 55.0      # valid -> used
 
 
 # --- route_legs + alignment with the ETA engine ------------------------------

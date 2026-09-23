@@ -59,6 +59,34 @@ def test_eta_on_time_none_without_window():
     assert out[0]["on_time"] is None
 
 
+def test_eta_early_arrival_flagged_not_on_time():
+    # ETA 09:30 but the customer window doesn't open until 14:00 -> too early.
+    stops = [{"stop_id": "a", "window_start": "2026-09-22T14:00:00",
+              "window_end": "2026-09-22T16:00:00"}]
+    out = eta_calculator(stops, leg_durations_min=[30], start_time=START)
+    assert out[0]["on_time"] is False
+
+
+def test_eta_on_time_true_within_both_bounds():
+    stops = [{"stop_id": "a", "window_start": "2026-09-22T09:00:00",
+              "window_end": "2026-09-22T10:00:00"}]              # eta 09:30, inside
+    out = eta_calculator(stops, leg_durations_min=[30], start_time=START)
+    assert out[0]["on_time"] is True
+
+
+def test_eta_mixed_timezone_does_not_crash():
+    # Naive start vs. an offset-aware window must not raise (would force safe-failure).
+    stops = [{"stop_id": "a", "window_end": "2026-09-22T10:00:00+05:30"}]
+    out = eta_calculator(stops, leg_durations_min=[30], start_time=START)
+    assert out[0]["on_time"] is True                            # 09:30 <= 10:00 (same local zone)
+
+
+def test_eta_accepts_trailing_z_timestamp():
+    out = eta_calculator([{"stop_id": "a"}], leg_durations_min=[30],
+                         start_time="2026-09-22T09:00:00Z")
+    assert out[0]["eta"].startswith("2026-09-22T09:30:00")
+
+
 # --- the timeline recompute (delay event) ------------------------------------
 def test_eta_recompute_shifts_downstream_on_late_start():
     stops = [{"stop_id": "a"}, {"stop_id": "b"}]
