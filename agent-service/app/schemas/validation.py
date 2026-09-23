@@ -27,3 +27,4 @@ class ValidationOutput(BaseModel):
     rule_results: list[RuleResult] = Field(default_factory=list)
     approved_batch: BatchCandidate | None = None
     rejection_reasons: list[str] = Field(default_factory=list)
+    explanation: str | None = None

@@ -9,6 +9,7 @@ import pytest
 from langgraph.checkpoint.memory import MemorySaver
 
 from app.agents import allocation_node, routing_node, triage_node, validation_node
+from app.agents import validation_agent
 from app.graph import build_graph
 from app.schemas import (
     AllocationOutput,
@@ -24,12 +25,66 @@ GOLDEN = json.loads((Path(__file__).parent / "golden_cases" / "kasun_case.json")
 
 def _payload(**overrides):
     data = dict(GOLDEN)
+    # Phase 3B requires an explicit persisted S3 batch. This remains test-only
+    # mocked upstream allocation/context data; S2 itself is not implemented here.
+    data.setdefault("batch_id", "batch-test-001")
     data.update(overrides)
     return data
 
 
 def _cfg(thread_id: str) -> dict:
     return {"configurable": {"thread_id": thread_id}}
+
+
+@pytest.fixture(autouse=True)
+def mock_s3_validation_tools(monkeypatch):
+    context = {
+        "batchId": "batch-test-001",
+        "warehouseId": "warehouse-test-001",
+        "vehicleId": "veh-van-01",
+        "batchStatus": "Reserved",
+        "maxWeightKg": 1000,
+        "maxVolumeM3": 12,
+        "totalWeightKg": 100,
+        "totalVolumeM3": 1,
+        "packages": [],
+    }
+    capacity = {
+        "batch_id": "batch-test-001",
+        "vehicle_id": "veh-van-01",
+        "total_weight_kg": 100,
+        "total_volume_m3": 1,
+        "max_weight_kg": 1000,
+        "max_volume_m3": 12,
+        "within_weight_capacity": True,
+        "within_volume_capacity": True,
+        "backend_totals_match": True,
+    }
+    stock = {
+        "batch_id": "batch-test-001",
+        "warehouse_id": "warehouse-test-001",
+        "batch_warehouse_id": "warehouse-test-001",
+        "expected_status": "Reserved",
+        "packages": [],
+        "all_packages_present": True,
+        "all_belong_to_expected_warehouse": True,
+        "all_belong_to_batch": True,
+        "all_in_expected_dispatch_state": True,
+        "none_dispatched": True,
+        "valid": True,
+    }
+    compatibility = {
+        "batch_id": "batch-test-001",
+        "load_sequence_valid": True,
+        "fragile_not_under_heavy": True,
+        "valid": True,
+    }
+    monkeypatch.setattr(validation_agent, "fetch_batch_validation_context", lambda *_: context)
+    monkeypatch.setattr(validation_agent, "capacity_calculator", lambda *_: capacity)
+    monkeypatch.setattr(validation_agent, "warehouse_stock_query", lambda *_args, **_kwargs: stock)
+    monkeypatch.setattr(validation_agent, "compatibility_rules", lambda *_: compatibility)
+    monkeypatch.setattr(validation_agent, "schema_validator", lambda *_: True)
+    monkeypatch.setattr(validation_agent, "_ollama_explanation", lambda *_: "All checks passed.")
 
 
 # --- contract: every stub node emits schema-valid output ---------------------

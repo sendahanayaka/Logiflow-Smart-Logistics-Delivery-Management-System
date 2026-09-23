@@ -55,6 +55,17 @@ def _continue_or_fail(next_step: str) -> Callable[[WorkflowState], str]:
     return router
 
 
+def _after_validation(state: WorkflowState) -> str:
+    """Route only a deterministic S3 PASS to S4; FAIL/REVISE stop safely."""
+    validation = state.get("validation") or {}
+    if (
+        state.get("status") == WorkflowStatus.FAILED.value
+        or validation.get("result") != "PASS"
+    ):
+        return "safe_failure"
+    return "route"
+
+
 def human_approval_node(state: WorkflowState) -> dict:
     """Runs only after a human decision has been injected into state['approval']."""
     decision = state.get("approval") or {}
@@ -96,7 +107,8 @@ def execute_node(state: WorkflowState) -> dict:
 
 def safe_failure_node(state: WorkflowState) -> dict:
     return {
-        "outcome": "Planning could not complete — order flagged for manual handling.",
+        "outcome": state.get("outcome")
+        or "Planning could not complete — order flagged for manual handling.",
         "audit": [AuditEntry(
             step="safe_failure", agent="system",
             summary="Flagged for manual handling; nothing lost.", ok=False,
@@ -124,7 +136,7 @@ def build_graph(checkpointer=None):
                             {"allocate": "allocate", "safe_failure": "safe_failure"})
     g.add_conditional_edges("allocate", _continue_or_fail("validate"),
                             {"validate": "validate", "safe_failure": "safe_failure"})
-    g.add_conditional_edges("validate", _continue_or_fail("route"),
+    g.add_conditional_edges("validate", _after_validation,
                             {"route": "route", "safe_failure": "safe_failure"})
     g.add_conditional_edges("route", _continue_or_fail("human_approval"),
                             {"human_approval": "human_approval", "safe_failure": "safe_failure"})
