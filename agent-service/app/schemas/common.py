@@ -63,3 +63,7 @@ class BatchCandidate(BaseModel):
 
     order_ids: list[str]
     vehicle_id: str
+    # S3 needs the persisted dispatch batch to retrieve deterministic warehouse
+    # context. Optional preserves existing S1/S2/S4 contract payloads; S3 returns
+    # REVISE until upstream allocation supplies it.
+    batch_id: str | None = None
