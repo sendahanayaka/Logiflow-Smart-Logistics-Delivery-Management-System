@@ -2,7 +2,7 @@
 import { baseApi } from '../../app/api'
 
 export type Id = string
-export type PackageStatus = 'Received' | 'Available' | 'Reserved' | 'Dispatched'
+export type PackageStatus = 'Received' | 'Available' | 'Reserved' | 'Dispatched' | 'OnHold'
 export type DispatchBatchResult = 'PASS' | 'FAIL' | 'REVISE'
 
 export interface Warehouse {

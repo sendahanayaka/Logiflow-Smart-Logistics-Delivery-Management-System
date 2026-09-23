@@ -1,2 +1,15 @@
-// [ALL]  React entry
-// TODO: implement. Owner fills this in.
+// [ALL] React application entry point.
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import { Provider } from 'react-redux'
+
+import { AppRouter } from './app/router'
+import { store } from './app/store'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <Provider store={store}>
+      <AppRouter />
+    </Provider>
+  </StrictMode>,
+)
