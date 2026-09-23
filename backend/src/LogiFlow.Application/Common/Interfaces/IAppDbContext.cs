@@ -11,6 +11,8 @@ public interface IAppDbContext
     DbSet<WarehouseEntity> Warehouses { get; }
     DbSet<StorageZone> StorageZones { get; }
     DbSet<Package> Packages { get; }
+    DbSet<DispatchBatch> DispatchBatches { get; }
+    DbSet<DispatchBatchItem> DispatchBatchItems { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task<IDbContextTransaction> BeginTransactionAsync(
         IsolationLevel isolationLevel,

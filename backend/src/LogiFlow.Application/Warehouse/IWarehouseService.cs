@@ -18,6 +18,10 @@ public interface IWarehouseService
         ReceivePackageCommand command,
         CancellationToken cancellationToken = default);
 
+    Task<PackageResponse> MakePackageAvailableAsync(
+        Guid packageId,
+        CancellationToken cancellationToken = default);
+
     Task<PagedResult<PackageResponse>> GetPackagesAsync(
         Guid warehouseId,
         PackageInventoryQuery query,

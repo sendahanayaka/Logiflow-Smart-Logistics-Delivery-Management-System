@@ -17,17 +17,20 @@ public class WarehouseController : ControllerBase
     private readonly IValidator<CreateWarehouseRequest> _warehouseValidator;
     private readonly IValidator<CreateStorageZoneRequest> _storageZoneValidator;
     private readonly IValidator<CreatePackageRequest> _packageValidator;
+    private readonly IDispatchBatchService _dispatchBatchService;
 
     public WarehouseController(
         IWarehouseService warehouseService,
         IValidator<CreateWarehouseRequest> warehouseValidator,
         IValidator<CreateStorageZoneRequest> storageZoneValidator,
-        IValidator<CreatePackageRequest> packageValidator)
+        IValidator<CreatePackageRequest> packageValidator,
+        IDispatchBatchService dispatchBatchService)
     {
         _warehouseService = warehouseService;
         _warehouseValidator = warehouseValidator;
         _storageZoneValidator = storageZoneValidator;
         _packageValidator = packageValidator;
+        _dispatchBatchService = dispatchBatchService;
     }
 
     [HttpPost]
@@ -162,6 +165,60 @@ public class WarehouseController : ControllerBase
                 cancellationToken);
 
             return Ok(packages);
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+    }
+
+    [HttpPatch("packages/{id:guid}/availability")]
+    [ProducesResponseType(typeof(PackageResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<PackageResponse>> MakePackageAvailable(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await _warehouseService.MakePackageAvailableAsync(id, cancellationToken));
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+    }
+
+    [HttpGet("{id:guid}/reports/throughput")]
+    [ProducesResponseType(typeof(WarehouseThroughputResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<WarehouseThroughputResponse>> GetThroughput(
+        Guid id,
+        [FromQuery] DateTime fromUtc,
+        [FromQuery] DateTime toUtc,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await _dispatchBatchService.GetThroughputAsync(
+                id,
+                new WarehouseThroughputQuery(fromUtc, toUtc),
+                cancellationToken));
         }
         catch (KeyNotFoundException exception)
         {

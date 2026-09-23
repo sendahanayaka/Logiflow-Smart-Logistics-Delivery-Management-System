@@ -12,4 +12,5 @@ public class Warehouse
 
     public ICollection<StorageZone> StorageZones { get; set; } = new List<StorageZone>();
     public ICollection<Package> Packages { get; set; } = new List<Package>();
+    public ICollection<DispatchBatch> DispatchBatches { get; set; } = new List<DispatchBatch>();
 }

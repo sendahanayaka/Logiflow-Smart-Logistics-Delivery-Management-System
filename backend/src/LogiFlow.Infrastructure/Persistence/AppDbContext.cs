@@ -15,6 +15,8 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
     public DbSet<StorageZone> StorageZones => Set<StorageZone>();
     public DbSet<Package> Packages => Set<Package>();
+    public DbSet<DispatchBatch> DispatchBatches => Set<DispatchBatch>();
+    public DbSet<DispatchBatchItem> DispatchBatchItems => Set<DispatchBatchItem>();
 
     public Task<IDbContextTransaction> BeginTransactionAsync(
         IsolationLevel isolationLevel,
