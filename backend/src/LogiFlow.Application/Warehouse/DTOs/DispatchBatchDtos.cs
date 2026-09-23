@@ -102,6 +102,27 @@ public sealed record DispatchBatchValidationResponse(
     string Result,
     IReadOnlyCollection<string> Issues);
 
+public sealed record DispatchBatchValidationPackageContextResponse(
+    Guid PackageId,
+    Guid WarehouseId,
+    string TrackingCode,
+    string Status,
+    decimal WeightKg,
+    decimal VolumeM3,
+    bool IsFragile,
+    int LoadSequence);
+
+public sealed record DispatchBatchValidationContextResponse(
+    Guid BatchId,
+    Guid WarehouseId,
+    string VehicleId,
+    string BatchStatus,
+    decimal MaxWeightKg,
+    decimal MaxVolumeM3,
+    decimal TotalWeightKg,
+    decimal TotalVolumeM3,
+    IReadOnlyCollection<DispatchBatchValidationPackageContextResponse> Packages);
+
 public sealed record WarehouseThroughputResponse(
     Guid WarehouseId,
     DateTime FromUtc,
