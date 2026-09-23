@@ -1,5 +1,6 @@
 using System.Data;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,6 +51,58 @@ public sealed class WarehouseServiceTests : IAsyncLifetime
         Assert.Equal(25, warehouse.TotalVolumeM3);
         Assert.Equal(0, warehouse.OccupiedVolumeM3);
         Assert.True(await _context.Warehouses.AnyAsync(item => item.Id == warehouse.Id));
+    }
+
+    [Fact]
+    public async Task GetWarehousesAsync_ReturnsPersistedWarehousesInDeterministicNameOrder()
+    {
+        var zulu = await CreateWarehouseAsync(name: "Zulu Warehouse");
+        var alpha = await CreateWarehouseAsync(name: "Alpha Warehouse");
+
+        var warehouses = await _service.GetWarehousesAsync();
+
+        Assert.Collection(
+            warehouses,
+            warehouse => Assert.Equal(alpha.Id, warehouse.Id),
+            warehouse => Assert.Equal(zulu.Id, warehouse.Id));
+    }
+
+    [Fact]
+    public async Task GetWarehouseAsync_ReturnsExistingPersistedWarehouse()
+    {
+        var expected = await CreateWarehouseAsync(totalVolumeM3: 25);
+
+        var warehouse = await _service.GetWarehouseAsync(expected.Id);
+
+        Assert.Equal(expected.Id, warehouse.Id);
+        Assert.Equal("Colombo Central", warehouse.Name);
+        Assert.Equal(25, warehouse.TotalVolumeM3);
+        Assert.Equal(0, warehouse.OccupiedVolumeM3);
+    }
+
+    [Fact]
+    public async Task GetWarehouseAsync_ThrowsForUnknownWarehouse()
+    {
+        await Assert.ThrowsAsync<KeyNotFoundException>(
+            () => _service.GetWarehouseAsync(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task GetStorageZonesAsync_ReturnsOnlySelectedWarehouseZonesInDeterministicCodeOrder()
+    {
+        var selectedWarehouse = await CreateWarehouseAsync(name: "Selected Warehouse");
+        var otherWarehouse = await CreateWarehouseAsync(name: "Other Warehouse");
+        var zoneB = await CreateZoneAsync(selectedWarehouse.Id, "B2");
+        var zoneA = await CreateZoneAsync(selectedWarehouse.Id, "A1");
+        await CreateZoneAsync(otherWarehouse.Id, "C3");
+
+        var zones = await _service.GetStorageZonesAsync(selectedWarehouse.Id);
+
+        Assert.Collection(
+            zones,
+            zone => Assert.Equal(zoneA.Id, zone.Id),
+            zone => Assert.Equal(zoneB.Id, zone.Id));
+        Assert.All(zones, zone => Assert.Equal(selectedWarehouse.Id, zone.WarehouseId));
     }
 
     [Fact]
@@ -273,9 +326,12 @@ public sealed class WarehouseServiceTests : IAsyncLifetime
         Assert.Single(result.Items);
     }
 
-    private async Task<WarehouseResponse> CreateWarehouseAsync(decimal totalVolumeM3 = 100) =>
+    private async Task<WarehouseResponse> CreateWarehouseAsync(
+        decimal totalVolumeM3 = 100,
+        string name = "Colombo Central",
+        string location = "Colombo") =>
         await _service.CreateWarehouseAsync(
-            new CreateWarehouseCommand("Colombo Central", "Colombo", totalVolumeM3));
+            new CreateWarehouseCommand(name, location, totalVolumeM3));
 
     private async Task<StorageZoneResponse> CreateZoneAsync(
         Guid warehouseId,

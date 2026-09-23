@@ -5,6 +5,17 @@ namespace LogiFlow.Application.Warehouse;
 
 public interface IWarehouseService
 {
+    Task<IReadOnlyCollection<WarehouseResponse>> GetWarehousesAsync(
+        CancellationToken cancellationToken = default);
+
+    Task<WarehouseResponse> GetWarehouseAsync(
+        Guid warehouseId,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyCollection<StorageZoneResponse>> GetStorageZonesAsync(
+        Guid warehouseId,
+        CancellationToken cancellationToken = default);
+
     Task<WarehouseResponse> CreateWarehouseAsync(
         CreateWarehouseCommand command,
         CancellationToken cancellationToken = default);

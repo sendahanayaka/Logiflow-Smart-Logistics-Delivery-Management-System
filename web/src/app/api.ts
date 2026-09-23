@@ -8,6 +8,13 @@ const baseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5080'
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({ baseUrl }),
-  tagTypes: ['Warehouse', 'WarehouseInventory', 'Package', 'DispatchBatch', 'Throughput'],
+  tagTypes: [
+    'Warehouse',
+    'WarehouseZones',
+    'WarehouseInventory',
+    'Package',
+    'DispatchBatch',
+    'Throughput',
+  ],
   endpoints: () => ({}),
 })

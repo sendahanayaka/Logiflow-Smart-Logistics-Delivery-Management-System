@@ -33,6 +33,58 @@ public class WarehouseController : ControllerBase
         _dispatchBatchService = dispatchBatchService;
     }
 
+    [HttpGet]
+    [ProducesResponseType(typeof(IReadOnlyCollection<WarehouseResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyCollection<WarehouseResponse>>> GetWarehouses(
+        CancellationToken cancellationToken)
+    {
+        return Ok(await _warehouseService.GetWarehousesAsync(cancellationToken));
+    }
+
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(WarehouseResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<WarehouseResponse>> GetWarehouse(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await _warehouseService.GetWarehouseAsync(id, cancellationToken));
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+    }
+
+    [HttpGet("{id:guid}/zones")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<StorageZoneResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IReadOnlyCollection<StorageZoneResponse>>> GetStorageZones(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await _warehouseService.GetStorageZonesAsync(id, cancellationToken));
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+    }
+
     [HttpPost]
     [ProducesResponseType(typeof(WarehouseResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
