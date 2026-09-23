@@ -34,6 +34,8 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<TrackingEvent> TrackingEvents => Set<TrackingEvent>();
     public DbSet<ProofOfDelivery> ProofOfDeliveries => Set<ProofOfDelivery>();
 
+    public void ClearChangeTracker() => ChangeTracker.Clear();
+
     public Task<IDbContextTransaction> BeginTransactionAsync(
         IsolationLevel isolationLevel,
         CancellationToken cancellationToken = default) =>

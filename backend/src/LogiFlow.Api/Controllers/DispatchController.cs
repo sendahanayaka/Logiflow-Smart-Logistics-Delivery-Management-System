@@ -26,11 +26,12 @@ public sealed class DispatchController : ControllerBase
     }
 
     [HttpPost("batches")]
-    [ProducesResponseType(typeof(DispatchBatchResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(DispatchBatchCreationResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(DispatchBatchCreationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<DispatchBatchResponse>> CreateBatch(
+    public async Task<ActionResult<DispatchBatchCreationResponse>> CreateBatch(
         [FromBody] CreateDispatchBatchRequest request,
         CancellationToken cancellationToken)
     {
@@ -52,7 +53,9 @@ public sealed class DispatchController : ControllerBase
                     request.PackageIds),
                 cancellationToken);
 
-            return Created($"/api/dispatch/batches/{batch.Id}", batch);
+            return batch.Result == "REVISE"
+                ? Ok(batch)
+                : Created($"/api/dispatch/batches/{batch.Batch!.Id}", batch);
         }
         catch (KeyNotFoundException exception)
         {
@@ -69,11 +72,11 @@ public sealed class DispatchController : ControllerBase
     }
 
     [HttpPut("batches/{id:guid}/items")]
-    [ProducesResponseType(typeof(DispatchBatchResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(DispatchBatchCreationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<DispatchBatchResponse>> ReplaceBatchItems(
+    public async Task<ActionResult<DispatchBatchCreationResponse>> ReplaceBatchItems(
         Guid id,
         [FromBody] ReplaceDispatchBatchItemsRequest request,
         CancellationToken cancellationToken)

@@ -333,6 +333,7 @@ public sealed class WarehouseServiceTests : IAsyncLifetime
         public DbSet<LogiFlow.Domain.Entities.ApprovalDecision> ApprovalDecisions => _context.ApprovalDecisions;
         public DbSet<LogiFlow.Domain.Entities.TrackingEvent> TrackingEvents => _context.TrackingEvents;
         public DbSet<LogiFlow.Domain.Entities.ProofOfDelivery> ProofOfDeliveries => _context.ProofOfDeliveries;
+        public void ClearChangeTracker() => _context.ClearChangeTracker();
 
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
             Task.FromException<int>(new DbUpdateException("Simulated package persistence failure."));

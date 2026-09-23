@@ -34,6 +34,7 @@ public interface IAppDbContext
     DbSet<TrackingEvent> TrackingEvents { get; }
     DbSet<ProofOfDelivery> ProofOfDeliveries { get; }
 
+    void ClearChangeTracker();
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
     // Transaction support
