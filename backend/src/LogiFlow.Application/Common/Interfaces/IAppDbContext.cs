@@ -19,6 +19,8 @@ public interface IAppDbContext
     DbSet<WarehouseEntity> Warehouses { get; }
     DbSet<StorageZone> StorageZones { get; }
     DbSet<Package> Packages { get; }
+    DbSet<DispatchBatch> DispatchBatches { get; }
+    DbSet<DispatchBatchItem> DispatchBatchItems { get; }
 
     // [S1] Identity
     DbSet<User> Users { get; }

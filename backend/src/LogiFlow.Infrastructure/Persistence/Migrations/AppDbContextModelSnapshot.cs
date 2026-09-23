@@ -286,6 +286,82 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("MaintenanceRecords", (string)null);
                 });
 
+            modelBuilder.Entity("LogiFlow.Domain.Entities.DispatchBatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("MaxVolumeM3")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<decimal>("MaxWeightKg")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("VehicleId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VehicleId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("DispatchBatches", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_DispatchBatches_MaxVolumeM3_Positive", "\"MaxVolumeM3\" > 0");
+
+                            t.HasCheckConstraint("CK_DispatchBatches_MaxWeightKg_Positive", "\"MaxWeightKg\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("LogiFlow.Domain.Entities.DispatchBatchItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DispatchBatchId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("LoadSequence")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PackageId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PackageId")
+                        .IsUnique();
+
+                    b.HasIndex("DispatchBatchId", "LoadSequence")
+                        .IsUnique();
+
+                    b.ToTable("DispatchBatchItems", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_DispatchBatchItems_LoadSequence_Positive", "\"LoadSequence\" > 0");
+                        });
+                });
+
             modelBuilder.Entity("LogiFlow.Domain.Entities.Package", b =>
                 {
                     b.Property<Guid>("Id")
@@ -845,6 +921,36 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                     b.Navigation("Vehicle");
                 });
 
+            modelBuilder.Entity("LogiFlow.Domain.Entities.DispatchBatch", b =>
+                {
+                    b.HasOne("LogiFlow.Domain.Entities.Warehouse", "Warehouse")
+                        .WithMany("DispatchBatches")
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("LogiFlow.Domain.Entities.DispatchBatchItem", b =>
+                {
+                    b.HasOne("LogiFlow.Domain.Entities.DispatchBatch", "DispatchBatch")
+                        .WithMany("Items")
+                        .HasForeignKey("DispatchBatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LogiFlow.Domain.Entities.Package", "Package")
+                        .WithMany("DispatchBatchItems")
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("DispatchBatch");
+
+                    b.Navigation("Package");
+                });
+
             modelBuilder.Entity("LogiFlow.Domain.Entities.Package", b =>
                 {
                     b.HasOne("LogiFlow.Domain.Entities.StorageZone", "StorageZone")
@@ -951,6 +1057,16 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                     b.Navigation("TrackingEvents");
                 });
 
+            modelBuilder.Entity("LogiFlow.Domain.Entities.DispatchBatch", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("LogiFlow.Domain.Entities.Package", b =>
+                {
+                    b.Navigation("DispatchBatchItems");
+                });
+
             modelBuilder.Entity("LogiFlow.Domain.Entities.StorageZone", b =>
                 {
                     b.Navigation("Packages");
@@ -958,6 +1074,8 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("LogiFlow.Domain.Entities.Warehouse", b =>
                 {
+                    b.Navigation("DispatchBatches");
+
                     b.Navigation("Packages");
 
                     b.Navigation("StorageZones");
