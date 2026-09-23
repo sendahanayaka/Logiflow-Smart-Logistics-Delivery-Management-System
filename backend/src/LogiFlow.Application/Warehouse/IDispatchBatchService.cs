@@ -4,11 +4,11 @@ namespace LogiFlow.Application.Warehouse;
 
 public interface IDispatchBatchService
 {
-    Task<DispatchBatchResponse> CreateBatchAsync(
+    Task<DispatchBatchCreationResponse> CreateBatchAsync(
         CreateDispatchBatchCommand command,
         CancellationToken cancellationToken = default);
 
-    Task<DispatchBatchResponse> ReplaceItemsAsync(
+    Task<DispatchBatchCreationResponse> ReplaceItemsAsync(
         Guid batchId,
         ReplaceDispatchBatchItemsCommand command,
         CancellationToken cancellationToken = default);

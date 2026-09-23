@@ -10,13 +10,15 @@ namespace LogiFlow.Application.Warehouse;
 public sealed class DispatchBatchService : IDispatchBatchService
 {
     private readonly IAppDbContext _context;
+    private readonly BatchingEngine _batchingEngine;
 
-    public DispatchBatchService(IAppDbContext context)
+    public DispatchBatchService(IAppDbContext context, BatchingEngine batchingEngine)
     {
         _context = context;
+        _batchingEngine = batchingEngine;
     }
 
-    public async Task<DispatchBatchResponse> CreateBatchAsync(
+    public async Task<DispatchBatchCreationResponse> CreateBatchAsync(
         CreateDispatchBatchCommand command,
         CancellationToken cancellationToken = default)
     {
@@ -26,22 +28,56 @@ public sealed class DispatchBatchService : IDispatchBatchService
             IsolationLevel.Serializable,
             cancellationToken);
 
+        var packages = new List<Package>();
+        var affectedPackages = new List<Package>();
+        var originalStatuses = new Dictionary<Guid, PackageStatus>();
+
         try
         {
-            var batch = await BuildReservedBatchAsync(command, cancellationToken);
+            var warehouseExists = await _context.Warehouses
+                .AnyAsync(warehouse => warehouse.Id == command.WarehouseId, cancellationToken);
+
+            if (!warehouseExists)
+            {
+                throw new KeyNotFoundException($"Warehouse '{command.WarehouseId}' was not found.");
+            }
+
+            packages = await LoadPackagesAsync(command.PackageIds, cancellationToken);
+            EnsureAllPackagesWereLoaded(packages, command.PackageIds);
+
+            var plan = _batchingEngine.Plan(
+                command.WarehouseId,
+                command.VehicleCapacity,
+                CreateCandidates(packages));
+
+            if (!plan.IsPass)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return Revise(plan);
+            }
+
+            affectedPackages = packages;
+            originalStatuses = affectedPackages.ToDictionary(
+                package => package.Id,
+                package => package.Status);
+            var batch = CreateReservedBatch(command, packages, plan);
+
+            _context.DispatchBatches.Add(batch);
             await _context.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
-            return MapBatch(batch);
+            return Pass(batch);
         }
         catch
         {
+            RestoreStatuses(affectedPackages, originalStatuses);
             await transaction.RollbackAsync(cancellationToken);
+            _context.ClearChangeTracker();
             throw;
         }
     }
 
-    public async Task<DispatchBatchResponse> ReplaceItemsAsync(
+    public async Task<DispatchBatchCreationResponse> ReplaceItemsAsync(
         Guid batchId,
         ReplaceDispatchBatchItemsCommand command,
         CancellationToken cancellationToken = default)
@@ -57,12 +93,15 @@ public sealed class DispatchBatchService : IDispatchBatchService
             IsolationLevel.Serializable,
             cancellationToken);
 
+        var packages = new List<Package>();
+        var affectedPackages = new List<Package>();
+        var originalStatuses = new Dictionary<Guid, PackageStatus>();
+
         try
         {
             var batch = await _context.DispatchBatches
                 .Include(item => item.Items)
                     .ThenInclude(item => item.Package)
-                        .ThenInclude(package => package.StorageZone)
                 .FirstOrDefaultAsync(item => item.Id == batchId, cancellationToken);
 
             if (batch is null)
@@ -75,20 +114,34 @@ public sealed class DispatchBatchService : IDispatchBatchService
                 throw new InvalidOperationException("Only reserved dispatch batches may have their items replaced.");
             }
 
-            var previousPackageIds = batch.Items
+            var existingItems = batch.Items.ToList();
+            var existingPackageIds = existingItems
                 .Select(item => item.PackageId)
                 .ToHashSet();
 
-            var packages = await LoadPackagesAsync(command.PackageIds, cancellationToken);
-            ValidatePackagesForBatch(
-                packages,
-                command.PackageIds,
-                batch.WarehouseId,
-                batch.MaxWeightKg,
-                batch.MaxVolumeM3,
-                previousPackageIds);
+            packages = await LoadPackagesAsync(command.PackageIds, cancellationToken);
+            EnsureAllPackagesWereLoaded(packages, command.PackageIds);
 
-            var existingItems = batch.Items.ToList();
+            var plan = _batchingEngine.Plan(
+                batch.WarehouseId,
+                new VehicleCapacityContext(batch.VehicleId, batch.MaxWeightKg, batch.MaxVolumeM3),
+                CreateCandidates(packages, existingPackageIds));
+
+            if (!plan.IsPass)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return Revise(plan);
+            }
+
+            affectedPackages = existingItems
+                .Select(item => item.Package)
+                .Concat(packages)
+                .GroupBy(package => package.Id)
+                .Select(group => group.First())
+                .ToList();
+            originalStatuses = affectedPackages.ToDictionary(
+                package => package.Id,
+                package => package.Status);
 
             foreach (var item in existingItems)
             {
@@ -100,17 +153,19 @@ public sealed class DispatchBatchService : IDispatchBatchService
 
             _context.DispatchBatchItems.RemoveRange(existingItems);
             batch.Items.Clear();
-            AddReservedItems(batch, packages);
+            AddReservedItems(batch, packages, plan);
             batch.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
-            return MapBatch(batch);
+            return Pass(batch);
         }
         catch
         {
+            RestoreStatuses(affectedPackages, originalStatuses);
             await transaction.RollbackAsync(cancellationToken);
+            _context.ClearChangeTracker();
             throw;
         }
     }
@@ -137,13 +192,13 @@ public sealed class DispatchBatchService : IDispatchBatchService
 
         var totalWeightKg = batch.Items.Sum(item => item.Package.WeightKg);
         var totalVolumeM3 = batch.Items.Sum(item => item.Package.VolumeM3);
-        var capacityValid = totalWeightKg <= batch.MaxWeightKg &&
-                            totalVolumeM3 <= batch.MaxVolumeM3;
+        var weightCapacityValid = totalWeightKg <= batch.MaxWeightKg;
+        var volumeCapacityValid = totalVolumeM3 <= batch.MaxVolumeM3;
         var packageAvailabilityValid = batch.Items.All(
             item => item.Package.Status == PackageStatus.Reserved);
         var warehouseConsistent = batch.Items.All(
             item => item.Package.WarehouseId == batch.WarehouseId);
-        var fragileLoadOrderValid = HasFragileLoadOrder(batch.Items);
+        var fragileLoadOrderValid = HasCompatibleFragileLoadOrder(batch.Items);
         var issues = new List<string>();
 
         if (batch.Items.Count == 0)
@@ -151,9 +206,14 @@ public sealed class DispatchBatchService : IDispatchBatchService
             issues.Add("A dispatch batch must contain at least one package.");
         }
 
-        if (!capacityValid)
+        if (!weightCapacityValid)
         {
-            issues.Add("Batch totals exceed the stored vehicle capacity context.");
+            issues.Add("Batch total weight exceeds the stored vehicle weight capacity.");
+        }
+
+        if (!volumeCapacityValid)
+        {
+            issues.Add("Batch total volume exceeds the stored vehicle volume capacity.");
         }
 
         if (!packageAvailabilityValid)
@@ -168,7 +228,7 @@ public sealed class DispatchBatchService : IDispatchBatchService
 
         if (!fragileLoadOrderValid)
         {
-            issues.Add("Fragile packages must be assigned after non-fragile packages.");
+            issues.Add("Fragile packages must form the final top-safe load segment.");
         }
 
         return new DispatchBatchValidationResponse(
@@ -177,7 +237,8 @@ public sealed class DispatchBatchService : IDispatchBatchService
             batch.Items.Count,
             totalWeightKg,
             totalVolumeM3,
-            capacityValid,
+            weightCapacityValid,
+            volumeCapacityValid,
             packageAvailabilityValid,
             warehouseConsistent,
             fragileLoadOrderValid,
@@ -214,6 +275,12 @@ public sealed class DispatchBatchService : IDispatchBatchService
                               package.ReceivedAt >= query.FromUtc &&
                               package.ReceivedAt <= query.ToUtc);
 
+        var batches = _context.DispatchBatches
+            .AsNoTracking()
+            .Where(batch => batch.WarehouseId == warehouseId &&
+                            batch.CreatedAt >= query.FromUtc &&
+                            batch.CreatedAt <= query.ToUtc);
+
         var receivedPackageCount = await packages.CountAsync(cancellationToken);
         var receivedWeightKg = await packages
             .Select(package => (decimal?)package.WeightKg)
@@ -225,6 +292,14 @@ public sealed class DispatchBatchService : IDispatchBatchService
             .CountAsync(package => package.Status == PackageStatus.Reserved, cancellationToken);
         var dispatchedPackageCount = await packages
             .CountAsync(package => package.Status == PackageStatus.Dispatched, cancellationToken);
+        var createdDispatchBatchCount = await batches.CountAsync(cancellationToken);
+        var batchedPackageCount = await _context.DispatchBatchItems
+            .AsNoTracking()
+            .CountAsync(
+                item => item.DispatchBatch.WarehouseId == warehouseId &&
+                        item.DispatchBatch.CreatedAt >= query.FromUtc &&
+                        item.DispatchBatch.CreatedAt <= query.ToUtc,
+                cancellationToken);
 
         return new WarehouseThroughputResponse(
             warehouseId,
@@ -234,30 +309,16 @@ public sealed class DispatchBatchService : IDispatchBatchService
             receivedWeightKg,
             receivedVolumeM3,
             reservedPackageCount,
-            dispatchedPackageCount);
+            dispatchedPackageCount,
+            createdDispatchBatchCount,
+            batchedPackageCount);
     }
 
-    private async Task<DispatchBatch> BuildReservedBatchAsync(
+    private static DispatchBatch CreateReservedBatch(
         CreateDispatchBatchCommand command,
-        CancellationToken cancellationToken)
+        IReadOnlyCollection<Package> packages,
+        BatchingPlan plan)
     {
-        var warehouseExists = await _context.Warehouses
-            .AnyAsync(warehouse => warehouse.Id == command.WarehouseId, cancellationToken);
-
-        if (!warehouseExists)
-        {
-            throw new KeyNotFoundException($"Warehouse '{command.WarehouseId}' was not found.");
-        }
-
-        var packages = await LoadPackagesAsync(command.PackageIds, cancellationToken);
-        ValidatePackagesForBatch(
-            packages,
-            command.PackageIds,
-            command.WarehouseId,
-            command.VehicleCapacity.MaxWeightKg,
-            command.VehicleCapacity.MaxVolumeM3,
-            new HashSet<Guid>());
-
         var batch = new DispatchBatch
         {
             Id = Guid.NewGuid(),
@@ -269,10 +330,31 @@ public sealed class DispatchBatchService : IDispatchBatchService
             CreatedAt = DateTime.UtcNow
         };
 
-        AddReservedItems(batch, packages);
-        _context.DispatchBatches.Add(batch);
-
+        AddReservedItems(batch, packages, plan);
         return batch;
+    }
+
+    private static void AddReservedItems(
+        DispatchBatch batch,
+        IReadOnlyCollection<Package> packages,
+        BatchingPlan plan)
+    {
+        var packagesById = packages.ToDictionary(package => package.Id);
+
+        foreach (var plannedItem in plan.Items.OrderBy(item => item.LoadSequence))
+        {
+            var package = packagesById[plannedItem.PackageId];
+            package.Status = PackageStatus.Reserved;
+
+            batch.Items.Add(new DispatchBatchItem
+            {
+                Id = Guid.NewGuid(),
+                DispatchBatchId = batch.Id,
+                PackageId = package.Id,
+                Package = package,
+                LoadSequence = plannedItem.LoadSequence
+            });
+        }
     }
 
     private async Task<List<Package>> LoadPackagesAsync(
@@ -282,6 +364,33 @@ public sealed class DispatchBatchService : IDispatchBatchService
             .Include(package => package.StorageZone)
             .Where(package => packageIds.Contains(package.Id))
             .ToListAsync(cancellationToken);
+
+    private static IReadOnlyCollection<BatchingCandidate> CreateCandidates(
+        IReadOnlyCollection<Package> packages,
+        IReadOnlySet<Guid>? alreadyReservedByThisBatch = null) =>
+        packages
+            .Select(package => new BatchingCandidate(
+                package.Id,
+                package.WarehouseId,
+                package.StorageZone.Code,
+                package.TrackingCode,
+                package.WeightKg,
+                package.VolumeM3,
+                package.IsFragile,
+                alreadyReservedByThisBatch?.Contains(package.Id) == true
+                    ? PackageStatus.Available
+                    : package.Status))
+            .ToList();
+
+    private static void EnsureAllPackagesWereLoaded(
+        IReadOnlyCollection<Package> packages,
+        IReadOnlyCollection<Guid> requestedPackageIds)
+    {
+        if (packages.Count != requestedPackageIds.Count)
+        {
+            throw new KeyNotFoundException("One or more requested packages were not found.");
+        }
+    }
 
     private static void ValidateCreateCommand(CreateDispatchBatchCommand command)
     {
@@ -330,83 +439,41 @@ public sealed class DispatchBatchService : IDispatchBatchService
         }
     }
 
-    private static void ValidatePackagesForBatch(
-        IReadOnlyCollection<Package> packages,
-        IReadOnlyCollection<Guid> requestedPackageIds,
-        Guid warehouseId,
-        decimal maxWeightKg,
-        decimal maxVolumeM3,
-        IReadOnlySet<Guid> currentlyReservedByBatch)
+    private static bool HasCompatibleFragileLoadOrder(
+        IEnumerable<DispatchBatchItem> items)
     {
-        if (packages.Count != requestedPackageIds.Count)
-        {
-            throw new KeyNotFoundException("One or more requested packages were not found.");
-        }
-
-        if (packages.Any(package => package.WarehouseId != warehouseId))
-        {
-            throw new ArgumentException("All requested packages must belong to the batch warehouse.");
-        }
-
-        if (packages.Any(
-                package => package.Status != PackageStatus.Available &&
-                           !(currentlyReservedByBatch.Contains(package.Id) &&
-                             package.Status == PackageStatus.Reserved)))
-        {
-            throw new InvalidOperationException("Only available packages may be added to a dispatch batch.");
-        }
-
-        if (packages.Sum(package => package.WeightKg) > maxWeightKg)
-        {
-            throw new InvalidOperationException("The requested packages exceed vehicle weight capacity.");
-        }
-
-        if (packages.Sum(package => package.VolumeM3) > maxVolumeM3)
-        {
-            throw new InvalidOperationException("The requested packages exceed vehicle volume capacity.");
-        }
-    }
-
-    private void AddReservedItems(DispatchBatch batch, IReadOnlyCollection<Package> packages)
-    {
-        var orderedPackages = packages
-            .OrderBy(package => package.StorageZone.Code)
-            .ThenBy(package => package.IsFragile)
-            .ThenByDescending(package => package.WeightKg)
-            .ThenBy(package => package.Id)
+        var orderedItems = items
+            .OrderBy(item => item.LoadSequence)
             .ToList();
 
-        for (var index = 0; index < orderedPackages.Count; index++)
+        if (!orderedItems.Select(item => item.LoadSequence)
+                .SequenceEqual(Enumerable.Range(1, orderedItems.Count)))
         {
-            var package = orderedPackages[index];
-            package.Status = PackageStatus.Reserved;
-
-            batch.Items.Add(new DispatchBatchItem
-            {
-                Id = Guid.NewGuid(),
-                DispatchBatchId = batch.Id,
-                PackageId = package.Id,
-                Package = package,
-                LoadSequence = index + 1
-            });
+            return false;
         }
+
+        var firstFragileIndex = orderedItems.FindIndex(item => item.Package.IsFragile);
+        return firstFragileIndex < 0 ||
+               orderedItems.Skip(firstFragileIndex).All(item => item.Package.IsFragile);
     }
 
-    private static bool HasFragileLoadOrder(IEnumerable<DispatchBatchItem> items)
-    {
-        var materializedItems = items.ToList();
-        var latestNonFragile = materializedItems
-            .Where(item => !item.Package.IsFragile)
-            .Select(item => item.LoadSequence)
-            .DefaultIfEmpty(0)
-            .Max();
-        var earliestFragile = materializedItems
-            .Where(item => item.Package.IsFragile)
-            .Select(item => item.LoadSequence)
-            .DefaultIfEmpty(int.MaxValue)
-            .Min();
+    private static DispatchBatchCreationResponse Pass(DispatchBatch batch) =>
+        new("PASS", MapBatch(batch), Array.Empty<string>());
 
-        return latestNonFragile < earliestFragile;
+    private static DispatchBatchCreationResponse Revise(BatchingPlan plan) =>
+        new("REVISE", null, plan.Issues);
+
+    private static void RestoreStatuses(
+        IEnumerable<Package> packages,
+        IReadOnlyDictionary<Guid, PackageStatus> originalStatuses)
+    {
+        foreach (var package in packages)
+        {
+            if (originalStatuses.TryGetValue(package.Id, out var status))
+            {
+                package.Status = status;
+            }
+        }
     }
 
     private static DispatchBatchResponse MapBatch(DispatchBatch batch)

@@ -13,6 +13,7 @@ public interface IAppDbContext
     DbSet<Package> Packages { get; }
     DbSet<DispatchBatch> DispatchBatches { get; }
     DbSet<DispatchBatchItem> DispatchBatchItems { get; }
+    void ClearChangeTracker();
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task<IDbContextTransaction> BeginTransactionAsync(
         IsolationLevel isolationLevel,

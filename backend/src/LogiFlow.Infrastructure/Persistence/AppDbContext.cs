@@ -18,6 +18,8 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<DispatchBatch> DispatchBatches => Set<DispatchBatch>();
     public DbSet<DispatchBatchItem> DispatchBatchItems => Set<DispatchBatchItem>();
 
+    public void ClearChangeTracker() => ChangeTracker.Clear();
+
     public Task<IDbContextTransaction> BeginTransactionAsync(
         IsolationLevel isolationLevel,
         CancellationToken cancellationToken = default) =>

@@ -1,9 +1,54 @@
+using LogiFlow.Domain.Enums;
+
 namespace LogiFlow.Application.Warehouse.DTOs;
 
 public sealed record VehicleCapacityContext(
     string VehicleId,
     decimal MaxWeightKg,
     decimal MaxVolumeM3);
+
+public sealed record BatchingCandidate(
+    Guid PackageId,
+    Guid WarehouseId,
+    string StorageZoneCode,
+    string TrackingCode,
+    decimal WeightKg,
+    decimal VolumeM3,
+    bool IsFragile,
+    PackageStatus Status);
+
+public sealed record BatchingPlanItem(
+    Guid PackageId,
+    string TrackingCode,
+    string StorageZoneCode,
+    decimal WeightKg,
+    decimal VolumeM3,
+    bool IsFragile,
+    decimal NormalizedSize,
+    int PlacementSequence,
+    int LoadSequence);
+
+public sealed record BatchingPlan(
+    string Result,
+    IReadOnlyCollection<BatchingPlanItem> Items,
+    decimal TotalWeightKg,
+    decimal TotalVolumeM3,
+    IReadOnlyCollection<string> Issues)
+{
+    public bool IsPass => Result == "PASS";
+
+    public static BatchingPlan Pass(
+        IReadOnlyCollection<BatchingPlanItem> items,
+        decimal totalWeightKg,
+        decimal totalVolumeM3) =>
+        new("PASS", items, totalWeightKg, totalVolumeM3, Array.Empty<string>());
+
+    public static BatchingPlan Revise(
+        IReadOnlyCollection<string> issues,
+        decimal totalWeightKg = 0,
+        decimal totalVolumeM3 = 0) =>
+        new("REVISE", Array.Empty<BatchingPlanItem>(), totalWeightKg, totalVolumeM3, issues);
+}
 
 public sealed record CreateDispatchBatchCommand(
     Guid WarehouseId,
@@ -38,13 +83,19 @@ public sealed record DispatchBatchResponse(
     DateTime CreatedAt,
     DateTime? UpdatedAt);
 
+public sealed record DispatchBatchCreationResponse(
+    string Result,
+    DispatchBatchResponse? Batch,
+    IReadOnlyCollection<string> Issues);
+
 public sealed record DispatchBatchValidationResponse(
     Guid BatchId,
     Guid WarehouseId,
     int PackageCount,
     decimal TotalWeightKg,
     decimal TotalVolumeM3,
-    bool CapacityValid,
+    bool WeightCapacityValid,
+    bool VolumeCapacityValid,
     bool PackageAvailabilityValid,
     bool WarehouseConsistent,
     bool FragileLoadOrderValid,
@@ -59,4 +110,6 @@ public sealed record WarehouseThroughputResponse(
     decimal ReceivedWeightKg,
     decimal ReceivedVolumeM3,
     int ReservedPackageCount,
-    int DispatchedPackageCount);
+    int DispatchedPackageCount,
+    int CreatedDispatchBatchCount,
+    int BatchedPackageCount);
