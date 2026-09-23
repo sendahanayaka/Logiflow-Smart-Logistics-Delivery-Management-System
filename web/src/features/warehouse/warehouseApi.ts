@@ -182,9 +182,24 @@ export interface WarehouseThroughput {
 
 export const warehouseApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    getWarehouses: build.query<Warehouse[], void>({
+      query: () => '/api/warehouse',
+      providesTags: (result) => [
+        { type: 'Warehouse', id: 'LIST' },
+        ...(result?.map((warehouse) => ({ type: 'Warehouse' as const, id: warehouse.id })) ?? []),
+      ],
+    }),
+    getWarehouse: build.query<Warehouse, Id>({
+      query: (warehouseId) => `/api/warehouse/${warehouseId}`,
+      providesTags: (_result, _error, warehouseId) => [{ type: 'Warehouse', id: warehouseId }],
+    }),
+    getStorageZones: build.query<StorageZone[], Id>({
+      query: (warehouseId) => `/api/warehouse/${warehouseId}/zones`,
+      providesTags: (_result, _error, warehouseId) => [{ type: 'WarehouseZones', id: warehouseId }],
+    }),
     createWarehouse: build.mutation<Warehouse, CreateWarehouseRequest>({
       query: (body) => ({ url: '/api/warehouse', method: 'POST', body }),
-      invalidatesTags: ['Warehouse'],
+      invalidatesTags: [{ type: 'Warehouse', id: 'LIST' }],
     }),
     createStorageZone: build.mutation<StorageZone, { warehouseId: Id; body: CreateStorageZoneRequest }>({
       query: ({ warehouseId, body }) => ({
@@ -192,7 +207,10 @@ export const warehouseApi = baseApi.injectEndpoints({
         method: 'POST',
         body,
       }),
-      invalidatesTags: (_result, _error, { warehouseId }) => [{ type: 'Warehouse', id: warehouseId }],
+      invalidatesTags: (_result, _error, { warehouseId }) => [
+        { type: 'Warehouse', id: warehouseId },
+        { type: 'WarehouseZones', id: warehouseId },
+      ],
     }),
     receivePackage: build.mutation<WarehousePackage, PackageIntakeRequest>({
       query: (body) => ({ url: '/api/warehouse/intake', method: 'POST', body }),
@@ -258,6 +276,9 @@ export const warehouseApi = baseApi.injectEndpoints({
 })
 
 export const {
+  useGetWarehousesQuery,
+  useGetWarehouseQuery,
+  useGetStorageZonesQuery,
   useCreateWarehouseMutation,
   useCreateStorageZoneMutation,
   useReceivePackageMutation,

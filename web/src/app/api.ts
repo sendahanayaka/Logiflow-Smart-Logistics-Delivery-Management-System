@@ -37,6 +37,7 @@ export const baseApi = createApi({
     'Shipment',
     'Tracking',
     'Warehouse',
+    'WarehouseZones',
     'WarehouseInventory',
     'Package',
     'DispatchBatch',
