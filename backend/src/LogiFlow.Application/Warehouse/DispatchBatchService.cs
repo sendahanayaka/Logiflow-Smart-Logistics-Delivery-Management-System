@@ -314,6 +314,51 @@ public sealed class DispatchBatchService : IDispatchBatchService
             batchedPackageCount);
     }
 
+    public async Task<DispatchBatchValidationContextResponse> GetValidationContextAsync(
+        Guid batchId,
+        CancellationToken cancellationToken = default)
+    {
+        if (batchId == Guid.Empty)
+        {
+            throw new ArgumentException("Dispatch batch ID is required.", nameof(batchId));
+        }
+
+        var batch = await _context.DispatchBatches
+            .AsNoTracking()
+            .Include(item => item.Items)
+                .ThenInclude(item => item.Package)
+            .FirstOrDefaultAsync(item => item.Id == batchId, cancellationToken);
+
+        if (batch is null)
+        {
+            throw new KeyNotFoundException($"Dispatch batch '{batchId}' was not found.");
+        }
+
+        var packages = batch.Items
+            .OrderBy(item => item.LoadSequence)
+            .Select(item => new DispatchBatchValidationPackageContextResponse(
+                item.PackageId,
+                item.Package.WarehouseId,
+                item.Package.TrackingCode,
+                item.Package.Status.ToString(),
+                item.Package.WeightKg,
+                item.Package.VolumeM3,
+                item.Package.IsFragile,
+                item.LoadSequence))
+            .ToList();
+
+        return new DispatchBatchValidationContextResponse(
+            batch.Id,
+            batch.WarehouseId,
+            batch.VehicleId,
+            batch.Status.ToString(),
+            batch.MaxWeightKg,
+            batch.MaxVolumeM3,
+            packages.Sum(package => package.WeightKg),
+            packages.Sum(package => package.VolumeM3),
+            packages);
+    }
+
     private static DispatchBatch CreateReservedBatch(
         CreateDispatchBatchCommand command,
         IReadOnlyCollection<Package> packages,
