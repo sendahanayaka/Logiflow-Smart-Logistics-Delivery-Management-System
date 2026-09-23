@@ -1,5 +1,6 @@
 using FluentValidation;
 using LogiFlow.Api.Controllers;
+using LogiFlow.Api.Middleware;
 using LogiFlow.Application.Common.Interfaces;
 using LogiFlow.Application.Warehouse;
 using LogiFlow.Infrastructure.Persistence;
@@ -24,6 +25,7 @@ builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionMiddleware>();
 app.MapControllers();
 app.Run();
 

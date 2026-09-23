@@ -203,6 +203,11 @@ public class WarehouseService : IWarehouseService
 
         if (query.Status is not null)
         {
+            if (!Enum.IsDefined(query.Status.Value))
+            {
+                throw new ArgumentException("Package status is invalid.", nameof(query.Status));
+            }
+
             packages = packages.Where(package => package.Status == query.Status);
         }
 
@@ -214,7 +219,12 @@ public class WarehouseService : IWarehouseService
         if (!string.IsNullOrWhiteSpace(query.TrackingCode))
         {
             var trackingCode = NormalizeTrackingCode(query.TrackingCode);
-            packages = packages.Where(package => package.TrackingCode.Contains(trackingCode));
+            var escapedTrackingCode = EscapeLikeLiteral(trackingCode);
+            packages = packages.Where(package =>
+                EF.Functions.Like(
+                    package.TrackingCode,
+                    $"%{escapedTrackingCode}%",
+                    "\\"));
         }
 
         var totalCount = await packages.CountAsync(cancellationToken);
@@ -332,6 +342,12 @@ public class WarehouseService : IWarehouseService
 
     private static string NormalizeTrackingCode(string trackingCode) =>
         trackingCode.Trim().ToUpperInvariant();
+
+    private static string EscapeLikeLiteral(string value) =>
+        value
+            .Replace("\\", "\\\\")
+            .Replace("%", "\\%")
+            .Replace("_", "\\_");
 
     private static string? NormalizeOptional(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();

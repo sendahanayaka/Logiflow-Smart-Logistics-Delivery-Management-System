@@ -49,7 +49,7 @@ public class WarehouseController : ControllerBase
                 new CreateWarehouseCommand(request.Name, request.Location, request.TotalVolumeM3),
                 cancellationToken);
 
-            return Created($"/api/warehouse/{warehouse.Id}", warehouse);
+            return StatusCode(StatusCodes.Status201Created, warehouse);
         }
         catch (ArgumentException exception)
         {
@@ -80,7 +80,7 @@ public class WarehouseController : ControllerBase
                 new CreateStorageZoneCommand(request.Name, request.Code, request.TotalVolumeM3),
                 cancellationToken);
 
-            return Created($"/api/warehouse/{id}/zones/{zone.Id}", zone);
+            return StatusCode(StatusCodes.Status201Created, zone);
         }
         catch (KeyNotFoundException exception)
         {
@@ -125,7 +125,7 @@ public class WarehouseController : ControllerBase
                     request.SpecialHandling),
                 cancellationToken);
 
-            return Created($"/api/warehouse/intake/{package.Id}", package);
+            return StatusCode(StatusCodes.Status201Created, package);
         }
         catch (KeyNotFoundException exception)
         {
