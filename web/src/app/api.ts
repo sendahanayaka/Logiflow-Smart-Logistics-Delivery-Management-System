@@ -27,6 +27,20 @@ export const baseApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Driver', 'Vehicle', 'Assignment', 'DutySchedule', 'MaintenanceRecord', 'Workflow', 'Shipment', 'Tracking'],
+  tagTypes: [
+    'Driver',
+    'Vehicle',
+    'Assignment',
+    'DutySchedule',
+    'MaintenanceRecord',
+    'Workflow',
+    'Shipment',
+    'Tracking',
+    'Warehouse',
+    'WarehouseInventory',
+    'Package',
+    'DispatchBatch',
+    'Throughput',
+  ],
   endpoints: () => ({}),
 });
