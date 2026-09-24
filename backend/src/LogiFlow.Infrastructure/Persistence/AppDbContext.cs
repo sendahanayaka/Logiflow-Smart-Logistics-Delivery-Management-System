@@ -16,6 +16,14 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<StorageZone> StorageZones => Set<StorageZone>();
     public DbSet<Package> Packages => Set<Package>();
 
+    // [S4] Delivery execution & tracking
+    public DbSet<AgentWorkflow> AgentWorkflows => Set<AgentWorkflow>();
+    public DbSet<RouteStop> RouteStops => Set<RouteStop>();
+    public DbSet<Shipment> Shipments => Set<Shipment>();
+    public DbSet<ApprovalDecision> ApprovalDecisions => Set<ApprovalDecision>();
+    public DbSet<TrackingEvent> TrackingEvents => Set<TrackingEvent>();
+    public DbSet<ProofOfDelivery> ProofOfDeliveries => Set<ProofOfDelivery>();
+
     public Task<IDbContextTransaction> BeginTransactionAsync(
         IsolationLevel isolationLevel,
         CancellationToken cancellationToken = default) =>

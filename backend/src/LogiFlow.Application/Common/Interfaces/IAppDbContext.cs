@@ -11,6 +11,15 @@ public interface IAppDbContext
     DbSet<WarehouseEntity> Warehouses { get; }
     DbSet<StorageZone> StorageZones { get; }
     DbSet<Package> Packages { get; }
+
+    // [S4] Delivery execution & tracking
+    DbSet<AgentWorkflow> AgentWorkflows { get; }
+    DbSet<RouteStop> RouteStops { get; }
+    DbSet<Shipment> Shipments { get; }
+    DbSet<ApprovalDecision> ApprovalDecisions { get; }
+    DbSet<TrackingEvent> TrackingEvents { get; }
+    DbSet<ProofOfDelivery> ProofOfDeliveries { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task<IDbContextTransaction> BeginTransactionAsync(
         IsolationLevel isolationLevel,

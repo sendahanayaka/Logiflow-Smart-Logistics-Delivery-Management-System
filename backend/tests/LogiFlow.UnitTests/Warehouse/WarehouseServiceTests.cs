@@ -316,6 +316,14 @@ public sealed class WarehouseServiceTests : IAsyncLifetime
         public DbSet<StorageZoneEntity> StorageZones => _context.StorageZones;
         public DbSet<PackageEntity> Packages => _context.Packages;
 
+        // [S4] delivery-execution DbSets added to IAppDbContext; delegate to the inner context.
+        public DbSet<LogiFlow.Domain.Entities.AgentWorkflow> AgentWorkflows => _context.AgentWorkflows;
+        public DbSet<LogiFlow.Domain.Entities.RouteStop> RouteStops => _context.RouteStops;
+        public DbSet<LogiFlow.Domain.Entities.Shipment> Shipments => _context.Shipments;
+        public DbSet<LogiFlow.Domain.Entities.ApprovalDecision> ApprovalDecisions => _context.ApprovalDecisions;
+        public DbSet<LogiFlow.Domain.Entities.TrackingEvent> TrackingEvents => _context.TrackingEvents;
+        public DbSet<LogiFlow.Domain.Entities.ProofOfDelivery> ProofOfDeliveries => _context.ProofOfDeliveries;
+
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
             Task.FromException<int>(new DbUpdateException("Simulated package persistence failure."));
 
