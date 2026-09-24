@@ -14,6 +14,7 @@ export const Navbar: React.FC = () => {
         dispatch(logout());
         navigate('/login');
     };
+
     return (
         <header className="navbar">
             <div className="navbar-container">
