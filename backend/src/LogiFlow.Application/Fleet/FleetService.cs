@@ -53,6 +53,7 @@ public class FleetService : IFleetService
         {
             Id = Guid.NewGuid(),
             UserId = request.UserId,
+            FullName = request.FullName.Trim(),
             LicenseNumber = request.LicenseNumber.Trim(),
             LicenseExpiryDate = EnsureUtc(request.LicenseExpiryDate),
             PhoneNumber = request.PhoneNumber?.Trim(),
@@ -87,6 +88,7 @@ public class FleetService : IFleetService
         }
 
         driver.UserId = request.UserId;
+        driver.FullName = request.FullName.Trim();
         driver.LicenseNumber = request.LicenseNumber.Trim();
         driver.LicenseExpiryDate = EnsureUtc(request.LicenseExpiryDate);
         driver.PhoneNumber = request.PhoneNumber?.Trim();
@@ -421,6 +423,11 @@ public class FleetService : IFleetService
 
     private static void ValidateCreateDriverRequest(CreateDriverRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.FullName))
+        {
+            throw new ArgumentException("Driver full name is required.", nameof(request.FullName));
+        }
+
         if (string.IsNullOrWhiteSpace(request.LicenseNumber))
         {
             throw new ArgumentException("Driver license number is required.", nameof(request.LicenseNumber));
@@ -434,6 +441,11 @@ public class FleetService : IFleetService
 
     private static void ValidateUpdateDriverRequest(UpdateDriverRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.FullName))
+        {
+            throw new ArgumentException("Driver full name is required.", nameof(request.FullName));
+        }
+
         if (string.IsNullOrWhiteSpace(request.LicenseNumber))
         {
             throw new ArgumentException("Driver license number is required.", nameof(request.LicenseNumber));
@@ -505,6 +517,7 @@ public class FleetService : IFleetService
     {
         Id = driver.Id,
         UserId = driver.UserId,
+        FullName = driver.FullName,
         LicenseNumber = driver.LicenseNumber,
         LicenseExpiryDate = driver.LicenseExpiryDate,
         PhoneNumber = driver.PhoneNumber,
@@ -531,6 +544,7 @@ public class FleetService : IFleetService
         Id = assignment.Id,
         DriverId = assignment.DriverId,
         VehicleId = assignment.VehicleId,
+        DriverName = assignment.Driver?.FullName ?? string.Empty,
         DriverLicenseNumber = assignment.Driver?.LicenseNumber ?? string.Empty,
         VehicleRegistrationNumber = assignment.Vehicle?.RegistrationNumber ?? string.Empty,
         AssignedAt = assignment.AssignedAt,

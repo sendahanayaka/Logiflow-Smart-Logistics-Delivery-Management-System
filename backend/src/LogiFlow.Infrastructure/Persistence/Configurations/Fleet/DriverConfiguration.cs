@@ -15,6 +15,10 @@ public class DriverConfiguration : IEntityTypeConfiguration<Driver>
         builder.Property(d => d.UserId)
             .IsRequired(false);
 
+        builder.Property(d => d.FullName)
+            .IsRequired()
+            .HasMaxLength(100);
+
         builder.Property(d => d.LicenseNumber)
             .IsRequired()
             .HasMaxLength(50);
