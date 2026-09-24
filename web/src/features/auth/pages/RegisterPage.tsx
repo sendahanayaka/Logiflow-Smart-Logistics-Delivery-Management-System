@@ -108,7 +108,7 @@ export const RegisterPage: React.FC = () => {
                     </button>
                 </form>
                 <div className="auth-links">
-                    Already have an account? <Link to="/login">Login</Link>
+                    Already have an account? <span style={{ cursor: 'pointer', color: '#08006C', textDecoration: 'underline' }} onClick={() => navigate('/login')}>Login</span>
                 </div>
             </div>
         </div>
