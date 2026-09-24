@@ -124,21 +124,28 @@ export const VehicleListPage: React.FC = () => {
     }
   };
 
+  // Summary Stats Logic
+  const totalVehiclesCount = vehicles.length;
+  const availableVehiclesCount = useMemo(
+    () => vehicles.filter((v) => v.status === VehicleStatus.Available).length,
+    [vehicles]
+  );
+  const activeTransitVehiclesCount = useMemo(
+    () => vehicles.filter((v) => v.status === VehicleStatus.InTransit).length,
+    [vehicles]
+  );
+
   return (
     <section className="users-page" aria-labelledby="vehicle-management-title">
       <header className="users-page__header">
         <div className="page-heading">
-          <span className="eyebrow">Fleet Management</span>
+          <span className="eyebrow">Fleet Operations</span>
           <h1 id="vehicle-management-title">Vehicle Management</h1>
-          <p>Manage fleet vehicles, specifications, capacity, and operational status.</p>
+          <p>Oversee fleet assets, capacity specifications, maintenance schedules, and active transit.</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div className="users-page__count">
-            <strong>{vehicles.length}</strong>
-            <span>{vehicles.length === 1 ? 'vehicle' : 'vehicles'}</span>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'nowrap', flexShrink: 0 }}>
           <button type="button" className="button button--secondary" onClick={() => navigate('/drivers')}>
-            Drivers
+            Drivers List
           </button>
           <button type="button" className="button button--secondary" onClick={() => navigate('/assignments')}>
             Assignments
@@ -147,10 +154,60 @@ export const VehicleListPage: React.FC = () => {
             Refresh
           </button>
           <button type="button" className="button button--primary" onClick={handleAddVehicle}>
-            Add Vehicle
+            + Register Vehicle
           </button>
         </div>
       </header>
+
+      {/* Top Stat Metric Cards */}
+      <div className="stats-grid">
+        <div className="stat-card stat-card--navy">
+          <div className="stat-card__header">
+            <span className="stat-card__title">Total Vehicles</span>
+            <span className="stat-card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-navy)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="1" y="3" width="15" height="13" rx="2" />
+                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                <circle cx="5.5" cy="18.5" r="2.5" />
+                <circle cx="18.5" cy="18.5" r="2.5" />
+              </svg>
+            </span>
+          </div>
+          <div className="stat-card__value">{totalVehiclesCount}</div>
+          <div className="stat-card__subtext">Active fleet inventory</div>
+        </div>
+
+        <div className="stat-card stat-card--success">
+          <div className="stat-card__header">
+            <span className="stat-card__title">Available Vehicles</span>
+            <span className="stat-card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            </span>
+          </div>
+          <div className="stat-card__value">{availableVehiclesCount}</div>
+          <div className="stat-card__subtext">Ready for driver assignment</div>
+        </div>
+
+        <div className="stat-card stat-card--orange">
+          <div className="stat-card__header">
+            <span className="stat-card__title">In Transit</span>
+            <span className="stat-card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-orange)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19L9 3" />
+                <path d="M20 19L15 3" />
+                <path d="M12 5v2" />
+                <path d="M12 11v2" />
+                <path d="M12 17v2" />
+              </svg>
+            </span>
+          </div>
+          <div className="stat-card__value">{activeTransitVehiclesCount}</div>
+          <div className="stat-card__subtext">On active delivery routes</div>
+        </div>
+      </div>
 
       {/* Toolbar: Search & Filters */}
       <div className="users-toolbar">
@@ -158,7 +215,7 @@ export const VehicleListPage: React.FC = () => {
           <input
             type="text"
             className="toolbar-search"
-            placeholder="Search by reg, type, make, model..."
+            placeholder="Search reg number, type, make, model..."
             value={searchTerm}
             onChange={handleSearchChange}
           />
@@ -167,7 +224,7 @@ export const VehicleListPage: React.FC = () => {
             value={statusFilter}
             onChange={handleStatusFilterChange}
           >
-            <option value="ALL">All Statuses</option>
+            <option value="ALL">All Vehicle Statuses</option>
             <option value={VehicleStatus.Available}>Available</option>
             <option value={VehicleStatus.InTransit}>In Transit</option>
             <option value={VehicleStatus.InMaintenance}>In Maintenance</option>
@@ -210,46 +267,74 @@ export const VehicleListPage: React.FC = () => {
 
       {!isLoading && !isError && (
         <>
-          <VehicleTable
-            vehicles={paginatedVehicles}
-            sortField={sortField}
-            sortDirection={sortDirection}
-            onSort={handleSort}
-            onViewVehicle={handleViewVehicle}
-            onEditVehicle={handleEditVehicle}
-            onDeleteVehicle={handleDeleteVehicle}
-          />
-
-          {/* Pagination Controls */}
-          {totalItems > 0 && (
-            <div className="pagination-container">
-              <span className="pagination-info">
-                Showing {Math.min((currentPage - 1) * pageSize + 1, totalItems)} to{' '}
-                {Math.min(currentPage * pageSize, totalItems)} of {totalItems} vehicles
-              </span>
-
-              <div className="pagination-controls">
-                <button
-                  type="button"
-                  className="button button--secondary"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                >
-                  Previous
-                </button>
-                <span className="pagination-page">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <button
-                  type="button"
-                  className="button button--secondary"
-                  disabled={currentPage >= totalPages}
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                >
-                  Next
-                </button>
+          {filteredVehicles.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state__icon">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--color-orange)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
               </div>
+              <h3 className="empty-state__title">No Vehicles Found</h3>
+              <p className="empty-state__description">
+                {vehicles.length === 0
+                  ? 'No vehicles have been registered in the fleet yet. Click below to register your first vehicle.'
+                  : 'No vehicle records match your current search query or filter criteria.'}
+              </p>
+              {vehicles.length === 0 ? (
+                <button type="button" className="button button--primary" onClick={handleAddVehicle}>
+                  + Register First Vehicle
+                </button>
+              ) : (
+                <button type="button" className="button button--secondary" onClick={handleResetFilters}>
+                  Clear Filters
+                </button>
+              )}
             </div>
+          ) : (
+            <>
+              <VehicleTable
+                vehicles={paginatedVehicles}
+                sortField={sortField}
+                sortDirection={sortDirection}
+                onSort={handleSort}
+                onViewVehicle={handleViewVehicle}
+                onEditVehicle={handleEditVehicle}
+                onDeleteVehicle={handleDeleteVehicle}
+              />
+
+              {/* Pagination Controls */}
+              {totalItems > 0 && (
+                <div className="pagination-container">
+                  <span className="pagination-info">
+                    Showing {Math.min((currentPage - 1) * pageSize + 1, totalItems)} to{' '}
+                    {Math.min(currentPage * pageSize, totalItems)} of {totalItems} vehicles
+                  </span>
+
+                  <div className="pagination-controls">
+                    <button
+                      type="button"
+                      className="button button--secondary"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    >
+                      Previous
+                    </button>
+                    <span className="pagination-page">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      type="button"
+                      className="button button--secondary"
+                      disabled={currentPage >= totalPages}
+                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </>
       )}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Driver, DriverStatus } from '../types';
 
-export type SortField = 'licenseNumber' | 'licenseExpiryDate' | 'status';
+export type SortField = 'fullName' | 'licenseNumber' | 'licenseExpiryDate' | 'status';
 export type SortDirection = 'asc' | 'desc';
 
 interface DriverTableProps {
@@ -71,6 +71,7 @@ export const DriverTable: React.FC<DriverTableProps> = ({
       <table className="data-table">
         <thead>
           <tr>
+            {renderSortHeader('Driver Name', 'fullName')}
             {renderSortHeader('License Number', 'licenseNumber')}
             <th>Phone Number</th>
             {renderSortHeader('License Expiry', 'licenseExpiryDate')}
@@ -81,7 +82,7 @@ export const DriverTable: React.FC<DriverTableProps> = ({
         <tbody>
           {drivers.length === 0 ? (
             <tr>
-              <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-muted)' }}>
+              <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-muted)' }}>
                 No drivers found.
               </td>
             </tr>
@@ -91,8 +92,9 @@ export const DriverTable: React.FC<DriverTableProps> = ({
               return (
                 <tr key={driver.id}>
                   <td>
-                    <strong>{driver.licenseNumber}</strong>
+                    <strong>{driver.fullName || 'N/A'}</strong>
                   </td>
+                  <td>{driver.licenseNumber}</td>
                   <td>{driver.phoneNumber || 'N/A'}</td>
                   <td>{formatDate(driver.licenseExpiryDate)}</td>
                   <td>

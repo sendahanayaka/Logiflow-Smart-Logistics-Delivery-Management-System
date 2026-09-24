@@ -18,6 +18,7 @@ export enum VehicleStatus {
 export interface Driver {
   id: string;
   userId: string | null;
+  fullName: string;
   licenseNumber: string;
   licenseExpiryDate: string;
   phoneNumber: string | null;
@@ -28,6 +29,7 @@ export interface Driver {
 
 export interface CreateDriverRequest {
   userId?: string | null;
+  fullName: string;
   licenseNumber: string;
   licenseExpiryDate: string;
   phoneNumber?: string | null;
@@ -36,6 +38,7 @@ export interface CreateDriverRequest {
 
 export interface UpdateDriverRequest {
   userId?: string | null;
+  fullName: string;
   licenseNumber: string;
   licenseExpiryDate: string;
   phoneNumber?: string | null;
@@ -86,6 +89,7 @@ export interface AssignmentResponse {
   id: string;
   driverId: string;
   vehicleId: string;
+  driverName?: string;
   driverLicenseNumber: string;
   vehicleRegistrationNumber: string;
   assignedAt: string;

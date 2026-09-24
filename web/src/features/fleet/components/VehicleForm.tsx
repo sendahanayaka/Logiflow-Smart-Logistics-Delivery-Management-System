@@ -151,122 +151,153 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
   return (
     <div className="user-form-card">
       <form className="user-form" onSubmit={handleSubmit} noValidate>
-        <div style={{ marginBottom: '1rem' }}>
-          <h2 style={{ margin: '0 0 0.25rem', fontSize: '1.5rem', color: 'var(--color-navy)' }}>
-            {isEditMode ? 'Edit Vehicle' : 'Add New Vehicle'}
+        <div style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem' }}>
+          <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.5rem', color: 'var(--color-navy)', fontWeight: 800 }}>
+            {isEditMode ? 'Edit Vehicle Specifications' : 'Register New Vehicle'}
           </h2>
           <p style={{ margin: 0, color: 'var(--color-muted)', fontSize: '0.875rem' }}>
             {isEditMode
-              ? 'Update vehicle specifications, capacity, or operational status.'
-              : 'Enter vehicle registration, make, model, capacity, and operational status.'}
+              ? 'Update vehicle specifications, payload capacity, or operational status.'
+              : 'Enter vehicle registration number, manufacturer, payload capacity, and initial fleet status.'}
           </p>
         </div>
 
         {isSuccess && (
           <div className="auth-notice auth-notice--success" role="status">
-            {isEditMode ? 'Vehicle updated successfully! Redirecting...' : 'Vehicle created successfully! Redirecting...'}
+            {isEditMode ? 'Vehicle specifications updated successfully! Redirecting...' : 'Vehicle registered successfully! Redirecting...'}
           </div>
         )}
 
         {isError && (
           <div className="error-message">
-            <h3>{isEditMode ? 'Vehicle Update Failed' : 'Vehicle Creation Failed'}</h3>
+            <h3>{isEditMode ? 'Vehicle Update Failed' : 'Vehicle Registration Failed'}</h3>
             <p>{getErrorMessage()}</p>
           </div>
         )}
 
-        <div className="user-form__grid">
-          <div className="form-field">
-            <label htmlFor="registrationNumber">Registration Number *</label>
-            <input
-              id="registrationNumber"
-              name="registrationNumber"
-              type="text"
-              value={values.registrationNumber}
-              onChange={handleChange}
-              placeholder="e.g. WP-ABC-1234"
-              maxLength={50}
-              disabled={isLoading}
-              aria-invalid={Boolean(errors.registrationNumber)}
-            />
-            {errors.registrationNumber && <span className="form-field__error">{errors.registrationNumber}</span>}
-          </div>
+        {/* Section 1: Vehicle Identification */}
+        <div className="form-section">
+          <h3 className="form-section__title">
+            <svg style={{ display: 'inline-block', width: '1.25rem', height: '1.25rem', verticalAlign: 'sub', marginRight: '0.5rem' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="1" y="3" width="15" height="13" />
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+              <circle cx="5.5" cy="18.5" r="2.5" />
+              <circle cx="18.5" cy="18.5" r="2.5" />
+            </svg>
+            Vehicle Identification & Make
+          </h3>
+          <div className="user-form__grid">
+            <div className="form-field">
+              <label htmlFor="registrationNumber">Registration Number *</label>
+              <input
+                id="registrationNumber"
+                name="registrationNumber"
+                type="text"
+                value={values.registrationNumber}
+                onChange={handleChange}
+                placeholder="e.g. WP-ABC-1234"
+                maxLength={50}
+                disabled={isLoading}
+                aria-invalid={Boolean(errors.registrationNumber)}
+              />
+              {errors.registrationNumber && <span className="form-field__error">{errors.registrationNumber}</span>}
+            </div>
 
-          <div className="form-field">
-            <label htmlFor="vehicleType">Vehicle Type *</label>
-            <input
-              id="vehicleType"
-              name="vehicleType"
-              type="text"
-              value={values.vehicleType}
-              onChange={handleChange}
-              placeholder="e.g. Van, Lorry, Container"
-              disabled={isLoading}
-              aria-invalid={Boolean(errors.vehicleType)}
-            />
-            {errors.vehicleType && <span className="form-field__error">{errors.vehicleType}</span>}
-          </div>
+            <div className="form-field">
+              <label htmlFor="vehicleType">Vehicle Type *</label>
+              <input
+                id="vehicleType"
+                name="vehicleType"
+                type="text"
+                value={values.vehicleType}
+                onChange={handleChange}
+                placeholder="e.g. Delivery Van, Heavy Lorry, Cargo Container"
+                disabled={isLoading}
+                aria-invalid={Boolean(errors.vehicleType)}
+              />
+              {errors.vehicleType && <span className="form-field__error">{errors.vehicleType}</span>}
+            </div>
 
-          <div className="form-field">
-            <label htmlFor="make">Make *</label>
-            <input
-              id="make"
-              name="make"
-              type="text"
-              value={values.make}
-              onChange={handleChange}
-              placeholder="e.g. Toyota, Isuzu"
-              disabled={isLoading}
-              aria-invalid={Boolean(errors.make)}
-            />
-            {errors.make && <span className="form-field__error">{errors.make}</span>}
-          </div>
+            <div className="form-field">
+              <label htmlFor="make">Manufacturer / Make *</label>
+              <input
+                id="make"
+                name="make"
+                type="text"
+                value={values.make}
+                onChange={handleChange}
+                placeholder="e.g. Toyota, Isuzu, Mitsubishi"
+                disabled={isLoading}
+                aria-invalid={Boolean(errors.make)}
+              />
+              {errors.make && <span className="form-field__error">{errors.make}</span>}
+            </div>
 
-          <div className="form-field">
-            <label htmlFor="model">Model *</label>
-            <input
-              id="model"
-              name="model"
-              type="text"
-              value={values.model}
-              onChange={handleChange}
-              placeholder="e.g. Hiace, Elf"
-              disabled={isLoading}
-              aria-invalid={Boolean(errors.model)}
-            />
-            {errors.model && <span className="form-field__error">{errors.model}</span>}
+            <div className="form-field">
+              <label htmlFor="model">Model Name *</label>
+              <input
+                id="model"
+                name="model"
+                type="text"
+                value={values.model}
+                onChange={handleChange}
+                placeholder="e.g. Hiace, Forward, Canter"
+                disabled={isLoading}
+                aria-invalid={Boolean(errors.model)}
+              />
+              {errors.model && <span className="form-field__error">{errors.model}</span>}
+            </div>
           </div>
+        </div>
 
-          <div className="form-field">
-            <label htmlFor="capacity">Capacity (kg) *</label>
-            <input
-              id="capacity"
-              name="capacity"
-              type="number"
-              value={values.capacity || ''}
-              onChange={handleChange}
-              placeholder="e.g. 1000"
-              disabled={isLoading}
-              aria-invalid={Boolean(errors.capacity)}
-            />
-            {errors.capacity && <span className="form-field__error">{errors.capacity}</span>}
-          </div>
+        {/* Section 2: Capacity & Operational Status */}
+        <div className="form-section">
+          <h3 className="form-section__title">
+            <svg style={{ display: 'inline-block', width: '1.25rem', height: '1.25rem', verticalAlign: 'sub', marginRight: '0.5rem' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="4" y1="21" x2="4" y2="14" />
+              <line x1="4" y1="10" x2="4" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12" y2="3" />
+              <line x1="20" y1="21" x2="20" y2="16" />
+              <line x1="20" y1="12" x2="20" y2="3" />
+              <line x1="1" y1="14" x2="7" y2="14" />
+              <line x1="9" y1="8" x2="15" y2="8" />
+              <line x1="17" y1="16" x2="23" y2="16" />
+            </svg>
+            Specifications & Operational Status
+          </h3>
+          <div className="user-form__grid">
+            <div className="form-field">
+              <label htmlFor="capacity">Payload Capacity (kg) *</label>
+              <input
+                id="capacity"
+                name="capacity"
+                type="number"
+                value={values.capacity || ''}
+                onChange={handleChange}
+                placeholder="e.g. 1500"
+                disabled={isLoading}
+                aria-invalid={Boolean(errors.capacity)}
+              />
+              {errors.capacity && <span className="form-field__error">{errors.capacity}</span>}
+            </div>
 
-          <div className="form-field">
-            <label htmlFor="vehicleStatus">Vehicle Status *</label>
-            <select
-              id="vehicleStatus"
-              name="status"
-              value={values.status}
-              onChange={handleChange}
-              disabled={isLoading}
-            >
-              <option value={VehicleStatus.Available}>Available</option>
-              <option value={VehicleStatus.InTransit}>In Transit</option>
-              <option value={VehicleStatus.InMaintenance}>In Maintenance</option>
-              <option value={VehicleStatus.OutOfService}>Out Of Service</option>
-              <option value={VehicleStatus.Decommissioned}>Decommissioned</option>
-            </select>
+            <div className="form-field">
+              <label htmlFor="vehicleStatus">Fleet Operational Status *</label>
+              <select
+                id="vehicleStatus"
+                name="status"
+                value={values.status}
+                onChange={handleChange}
+                disabled={isLoading}
+              >
+                <option value={VehicleStatus.Available}>Available (Ready for dispatch)</option>
+                <option value={VehicleStatus.InTransit}>In Transit</option>
+                <option value={VehicleStatus.InMaintenance}>In Maintenance</option>
+                <option value={VehicleStatus.OutOfService}>Out of Service</option>
+                <option value={VehicleStatus.Decommissioned}>Decommissioned</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -282,11 +313,11 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
           <button type="submit" className="button button--primary" disabled={isLoading}>
             {isLoading
               ? isEditMode
-                ? 'Saving...'
-                : 'Creating...'
+                ? 'Saving Changes...'
+                : 'Registering Vehicle...'
               : isEditMode
               ? 'Save Changes'
-              : 'Save Vehicle'}
+              : 'Register Vehicle'}
           </button>
         </div>
       </form>

@@ -71,9 +71,9 @@ export const DriverDetailsPage: React.FC = () => {
       <header className="detail-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <span className="eyebrow">Driver Details</span>
-          <h1 style={{ margin: '0.25rem 0 0.5rem' }}>License #{driver.licenseNumber}</h1>
+          <h1 style={{ margin: '0.25rem 0 0.5rem' }}>{driver.fullName || `License #${driver.licenseNumber}`}</h1>
           <p style={{ color: 'var(--color-muted)', margin: 0 }}>
-            Created on {formatDate(driver.createdAt)}
+            License #{driver.licenseNumber} • Created on {formatDate(driver.createdAt)}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -121,10 +121,17 @@ export const DriverDetailsPage: React.FC = () => {
               fontSize: '1.1rem',
             }}
           >
-            DR
+            {driver.fullName
+              ? driver.fullName
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .substring(0, 2)
+                  .toUpperCase()
+              : 'DR'}
           </div>
           <div>
-            <h2 style={{ margin: 0, fontSize: '1.25rem' }}>License: {driver.licenseNumber}</h2>
+            <h2 style={{ margin: 0, fontSize: '1.25rem' }}>{driver.fullName || `License: ${driver.licenseNumber}`}</h2>
             <div style={{ marginTop: '0.25rem' }}>
               <span className={`status-badge ${statusInfo.badgeClass}`}>
                 <span className="status-badge__dot" aria-hidden="true" />
@@ -135,6 +142,10 @@ export const DriverDetailsPage: React.FC = () => {
         </div>
 
         <dl className="details-grid">
+          <div>
+            <dt>Full Name</dt>
+            <dd><strong>{driver.fullName || 'N/A'}</strong></dd>
+          </div>
           <div>
             <dt>License Number</dt>
             <dd>{driver.licenseNumber}</dd>
@@ -169,7 +180,7 @@ export const DriverDetailsPage: React.FC = () => {
       <DeleteConfirmModal
         isOpen={isDeleteModalOpen}
         title="Delete Driver"
-        itemName={`License: ${driver.licenseNumber}`}
+        itemName={driver.fullName ? `${driver.fullName} (${driver.licenseNumber})` : `License: ${driver.licenseNumber}`}
         message="Are you sure you want to delete this driver? This action cannot be undone."
         isDeleting={isDeleting}
         onConfirm={handleDeleteConfirm}

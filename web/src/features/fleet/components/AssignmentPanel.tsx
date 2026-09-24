@@ -108,12 +108,12 @@ export const AssignmentPanel: React.FC = () => {
       {/* 1. Assignment Form Card */}
       <div className="user-form-card">
         <form className="user-form" onSubmit={handleAssignSubmit} noValidate>
-          <div style={{ marginBottom: '1rem' }}>
-            <h2 style={{ margin: '0 0 0.25rem', fontSize: '1.5rem', color: 'var(--color-navy)' }}>
-              Assign Vehicle & Driver
+          <div style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem' }}>
+            <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.5rem', color: 'var(--color-navy)', fontWeight: 800 }}>
+              Dispatch & Fleet Assignment Control
             </h2>
             <p style={{ margin: 0, color: 'var(--color-muted)', fontSize: '0.875rem' }}>
-              Select an available driver and an available vehicle to create an active assignment.
+              Pair an available driver with an available vehicle to create an active delivery assignment.
             </p>
           </div>
 
@@ -130,96 +130,103 @@ export const AssignmentPanel: React.FC = () => {
             </div>
           )}
 
-          <div style={{ fontSize: '0.825rem', color: 'var(--color-muted)', fontStyle: 'italic', marginBottom: '0.5rem' }}>
-            Only available drivers and vehicles can be assigned.
-          </div>
+          {/* Section 1: Selection Cards */}
+          <div className="form-section">
+            <h3 className="form-section__title">
+              <svg style={{ display: 'inline-block', width: '1.25rem', height: '1.25rem', verticalAlign: 'sub', marginRight: '0.5rem' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+              Pair Available Assets
+            </h3>
 
-          <div className="user-form__grid">
-            {/* Driver Selector */}
-            <div className="form-field">
-              <label htmlFor="assign-driver">Available Driver *</label>
-              <select
-                id="assign-driver"
-                value={driverId}
-                onChange={(e) => {
-                  setDriverId(e.target.value);
-                  setErrors((prev) => ({ ...prev, driverId: undefined }));
-                }}
-                disabled={isAssigning || isLoadingDrivers || availableDrivers.length === 0}
-                aria-invalid={Boolean(errors.driverId)}
-              >
-                <option value="">
-                  {isLoadingDrivers
-                    ? 'Loading drivers...'
-                    : availableDrivers.length === 0
-                    ? '-- No available drivers --'
-                    : '-- Select Available Driver --'}
-                </option>
-                {availableDrivers.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    License: {d.licenseNumber} {d.phoneNumber ? `(${d.phoneNumber})` : ''}
+            <div className="user-form__grid">
+              {/* Driver Selector */}
+              <div className="form-field">
+                <label htmlFor="assign-driver">Available Driver *</label>
+                <select
+                  id="assign-driver"
+                  value={driverId}
+                  onChange={(e) => {
+                    setDriverId(e.target.value);
+                    setErrors((prev) => ({ ...prev, driverId: undefined }));
+                  }}
+                  disabled={isAssigning || isLoadingDrivers || availableDrivers.length === 0}
+                  aria-invalid={Boolean(errors.driverId)}
+                >
+                  <option value="">
+                    {isLoadingDrivers
+                      ? 'Loading drivers...'
+                      : availableDrivers.length === 0
+                      ? '-- No available drivers --'
+                      : '-- Select Available Driver --'}
                   </option>
-                ))}
-              </select>
-              {availableDrivers.length === 0 && !isLoadingDrivers && (
-                <span className="form-field__error" style={{ color: 'var(--color-warning)' }}>
-                  No available drivers.
-                </span>
-              )}
-              {errors.driverId && <span className="form-field__error">{errors.driverId}</span>}
-            </div>
+                  {availableDrivers.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.fullName ? `${d.fullName} (License: ${d.licenseNumber})` : `License: ${d.licenseNumber}`} {d.phoneNumber ? `(${d.phoneNumber})` : ''}
+                    </option>
+                  ))}
+                </select>
+                {availableDrivers.length === 0 && !isLoadingDrivers && (
+                  <span className="form-field__error" style={{ color: 'var(--color-warning)' }}>
+                    No available drivers ready for dispatch.
+                  </span>
+                )}
+                {errors.driverId && <span className="form-field__error">{errors.driverId}</span>}
+              </div>
 
-            {/* Vehicle Selector */}
-            <div className="form-field">
-              <label htmlFor="assign-vehicle">Available Vehicle *</label>
-              <select
-                id="assign-vehicle"
-                value={vehicleId}
-                onChange={(e) => {
-                  setVehicleId(e.target.value);
-                  setErrors((prev) => ({ ...prev, vehicleId: undefined }));
-                }}
-                disabled={isAssigning || isLoadingVehicles || availableVehicles.length === 0}
-                aria-invalid={Boolean(errors.vehicleId)}
-              >
-                <option value="">
-                  {isLoadingVehicles
-                    ? 'Loading vehicles...'
-                    : availableVehicles.length === 0
-                    ? '-- No available vehicles --'
-                    : '-- Select Available Vehicle --'}
-                </option>
-                {availableVehicles.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    Reg: {v.registrationNumber} ({v.make} {v.model} - {v.capacity}kg)
+              {/* Vehicle Selector */}
+              <div className="form-field">
+                <label htmlFor="assign-vehicle">Available Vehicle *</label>
+                <select
+                  id="assign-vehicle"
+                  value={vehicleId}
+                  onChange={(e) => {
+                    setVehicleId(e.target.value);
+                    setErrors((prev) => ({ ...prev, vehicleId: undefined }));
+                  }}
+                  disabled={isAssigning || isLoadingVehicles || availableVehicles.length === 0}
+                  aria-invalid={Boolean(errors.vehicleId)}
+                >
+                  <option value="">
+                    {isLoadingVehicles
+                      ? 'Loading vehicles...'
+                      : availableVehicles.length === 0
+                      ? '-- No available vehicles --'
+                      : '-- Select Available Vehicle --'}
                   </option>
-                ))}
-              </select>
-              {availableVehicles.length === 0 && !isLoadingVehicles && (
-                <span className="form-field__error" style={{ color: 'var(--color-warning)' }}>
-                  No available vehicles.
-                </span>
-              )}
-              {errors.vehicleId && <span className="form-field__error">{errors.vehicleId}</span>}
-            </div>
+                  {availableVehicles.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      Reg: {v.registrationNumber} ({v.make} {v.model} - {v.capacity}kg)
+                    </option>
+                  ))}
+                </select>
+                {availableVehicles.length === 0 && !isLoadingVehicles && (
+                  <span className="form-field__error" style={{ color: 'var(--color-warning)' }}>
+                    No available vehicles ready for assignment.
+                  </span>
+                )}
+                {errors.vehicleId && <span className="form-field__error">{errors.vehicleId}</span>}
+              </div>
 
-            {/* Notes Field */}
-            <div className="form-field form-field--wide">
-              <label htmlFor="assign-notes">Assignment Notes (Optional)</label>
-              <input
-                id="assign-notes"
-                type="text"
-                value={notes}
-                onChange={(e) => {
-                  setNotes(e.target.value);
-                  setErrors((prev) => ({ ...prev, notes: undefined }));
-                }}
-                placeholder="e.g. Route details, dispatch batch ID, or shift instructions"
-                maxLength={500}
-                disabled={isAssigning}
-                aria-invalid={Boolean(errors.notes)}
-              />
-              {errors.notes && <span className="form-field__error">{errors.notes}</span>}
+              {/* Notes Field */}
+              <div className="form-field form-field--wide">
+                <label htmlFor="assign-notes">Dispatch / Route Notes (Optional)</label>
+                <input
+                  id="assign-notes"
+                  type="text"
+                  value={notes}
+                  onChange={(e) => {
+                    setNotes(e.target.value);
+                    setErrors((prev) => ({ ...prev, notes: undefined }));
+                  }}
+                  placeholder="e.g. Route details, dispatch batch ID, or shift instructions"
+                  maxLength={500}
+                  disabled={isAssigning}
+                  aria-invalid={Boolean(errors.notes)}
+                />
+                {errors.notes && <span className="form-field__error">{errors.notes}</span>}
+              </div>
             </div>
           </div>
 
@@ -229,7 +236,7 @@ export const AssignmentPanel: React.FC = () => {
               className="button button--primary"
               disabled={isAssigning || availableDrivers.length === 0 || availableVehicles.length === 0}
             >
-              {isAssigning ? 'Assigning...' : 'Assign Vehicle'}
+              {isAssigning ? 'Creating Assignment...' : 'Assign Vehicle & Driver'}
             </button>
           </div>
         </form>
@@ -237,7 +244,7 @@ export const AssignmentPanel: React.FC = () => {
 
       {/* 2. Assignments Section Tabs (Active / History) */}
       <div>
-        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', borderBottom: '2px solid var(--color-border)', paddingBottom: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', borderBottom: '2px solid var(--color-border)', paddingBottom: '0.5rem' }}>
           <button
             type="button"
             className={`button ${activeTab === 'active' ? 'button--primary' : 'button--secondary'}`}
@@ -252,7 +259,7 @@ export const AssignmentPanel: React.FC = () => {
             style={{ fontSize: '0.85rem' }}
             onClick={() => setActiveTab('history')}
           >
-            Assignment History ({historyAssignments.length})
+            Assignment History Log ({historyAssignments.length})
           </button>
         </div>
 
@@ -275,51 +282,65 @@ export const AssignmentPanel: React.FC = () => {
             )}
 
             {!isLoadingActive && !isErrorActive && (
-              <div style={{ overflowX: 'auto' }}>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Driver License</th>
-                      <th>Vehicle Registration</th>
-                      <th>Assigned At</th>
-                      <th>Notes</th>
-                      <th style={{ textAlign: 'right' }}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {activeAssignments.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-muted)' }}>
-                          No active assignments found. Select an available driver and vehicle above to create one.
-                        </td>
-                      </tr>
-                    ) : (
-                      activeAssignments.map((assignment) => (
-                        <tr key={assignment.id}>
-                          <td>
-                            <strong>{assignment.driverLicenseNumber}</strong>
-                          </td>
-                          <td>
-                            <strong>{assignment.vehicleRegistrationNumber}</strong>
-                          </td>
-                          <td>{formatDate(assignment.assignedAt)}</td>
-                          <td>{assignment.notes || 'N/A'}</td>
-                          <td style={{ textAlign: 'right' }}>
-                            <button
-                              type="button"
-                              className="button button--danger"
-                              style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem' }}
-                              onClick={() => setAssignmentToEnd(assignment)}
-                            >
-                              End Assignment
-                            </button>
-                          </td>
+              <>
+                {activeAssignments.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-state__icon" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="1" y="3" width="15" height="13" />
+                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                        <circle cx="5.5" cy="18.5" r="2.5" />
+                        <circle cx="18.5" cy="18.5" r="2.5" />
+                      </svg>
+                    </div>
+                    <h3 className="empty-state__title">No Active Assignments</h3>
+                    <p className="empty-state__description">
+                      There are currently no active driver-vehicle pairs dispatched in the fleet. Select an available driver and vehicle above to create one.
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Assigned Driver</th>
+                          <th>Vehicle Registration</th>
+                          <th>Assigned At</th>
+                          <th>Notes / Route</th>
+                          <th style={{ textAlign: 'right' }}>Actions</th>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                      </thead>
+                      <tbody>
+                        {activeAssignments.map((assignment) => (
+                          <tr key={assignment.id}>
+                            <td>
+                              <strong>{assignment.driverName || 'Driver'}</strong>
+                              <div style={{ fontSize: '0.78rem', color: 'var(--color-muted)', marginTop: '0.15rem' }}>
+                                License: {assignment.driverLicenseNumber}
+                              </div>
+                            </td>
+                            <td>
+                              <strong>{assignment.vehicleRegistrationNumber}</strong>
+                            </td>
+                            <td>{formatDate(assignment.assignedAt)}</td>
+                            <td>{assignment.notes || 'N/A'}</td>
+                            <td style={{ textAlign: 'right' }}>
+                              <button
+                                type="button"
+                                className="button button--danger"
+                                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                                onClick={() => setAssignmentToEnd(assignment)}
+                              >
+                                End Assignment
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
@@ -343,53 +364,68 @@ export const AssignmentPanel: React.FC = () => {
             )}
 
             {!isLoadingHistory && !isErrorHistory && (
-              <div style={{ overflowX: 'auto' }}>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Driver License</th>
-                      <th>Vehicle Registration</th>
-                      <th>Assigned At</th>
-                      <th>Unassigned At</th>
-                      <th>Status</th>
-                      <th>Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {historyAssignments.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-muted)' }}>
-                          No assignment history recorded.
-                        </td>
-                      </tr>
-                    ) : (
-                      historyAssignments.map((assignment) => (
-                        <tr key={assignment.id}>
-                          <td>
-                            <strong>{assignment.driverLicenseNumber}</strong>
-                          </td>
-                          <td>
-                            <strong>{assignment.vehicleRegistrationNumber}</strong>
-                          </td>
-                          <td>{formatDate(assignment.assignedAt)}</td>
-                          <td>{assignment.unassignedAt ? formatDate(assignment.unassignedAt) : '—'}</td>
-                          <td>
-                            <span
-                              className={`status-badge ${
-                                assignment.isActive ? 'status-badge--available' : 'status-badge--inactive'
-                              }`}
-                            >
-                              <span className="status-badge__dot" aria-hidden="true" />
-                              {assignment.isActive ? 'Active' : 'Completed'}
-                            </span>
-                          </td>
-                          <td>{assignment.notes || 'N/A'}</td>
+              <>
+                {historyAssignments.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-state__icon" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                      </svg>
+                    </div>
+                    <h3 className="empty-state__title">No History Log</h3>
+                    <p className="empty-state__description">
+                      No assignment history has been recorded yet. Completed assignments will appear here automatically.
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Assigned Driver</th>
+                          <th>Vehicle Registration</th>
+                          <th>Assigned At</th>
+                          <th>Unassigned At</th>
+                          <th>Status</th>
+                          <th>Notes</th>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                      </thead>
+                      <tbody>
+                        {historyAssignments.map((assignment) => (
+                          <tr key={assignment.id}>
+                            <td>
+                              <strong>{assignment.driverName || 'Driver'}</strong>
+                              <div style={{ fontSize: '0.78rem', color: 'var(--color-muted)', marginTop: '0.15rem' }}>
+                                License: {assignment.driverLicenseNumber}
+                              </div>
+                            </td>
+                            <td>
+                              <strong>{assignment.vehicleRegistrationNumber}</strong>
+                            </td>
+                            <td>{formatDate(assignment.assignedAt)}</td>
+                            <td>{assignment.unassignedAt ? formatDate(assignment.unassignedAt) : '—'}</td>
+                            <td>
+                              <span
+                                className={`status-badge ${
+                                  assignment.isActive ? 'status-badge--available' : 'status-badge--inactive'
+                                }`}
+                              >
+                                <span className="status-badge__dot" aria-hidden="true" />
+                                {assignment.isActive ? 'Active' : 'Completed'}
+                              </span>
+                            </td>
+                            <td>{assignment.notes || 'N/A'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
