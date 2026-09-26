@@ -43,3 +43,20 @@ public sealed record RouteStopResponse(
     DateTime? WindowEnd,
     bool? OnTime,
     string Status);
+
+/// <summary>An ops-manager decision at the approval gate.</summary>
+public sealed record ApproveWorkflowCommand(
+    LogiFlow.Domain.Enums.ApprovalAction Action,
+    string DecidedBy,
+    string? Reason,
+    IReadOnlyDictionary<string, object>? Revisions,
+    Guid? DriverId,
+    Guid? VehicleId);
+
+/// <summary>Outcome of an approval decision.</summary>
+public sealed record ApprovalResult(
+    Guid WorkflowId,
+    string Status,
+    Guid? ShipmentId,
+    string? ShipmentCode,
+    string Message);

@@ -27,6 +27,7 @@ builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 
 // [S4] Delivery execution: workflow service + typed HttpClient to the internal agent.
 builder.Services.AddScoped<IAgentWorkflowService, AgentWorkflowService>();
+builder.Services.AddScoped<IApprovalService, ApprovalService>();
 
 var agentBaseUrl = builder.Configuration["AgentService:BaseUrl"] ?? "http://localhost:8000";
 var agentApiKey = builder.Configuration["AgentService:ApiKey"];
