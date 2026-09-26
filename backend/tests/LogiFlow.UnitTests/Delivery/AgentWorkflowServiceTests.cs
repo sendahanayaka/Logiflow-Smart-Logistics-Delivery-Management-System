@@ -9,6 +9,7 @@ using LogiFlow.Domain.Enums;
 using LogiFlow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace LogiFlow.UnitTests.Delivery;
@@ -28,7 +29,7 @@ public sealed class AgentWorkflowServiceTests : IAsyncLifetime
         _context = new AppDbContext(options);
         await _context.Database.EnsureCreatedAsync();
         _agent = new FakeAgentServiceClient();
-        _service = new AgentWorkflowService(_context, _agent);
+        _service = new AgentWorkflowService(_context, _agent, NullLogger<AgentWorkflowService>.Instance);
     }
 
     public async Task DisposeAsync() => await _context.DisposeAsync();
@@ -64,7 +65,7 @@ public sealed class AgentWorkflowServiceTests : IAsyncLifetime
         Assert.Equal("Kandy 1", first.Address);
         Assert.Equal(7.2906, first.Latitude);
         Assert.NotEqual(Guid.Empty, first.OrderId);
-        Assert.Null(first.OnTime); // authoritative flag is computed later (Phase 3)
+        Assert.True(first.OnTime); // ETA 09:00 is within the 09:00-17:00 window (set by EtaEngine)
     }
 
     [Fact]

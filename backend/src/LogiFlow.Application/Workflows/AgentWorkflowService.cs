@@ -2,10 +2,13 @@
 using System.Globalization;
 using System.Text.Json;
 using LogiFlow.Application.Common.Interfaces;
+using LogiFlow.Application.Delivery;
+using LogiFlow.Application.Delivery.DTOs;
 using LogiFlow.Application.Workflows.DTOs;
 using LogiFlow.Domain.Entities;
 using LogiFlow.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LogiFlow.Application.Workflows;
 
@@ -13,11 +16,16 @@ public class AgentWorkflowService : IAgentWorkflowService
 {
     private readonly IAppDbContext _context;
     private readonly IAgentServiceClient _agent;
+    private readonly ILogger<AgentWorkflowService> _logger;
 
-    public AgentWorkflowService(IAppDbContext context, IAgentServiceClient agent)
+    public AgentWorkflowService(
+        IAppDbContext context,
+        IAgentServiceClient agent,
+        ILogger<AgentWorkflowService> logger)
     {
         _context = context;
         _agent = agent;
+        _logger = logger;
     }
 
     public async Task<WorkflowResponse> RunWorkflowAsync(
@@ -71,6 +79,7 @@ public class AgentWorkflowService : IAgentWorkflowService
         };
 
         AttachRouteStops(workflow, routing, command);
+        ApplyServerSideValidation(workflow);
 
         _context.AgentWorkflows.Add(workflow);
         await _context.SaveChangesAsync(cancellationToken);
@@ -152,6 +161,44 @@ public class AgentWorkflowService : IAgentWorkflowService
                 Status = RouteStopStatus.Pending,
                 CreatedAt = DateTime.UtcNow
             });
+        }
+    }
+
+    // Deterministic re-check of the agent's plan: set the authoritative on-time flag
+    // from each stop's ETA vs its window, and re-validate the numbers against physics.
+    // "The agent proposes; the backend decides."
+    private void ApplyServerSideValidation(AgentWorkflow workflow)
+    {
+        var stops = workflow.RouteStops.OrderBy(stop => stop.Sequence).ToList();
+        if (stops.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var stop in stops)
+        {
+            stop.OnTime = EtaEngine.WithinWindow(stop.Eta, stop.WindowStart, stop.WindowEnd);
+        }
+
+        var etaStops = stops
+            .Select(stop => new EtaStop(
+                stop.StopKey, stop.Latitude, stop.Longitude,
+                (double)stop.DistanceFromPrevKm, stop.WindowStart, stop.WindowEnd))
+            .ToList();
+        var validation = EtaEngine.ValidatePlan(etaStops, stops.Select(stop => stop.Eta).ToList());
+
+        if (!validation.Ok)
+        {
+            _logger.LogWarning(
+                "Workflow {WorkflowKey}: agent plan failed re-validation: {Issues}",
+                workflow.WorkflowKey, string.Join("; ", validation.Issues));
+        }
+
+        if (validation.Warnings.Count > 0)
+        {
+            _logger.LogInformation(
+                "Workflow {WorkflowKey}: re-validation warnings: {Warnings}",
+                workflow.WorkflowKey, string.Join("; ", validation.Warnings));
         }
     }
 
