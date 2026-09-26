@@ -317,6 +317,7 @@ public sealed class WarehouseServiceTests : IAsyncLifetime
         public DbSet<PackageEntity> Packages => _context.Packages;
         public DbSet<LogiFlow.Domain.Entities.User> Users => _context.Users;
         public DbSet<LogiFlow.Domain.Entities.Role> Roles => _context.Roles;
+        public DbSet<DeliveryOrder> DeliveryOrders => _context.DeliveryOrders;
 
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
             Task.FromException<int>(new DbUpdateException("Simulated package persistence failure."));

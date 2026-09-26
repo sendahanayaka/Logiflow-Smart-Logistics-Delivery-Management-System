@@ -13,6 +13,7 @@ public interface IAppDbContext
     DbSet<Package> Packages { get; }
     DbSet<User> Users { get; }
     DbSet<Role> Roles { get; }
+    DbSet<DeliveryOrder> DeliveryOrders { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task<IDbContextTransaction> BeginTransactionAsync(
         IsolationLevel isolationLevel,
