@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LogiFlow.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260924061353_AddS4DeliveryDomain")]
+    [Migration("20260926151122_AddS4DeliveryDomain")]
     partial class AddS4DeliveryDomain
     {
         /// <inheritdoc />
@@ -217,6 +217,47 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                     b.HasIndex("ShipmentId");
 
                     b.ToTable("ProofOfDeliveries", (string)null);
+                });
+
+            modelBuilder.Entity("LogiFlow.Domain.Entities.Role", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Roles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            Name = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            Name = "CUSTOMER"
+                        },
+                        new
+                        {
+                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
+                            Name = "WAREHOUSE_STAFF"
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
+                            Name = "DRIVER"
+                        });
                 });
 
             modelBuilder.Entity("LogiFlow.Domain.Entities.RouteStop", b =>
@@ -448,6 +489,48 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("TrackingEvents", (string)null);
                 });
 
+            modelBuilder.Entity("LogiFlow.Domain.Entities.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("Users", (string)null);
+                });
+
             modelBuilder.Entity("LogiFlow.Domain.Entities.Warehouse", b =>
                 {
                     b.Property<Guid>("Id")
@@ -573,6 +656,17 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                     b.Navigation("Shipment");
                 });
 
+            modelBuilder.Entity("LogiFlow.Domain.Entities.User", b =>
+                {
+                    b.HasOne("LogiFlow.Domain.Entities.Role", "Role")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+                });
+
             modelBuilder.Entity("LogiFlow.Domain.Entities.AgentWorkflow", b =>
                 {
                     b.Navigation("ApprovalDecisions");
@@ -580,6 +674,11 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                     b.Navigation("RouteStops");
 
                     b.Navigation("Shipment");
+                });
+
+            modelBuilder.Entity("LogiFlow.Domain.Entities.Role", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("LogiFlow.Domain.Entities.Shipment", b =>

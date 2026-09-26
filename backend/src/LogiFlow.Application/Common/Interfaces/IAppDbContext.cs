@@ -12,6 +12,10 @@ public interface IAppDbContext
     DbSet<StorageZone> StorageZones { get; }
     DbSet<Package> Packages { get; }
 
+    // [S1] Identity
+    DbSet<User> Users { get; }
+    DbSet<Role> Roles { get; }
+
     // [S4] Delivery execution & tracking
     DbSet<AgentWorkflow> AgentWorkflows { get; }
     DbSet<RouteStop> RouteStops { get; }

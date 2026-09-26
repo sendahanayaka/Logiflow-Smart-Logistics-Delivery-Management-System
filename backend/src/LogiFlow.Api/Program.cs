@@ -7,6 +7,11 @@ using LogiFlow.Application.Workflows;
 using LogiFlow.Infrastructure.Agents;
 using LogiFlow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using LogiFlow.Application.Auth;
+using LogiFlow.Infrastructure.Auth;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +29,31 @@ if (string.IsNullOrWhiteSpace(connectionString))
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+var jwtSecret = builder.Configuration["Jwt:Key"] ?? Environment.GetEnvironmentVariable("JWT_SECRET");
+if (string.IsNullOrEmpty(jwtSecret) || jwtSecret.Length < 32)
+{
+    throw new InvalidOperationException("Secure JWT configuration key is required but missing or invalid.");
+}
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "LogiFlow",
+            ValidAudience = builder.Configuration["Jwt:Audience"] ?? "LogiFlow",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+        };
+    });
+builder.Services.AddAuthorization();
 
 // [S4] Delivery execution: workflow service + typed HttpClient to the internal agent.
 builder.Services.AddScoped<IAgentWorkflowService, AgentWorkflowService>();
@@ -44,6 +74,10 @@ builder.Services.AddHttpClient<IAgentServiceClient, AgentServiceClient>(client =
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 app.Run();
 
