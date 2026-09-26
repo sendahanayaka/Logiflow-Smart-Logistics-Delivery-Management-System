@@ -1,0 +1,132 @@
+.orders-container {
+    padding: 2rem;
+    background-color: #F5F6F8;
+    min-height: 100vh;
+    font-family: inherit;
+    color: #252525;
+}
+
+.orders-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.orders-title {
+    color: #08006C;
+    margin: 0;
+}
+
+.orders-btn-primary {
+    background-color: #FD5901;
+    color: #FFFFFF;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.orders-btn-primary:hover {
+    background-color: #e04e00;
+}
+
+.orders-btn-secondary {
+    background-color: #e2e8f0;
+    color: #08006C;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.orders-btn-danger {
+    background-color: #dc2626;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.orders-panel {
+    background: #FFFFFF;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.orders-table th {
+    text-align: left;
+    padding: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+    color: #08006C;
+}
+
+.orders-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.orders-table tr:hover {
+    background-color: #f8fafc;
+}
+
+.orders-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.orders-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #08006C;
+    font-weight: 500;
+}
+
+.orders-form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.status-pending {
+    background-color: #fef08a;
+    color: #854d0e;
+}
+
+.status-cancelled {
+    background-color: #fecaca;
+    color: #991b1b;
+}
+
+.status-default {
+    background-color: #e2e8f0;
+    color: #475569;
+}
