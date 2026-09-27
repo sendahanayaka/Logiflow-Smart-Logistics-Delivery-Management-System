@@ -12,7 +12,9 @@ interface DriverTableProps {
   onViewDriver?: (driver: Driver) => void;
   onEditDriver?: (driver: Driver) => void;
   onDeleteDriver?: (driver: Driver) => void;
+  onScheduleDriver?: (driver: Driver) => void;
 }
+
 
 export const getDriverStatusInfo = (status: DriverStatus): { label: string; badgeClass: string } => {
   switch (status) {
@@ -47,6 +49,7 @@ export const DriverTable: React.FC<DriverTableProps> = ({
   onViewDriver,
   onEditDriver,
   onDeleteDriver,
+  onScheduleDriver,
 }) => {
   const renderSortHeader = (label: string, field: SortField) => {
     const isActive = sortField === field;
@@ -123,6 +126,14 @@ export const DriverTable: React.FC<DriverTableProps> = ({
                       </button>
                       <button
                         type="button"
+                        className="button button--secondary"
+                        style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem', color: 'var(--color-orange)', borderColor: 'var(--color-orange)' }}
+                        onClick={() => onScheduleDriver?.(driver)}
+                      >
+                        Schedule
+                      </button>
+                      <button
+                        type="button"
                         className="button button--danger"
                         style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem' }}
                         onClick={() => onDeleteDriver?.(driver)}
@@ -140,5 +151,6 @@ export const DriverTable: React.FC<DriverTableProps> = ({
     </div>
   );
 };
+
 
 export default DriverTable;

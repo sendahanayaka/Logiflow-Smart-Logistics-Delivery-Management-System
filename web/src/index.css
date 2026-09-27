@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 
 :root {
+  --color-primary: #ff5000;
   --color-navy: #08006c;
   --color-navy-deep: #050048;
   --color-navy-soft: #120980;
@@ -10,6 +11,7 @@
   --color-orange-soft: #fff1eb;
   --color-white: #ffffff;
   --color-canvas: #f4f5fa;
+  --color-bg: #f4f5fa;
   --color-border: #e3e6f0;
   --color-border-hover: #cbd1e1;
   --color-text: #1a2035;
@@ -29,6 +31,30 @@
   --shadow-button-primary: 0 4px 14px rgba(255, 80, 0, 0.28);
   --focus-ring: 0 0 0 3px rgba(255, 80, 0, 0.18);
   --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 *, *::before, *::after {
@@ -867,3 +893,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+}

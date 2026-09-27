@@ -1,25 +1,25 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DriverForm } from '../components/DriverForm';
+import { FleetHeader } from '../components/FleetHeader';
 
 export const DriverCreatePage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
     <section className="users-page">
-      <a
-        href="/drivers"
-        className="back-link"
-        onClick={(e) => {
-          e.preventDefault();
-          navigate('/drivers');
-        }}
-      >
-        &larr; Back to Driver List
-      </a>
+      <FleetHeader
+        title="Add New Driver"
+        subtitle="Register a new driver into the fleet management database."
+        breadcrumbs={[
+          { label: 'Drivers', path: '/fleet/drivers' },
+          { label: 'Add Driver' },
+        ]}
+        activeTab="drivers"
+      />
       <DriverForm
-        onCancel={() => navigate('/drivers')}
-        onSuccess={() => navigate('/drivers')}
+        onCancel={() => navigate('/fleet/drivers')}
+        onSuccess={() => navigate('/fleet/drivers')}
       />
     </section>
   );

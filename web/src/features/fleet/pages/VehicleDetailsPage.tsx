@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useGetVehicleByIdQuery, useDeleteVehicleMutation } from '../api/fleetApi';
 import { getVehicleStatusInfo } from '../components/VehicleTable';
 import { formatDate } from '../components/DriverTable';
 import { DeleteConfirmModal } from '../components/DeleteConfirmModal';
+import { FleetHeader } from '../components/FleetHeader';
 
 export const VehicleDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,7 +23,7 @@ export const VehicleDetailsPage: React.FC = () => {
     try {
       await deleteVehicle(id).unwrap();
       setIsDeleteModalOpen(false);
-      navigate('/vehicles');
+      navigate('/fleet/vehicles');
     } catch {
       // Handled in modal UI state
     }
@@ -52,7 +53,7 @@ export const VehicleDetailsPage: React.FC = () => {
             type="button"
             className="button button--secondary"
             style={{ marginTop: '0.75rem' }}
-            onClick={() => navigate('/vehicles')}
+            onClick={() => navigate('/fleet/vehicles')}
           >
             Back to Vehicle List
           </button>
@@ -65,35 +66,33 @@ export const VehicleDetailsPage: React.FC = () => {
 
   return (
     <section className="users-page">
-      <Link to="/vehicles" className="back-link">
-        &larr; Back to Vehicle List
-      </Link>
-
-      <header className="detail-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <span className="eyebrow">Vehicle Details</span>
-          <h1 style={{ margin: '0.25rem 0 0.5rem' }}>Registration #{vehicle.registrationNumber}</h1>
-          <p style={{ color: 'var(--color-muted)', margin: 0 }}>
-            {vehicle.make} {vehicle.model} ({vehicle.vehicleType})
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button
-            type="button"
-            className="button button--secondary"
-            onClick={() => navigate(`/vehicles/${vehicle.id}/edit`)}
-          >
-            Edit Vehicle
-          </button>
-          <button
-            type="button"
-            className="button button--danger"
-            onClick={() => setIsDeleteModalOpen(true)}
-          >
-            Delete Vehicle
-          </button>
-        </div>
-      </header>
+      <FleetHeader
+        title={`Registration #${vehicle.registrationNumber}`}
+        subtitle={`${vehicle.make} ${vehicle.model} (${vehicle.vehicleType}) • ${vehicle.capacity} kg Capacity`}
+        breadcrumbs={[
+          { label: 'Vehicles', path: '/fleet/vehicles' },
+          { label: vehicle.registrationNumber },
+        ]}
+        activeTab="vehicles"
+        actionButton={
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              type="button"
+              className="button button--secondary"
+              onClick={() => navigate(`/fleet/vehicles/${vehicle.id}/edit`)}
+            >
+              Edit Vehicle
+            </button>
+            <button
+              type="button"
+              className="button button--danger"
+              onClick={() => setIsDeleteModalOpen(true)}
+            >
+              Delete Vehicle
+            </button>
+          </div>
+        }
+      />
 
       {isDeleteError && (
         <div className="error-message" style={{ marginTop: '1rem' }}>

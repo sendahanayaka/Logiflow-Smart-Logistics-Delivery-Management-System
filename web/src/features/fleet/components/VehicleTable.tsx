@@ -12,6 +12,7 @@ interface VehicleTableProps {
   onViewVehicle?: (vehicle: Vehicle) => void;
   onEditVehicle?: (vehicle: Vehicle) => void;
   onDeleteVehicle?: (vehicle: Vehicle) => void;
+  onMaintenanceVehicle?: (vehicle: Vehicle) => void;
 }
 
 export const getVehicleStatusInfo = (status: VehicleStatus): { label: string; badgeClass: string } => {
@@ -39,6 +40,7 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
   onViewVehicle,
   onEditVehicle,
   onDeleteVehicle,
+  onMaintenanceVehicle,
 }) => {
   const renderSortHeader = (label: string, field: VehicleSortField) => {
     const isActive = sortField === field;
@@ -117,6 +119,14 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
                       </button>
                       <button
                         type="button"
+                        className="button button--secondary"
+                        style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem', borderColor: '#f97316', color: '#f97316', fontWeight: 600 }}
+                        onClick={() => onMaintenanceVehicle?.(vehicle)}
+                      >
+                        Maintenance
+                      </button>
+                      <button
+                        type="button"
                         className="button button--danger"
                         style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem' }}
                         onClick={() => onDeleteVehicle?.(vehicle)}
@@ -134,5 +144,6 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
     </div>
   );
 };
+
 
 export default VehicleTable;

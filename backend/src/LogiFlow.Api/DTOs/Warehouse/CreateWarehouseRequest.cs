@@ -1,2 +1,6 @@
-// [S3]  Warehouse DTO
-// TODO: implement. Owner fills this in.
+namespace LogiFlow.Api.DTOs.Warehouse;
+
+public sealed record CreateWarehouseRequest(
+    string Name,
+    string Location,
+    decimal TotalVolumeM3);

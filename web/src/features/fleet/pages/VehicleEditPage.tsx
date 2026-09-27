@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetVehicleByIdQuery } from '../api/fleetApi';
 import { VehicleForm } from '../components/VehicleForm';
+import { FleetHeader } from '../components/FleetHeader';
 
 export const VehicleEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -35,7 +36,7 @@ export const VehicleEditPage: React.FC = () => {
             type="button"
             className="button button--secondary"
             style={{ marginTop: '0.75rem' }}
-            onClick={() => navigate('/vehicles')}
+            onClick={() => navigate('/fleet/vehicles')}
           >
             Back to Vehicle List
           </button>
@@ -46,22 +47,22 @@ export const VehicleEditPage: React.FC = () => {
 
   return (
     <section className="users-page">
-      <a
-        href={`/vehicles/${id}`}
-        className="back-link"
-        onClick={(e) => {
-          e.preventDefault();
-          navigate(`/vehicles/${id}`);
-        }}
-      >
-        &larr; Back to Vehicle Details
-      </a>
+      <FleetHeader
+        title={`Edit Vehicle: ${vehicle.registrationNumber}`}
+        subtitle={`Update specifications for ${vehicle.make} ${vehicle.model} (${vehicle.capacity} kg)`}
+        breadcrumbs={[
+          { label: 'Vehicles', path: '/fleet/vehicles' },
+          { label: vehicle.registrationNumber, path: `/fleet/vehicles/${id}` },
+          { label: 'Edit' },
+        ]}
+        activeTab="vehicles"
+      />
       <VehicleForm
         isEditMode={true}
         vehicleId={id}
         initialValues={vehicle}
-        onCancel={() => navigate(`/vehicles/${id}`)}
-        onSuccess={() => navigate(`/vehicles/${id}`)}
+        onCancel={() => navigate(`/fleet/vehicles/${id}`)}
+        onSuccess={() => navigate(`/fleet/vehicles/${id}`)}
       />
     </section>
   );

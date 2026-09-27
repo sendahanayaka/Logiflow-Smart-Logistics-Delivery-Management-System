@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useGetDriverByIdQuery, useDeleteDriverMutation } from '../api/fleetApi';
 import { getDriverStatusInfo, formatDate } from '../components/DriverTable';
 import { DeleteConfirmModal } from '../components/DeleteConfirmModal';
+import { FleetHeader } from '../components/FleetHeader';
 
 export const DriverDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,7 +22,7 @@ export const DriverDetailsPage: React.FC = () => {
     try {
       await deleteDriver(id).unwrap();
       setIsDeleteModalOpen(false);
-      navigate('/drivers');
+      navigate('/fleet/drivers');
     } catch {
       // Handled in modal UI state
     }
@@ -51,7 +52,7 @@ export const DriverDetailsPage: React.FC = () => {
             type="button"
             className="button button--secondary"
             style={{ marginTop: '0.75rem' }}
-            onClick={() => navigate('/drivers')}
+            onClick={() => navigate('/fleet/drivers')}
           >
             Back to Driver List
           </button>
@@ -64,35 +65,33 @@ export const DriverDetailsPage: React.FC = () => {
 
   return (
     <section className="users-page">
-      <Link to="/drivers" className="back-link">
-        &larr; Back to Driver List
-      </Link>
-
-      <header className="detail-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <span className="eyebrow">Driver Details</span>
-          <h1 style={{ margin: '0.25rem 0 0.5rem' }}>{driver.fullName || `License #${driver.licenseNumber}`}</h1>
-          <p style={{ color: 'var(--color-muted)', margin: 0 }}>
-            License #{driver.licenseNumber} • Created on {formatDate(driver.createdAt)}
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button
-            type="button"
-            className="button button--secondary"
-            onClick={() => navigate(`/drivers/${driver.id}/edit`)}
-          >
-            Edit Driver
-          </button>
-          <button
-            type="button"
-            className="button button--danger"
-            onClick={() => setIsDeleteModalOpen(true)}
-          >
-            Delete Driver
-          </button>
-        </div>
-      </header>
+      <FleetHeader
+        title={driver.fullName || `License #${driver.licenseNumber}`}
+        subtitle={`License #${driver.licenseNumber} • Created on ${formatDate(driver.createdAt)}`}
+        breadcrumbs={[
+          { label: 'Drivers', path: '/fleet/drivers' },
+          { label: driver.fullName || driver.licenseNumber },
+        ]}
+        activeTab="drivers"
+        actionButton={
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              type="button"
+              className="button button--secondary"
+              onClick={() => navigate(`/fleet/drivers/${driver.id}/edit`)}
+            >
+              Edit Driver
+            </button>
+            <button
+              type="button"
+              className="button button--danger"
+              onClick={() => setIsDeleteModalOpen(true)}
+            >
+              Delete Driver
+            </button>
+          </div>
+        }
+      />
 
       {isDeleteError && (
         <div className="error-message" style={{ marginTop: '1rem' }}>
