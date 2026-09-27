@@ -321,6 +321,8 @@ public sealed class WarehouseServiceTests : IAsyncLifetime
         public DbSet<WarehouseEntity> Warehouses => _context.Warehouses;
         public DbSet<StorageZoneEntity> StorageZones => _context.StorageZones;
         public DbSet<PackageEntity> Packages => _context.Packages;
+        public DbSet<DispatchBatch> DispatchBatches => _context.DispatchBatches;
+        public DbSet<DispatchBatchItem> DispatchBatchItems => _context.DispatchBatchItems;
         public DbSet<LogiFlow.Domain.Entities.User> Users => _context.Users;
         public DbSet<LogiFlow.Domain.Entities.Role> Roles => _context.Roles;
         public DbSet<DeliveryOrder> DeliveryOrders => _context.DeliveryOrders;
@@ -332,6 +334,7 @@ public sealed class WarehouseServiceTests : IAsyncLifetime
         public DbSet<LogiFlow.Domain.Entities.ApprovalDecision> ApprovalDecisions => _context.ApprovalDecisions;
         public DbSet<LogiFlow.Domain.Entities.TrackingEvent> TrackingEvents => _context.TrackingEvents;
         public DbSet<LogiFlow.Domain.Entities.ProofOfDelivery> ProofOfDeliveries => _context.ProofOfDeliveries;
+        public void ClearChangeTracker() => _context.ClearChangeTracker();
 
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
             Task.FromException<int>(new DbUpdateException("Simulated package persistence failure."));

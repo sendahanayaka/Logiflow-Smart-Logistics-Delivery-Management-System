@@ -21,4 +21,5 @@ public class Package
 
     public Warehouse Warehouse { get; set; } = null!;
     public StorageZone StorageZone { get; set; } = null!;
+    public ICollection<DispatchBatchItem> DispatchBatchItems { get; set; } = new List<DispatchBatchItem>();
 }

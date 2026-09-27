@@ -52,6 +52,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 builder.Services.AddScoped<IFleetService, FleetService>();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
+builder.Services.AddSingleton<BatchingEngine>();
+builder.Services.AddScoped<IDispatchBatchService, DispatchBatchService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();

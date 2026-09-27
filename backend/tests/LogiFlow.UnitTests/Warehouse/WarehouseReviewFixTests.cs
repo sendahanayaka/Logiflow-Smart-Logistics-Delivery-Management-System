@@ -198,7 +198,8 @@ public sealed class WarehouseReviewFixTests : IAsyncLifetime
             _service,
             new CreateWarehouseRequestValidator(),
             new CreateStorageZoneRequestValidator(),
-            new CreatePackageRequestValidator())
+            new CreatePackageRequestValidator(),
+            new NoOpDispatchBatchService())
         {
             ControllerContext = new ControllerContext
             {
@@ -276,5 +277,30 @@ public sealed class WarehouseReviewFixTests : IAsyncLifetime
         context.Response.Body.Position = 0;
         using var reader = new StreamReader(context.Response.Body, leaveOpen: true);
         return await reader.ReadToEndAsync();
+    }
+
+    private sealed class NoOpDispatchBatchService : IDispatchBatchService
+    {
+        public Task<DispatchBatchCreationResponse> CreateBatchAsync(
+            CreateDispatchBatchCommand command,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<DispatchBatchCreationResponse> ReplaceItemsAsync(
+            Guid batchId,
+            ReplaceDispatchBatchItemsCommand command,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<DispatchBatchValidationResponse> GetValidationAsync(
+            Guid batchId,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<WarehouseThroughputResponse> GetThroughputAsync(
+            Guid warehouseId,
+            WarehouseThroughputQuery query,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
     }
 }

@@ -254,6 +254,35 @@ public class WarehouseService : IWarehouseService
             totalCount);
     }
 
+    public async Task<PackageResponse> MakePackageAvailableAsync(
+        Guid packageId,
+        CancellationToken cancellationToken = default)
+    {
+        if (packageId == Guid.Empty)
+        {
+            throw new ArgumentException("Package ID is required.", nameof(packageId));
+        }
+
+        var package = await _context.Packages
+            .FirstOrDefaultAsync(item => item.Id == packageId, cancellationToken);
+
+        if (package is null)
+        {
+            throw new KeyNotFoundException($"Package '{packageId}' was not found.");
+        }
+
+        if (package.Status != PackageStatus.Received)
+        {
+            throw new InvalidOperationException(
+                "Only received packages may be made available for dispatch.");
+        }
+
+        package.Status = PackageStatus.Available;
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return MapPackage(package);
+    }
+
     private static void ValidateWarehouse(CreateWarehouseCommand command)
     {
         if (string.IsNullOrWhiteSpace(command.Name))
