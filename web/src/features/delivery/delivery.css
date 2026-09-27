@@ -63,3 +63,47 @@
 .wf-btn--reject { background: var(--color-danger, #d92550); }
 .wf-btn--revise { background: var(--color-navy, #08006c); }
 .wf-ok { color: var(--color-success, #0a8754); font-weight: 600; margin: 0.5rem 0; }
+
+/* shipment status badges */
+.wf-badge--Created { background: #eef1f6; color: #5e6982; }
+.wf-badge--Dispatched { background: #dbeafe; color: #1e40af; }
+.wf-badge--InTransit { background: #fef3c7; color: #92400e; }
+.wf-badge--Delivered { background: var(--color-success-bg, #e6f7f0); color: var(--color-success, #0a8754); }
+.wf-badge--Cancelled { background: #fee2e2; color: #b91c1c; }
+
+.ship-subhead { color: var(--color-navy, #08006c); margin: 1.4rem 0 0.4rem; font-size: 1rem; }
+
+/* timeline */
+.tl { list-style: none; margin: 0; padding: 0 0 0 0.5rem; }
+.tl__item { position: relative; padding: 0 0 1.1rem 1.4rem; border-left: 2px solid var(--color-border, #e3e6f0); }
+.tl__item:last-child { border-left-color: transparent; }
+.tl__dot { position: absolute; left: -7px; top: 3px; width: 12px; height: 12px; border-radius: 50%;
+    background: #cbd1e1; border: 2px solid #fff; }
+.tl__item--Arrived .tl__dot { background: #f59e0b; }
+.tl__item--EnRoute .tl__dot { background: #1e40af; }
+.tl__item--Delivered .tl__dot { background: var(--color-success, #0a8754); }
+.tl__head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.tl__meta { font-size: 0.8rem; color: var(--color-muted, #5e6982); margin-top: 0.15rem; }
+.tl__note { font-size: 0.82rem; color: var(--color-text, #1a2035); margin-top: 0.2rem; font-style: italic; }
+.tl__status { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; padding: 0.15rem 0.5rem;
+    border-radius: 999px; background: #eef1f6; color: #5e6982; }
+.tl__status--Delivered { background: var(--color-success-bg, #e6f7f0); color: var(--color-success, #0a8754); }
+.tl__status--Arrived { background: #fef3c7; color: #92400e; }
+.tl__status--EnRoute { background: #dbeafe; color: #1e40af; }
+
+/* route sketch */
+.map-sketch { width: 100%; height: auto; background: #f9fafc; border: 1px solid var(--color-border, #e3e6f0);
+    border-radius: 8px; }
+.map-sketch--empty { padding: 2rem; text-align: center; color: var(--color-muted, #5e6982); font-size: 0.9rem; }
+.map-sketch__route { fill: none; stroke: var(--color-primary, #ff5000); stroke-width: 2.5; stroke-dasharray: 6 5; }
+.map-sketch__stop { fill: var(--color-navy, #08006c); }
+.map-sketch__stop--Delivered { fill: var(--color-success, #0a8754); }
+.map-sketch__stop--Arrived { fill: #f59e0b; }
+.map-sketch__label { fill: #fff; font-size: 12px; font-weight: 700; }
+
+/* proof of delivery */
+.pod-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.pod-list li { display: flex; flex-direction: column; background: #f9fafc; border: 1px solid var(--color-border, #e3e6f0);
+    border-radius: 6px; padding: 0.6rem 0.8rem; }
+.pod-list__time { font-size: 0.8rem; color: var(--color-muted, #5e6982); }
+.pod-list__note { font-size: 0.82rem; color: var(--color-text, #1a2035); }

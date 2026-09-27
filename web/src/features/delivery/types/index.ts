@@ -76,6 +76,8 @@ export interface TimelineEntry {
   actualAt: string | null;
   note: string | null;
   onTime: boolean | null;
+  latitude: number;
+  longitude: number;
 }
 
 export interface TrackingView {

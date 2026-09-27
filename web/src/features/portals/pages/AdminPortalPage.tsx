@@ -6,6 +6,7 @@ import '../../delivery/delivery.css';
 import { useGetWorkflowsQuery, useGetShipmentsQuery } from '../../delivery/deliveryApi';
 import { ApprovalsSection } from '../../delivery/components/ApprovalsSection';
 import { WorkflowMonitor } from '../../delivery/components/WorkflowMonitor';
+import { ShipmentsSection } from '../../delivery/components/ShipmentsSection';
 
 type TabKey = 'overview' | 'approvals' | 'monitor' | 'shipments' | 'fleet' | 'users';
 
@@ -47,13 +48,6 @@ const Overview: React.FC = () => {
     );
 };
 
-const ComingSoon: React.FC<{ phase: string; children: React.ReactNode }> = ({ phase, children }) => (
-    <div className="portal-dashboard-placeholder">
-        <h3>{children}</h3>
-        <p>Arrives in {phase}.</p>
-    </div>
-);
-
 export const AdminPortalPage: React.FC = () => {
     const [tab, setTab] = useState<TabKey>('overview');
 
@@ -81,7 +75,7 @@ export const AdminPortalPage: React.FC = () => {
                 {tab === 'overview' && <Overview />}
                 {tab === 'approvals' && <ApprovalsSection />}
                 {tab === 'monitor' && <WorkflowMonitor />}
-                {tab === 'shipments' && <ComingSoon phase="Phase 3">Shipments &amp; live tracking</ComingSoon>}
+                {tab === 'shipments' && <ShipmentsSection />}
                 {tab === 'fleet' && (
                     <div className="admin-link-card">
                         <h3>Fleet &amp; Driver Management</h3>
