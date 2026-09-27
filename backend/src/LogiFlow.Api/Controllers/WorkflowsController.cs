@@ -86,6 +86,15 @@ public class WorkflowsController : ControllerBase
         return workflow is null ? NotFound() : Ok(workflow);
     }
 
+    [HttpGet]
+    [ProducesResponseType(typeof(IReadOnlyList<WorkflowSummary>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<WorkflowSummary>>> List(
+        [FromQuery] WorkflowStatus? status,
+        CancellationToken cancellationToken)
+    {
+        return Ok(await _workflows.ListWorkflowsAsync(status, cancellationToken));
+    }
+
     [HttpPost("{id:guid}/approval")]
     [ProducesResponseType(typeof(ApprovalResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

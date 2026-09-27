@@ -1,10 +1,16 @@
 // [S4]  agent workflow contract
 using LogiFlow.Application.Workflows.DTOs;
+using LogiFlow.Domain.Enums;
 
 namespace LogiFlow.Application.Workflows;
 
 public interface IAgentWorkflowService
 {
+    /// <summary>List workflows for the admin monitor / approval queue, newest first.</summary>
+    Task<IReadOnlyList<WorkflowSummary>> ListWorkflowsAsync(
+        WorkflowStatus? status = null,
+        CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Trigger a routing run: build the agent payload, call the agent, and persist the
     /// proposed plan (workflow + route stops) in state AwaitingApproval.

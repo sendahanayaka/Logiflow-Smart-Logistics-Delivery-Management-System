@@ -31,7 +31,9 @@ public sealed record TimelineStop(
     string Address,
     DateTime PlannedEta,
     string Status,
-    bool? OnTime = null);
+    bool? OnTime = null,
+    double Latitude = 0,
+    double Longitude = 0);
 
 /// <summary>An actual tracking event recorded against a run.</summary>
 public sealed record TimelineEvent(
@@ -49,7 +51,9 @@ public sealed record TimelineEntry(
     string Status,
     DateTime? ActualAt,
     string? Note,
-    bool? OnTime = null);
+    bool? OnTime = null,
+    double Latitude = 0,
+    double Longitude = 0);
 
 // --- Phase 5 views + commands ------------------------------------------------
 
@@ -86,3 +90,16 @@ public sealed record RecordPodCommand(
     string? PhotoUrl,
     string? Notes,
     DateTime? DeliveredAt);
+
+/// <summary>Lightweight shipment row for the admin shipments list.</summary>
+public sealed record ShipmentSummary(
+    Guid Id,
+    string ShipmentCode,
+    string Status,
+    Guid DriverId,
+    Guid VehicleId,
+    decimal TotalDistanceKm,
+    int StopCount,
+    int DeliveredCount,
+    DateTime? DispatchedAt,
+    DateTime CreatedAt);
