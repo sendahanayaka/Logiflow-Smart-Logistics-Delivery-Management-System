@@ -5,6 +5,9 @@ namespace LogiFlow.Application.Delivery;
 
 public interface IShipmentService
 {
+    /// <summary>List dispatched shipments for the admin shipments view, newest first.</summary>
+    Task<IReadOnlyList<ShipmentSummary>> ListShipmentsAsync(CancellationToken cancellationToken = default);
+
     /// <summary>Customer / ops live-tracking timeline for a shipment (null if not found).</summary>
     Task<TrackingView?> GetTrackingAsync(Guid shipmentId, CancellationToken cancellationToken = default);
 

@@ -7,6 +7,7 @@ import { useGetWorkflowsQuery, useGetShipmentsQuery } from '../../delivery/deliv
 import { ApprovalsSection } from '../../delivery/components/ApprovalsSection';
 import { WorkflowMonitor } from '../../delivery/components/WorkflowMonitor';
 import { ShipmentsSection } from '../../delivery/components/ShipmentsSection';
+import { useGetDriversQuery, useGetVehiclesQuery } from '../../fleet/api/fleetApi';
 
 type TabKey = 'overview' | 'approvals' | 'monitor' | 'shipments' | 'fleet' | 'users';
 
@@ -29,6 +30,9 @@ const StatTile: React.FC<{ label: string; value: React.ReactNode; accent?: boole
 const Overview: React.FC = () => {
     const { data: workflows, isLoading: wfLoading, isError: wfError } = useGetWorkflowsQuery();
     const { data: shipments, isLoading: shLoading, isError: shError } = useGetShipmentsQuery();
+    // Fleet snapshot (aggregated into the ops home); optional — 0 if fleet API is unavailable.
+    const { data: drivers } = useGetDriversQuery();
+    const { data: vehicles } = useGetVehiclesQuery();
 
     if (wfLoading || shLoading) return <p className="admin-muted">Loading dashboard…</p>;
     if (wfError || shError) return <p className="admin-error">Couldn’t load dashboard data. Is the API running?</p>;
@@ -44,6 +48,8 @@ const Overview: React.FC = () => {
             <StatTile label="Workflows total" value={totalWorkflows} />
             <StatTile label="Active shipments" value={activeShipments} />
             <StatTile label="Delivered" value={delivered} />
+            <StatTile label="Drivers" value={(drivers ?? []).length} />
+            <StatTile label="Vehicles" value={(vehicles ?? []).length} />
         </div>
     );
 };
@@ -86,8 +92,11 @@ export const AdminPortalPage: React.FC = () => {
                 {tab === 'users' && (
                     <div className="admin-link-card">
                         <h3>User Management</h3>
-                        <p>Manage users and roles.</p>
-                        <Link className="admin-btn" to="/users">Open Users</Link>
+                        <p>
+                            Owned by S1 (Customer &amp; User Management). The admin user-management screen
+                            isn’t built yet — this tab will surface it here once it’s available.
+                        </p>
+                        <span className="admin-btn admin-btn--disabled" aria-disabled="true">Not yet available</span>
                     </div>
                 )}
             </main>

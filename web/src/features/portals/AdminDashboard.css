@@ -100,3 +100,4 @@
 }
 
 .admin-btn:hover { filter: brightness(0.95); }
+.admin-btn--disabled { background: #cbd1e1; color: #fff; cursor: not-allowed; pointer-events: none; }
