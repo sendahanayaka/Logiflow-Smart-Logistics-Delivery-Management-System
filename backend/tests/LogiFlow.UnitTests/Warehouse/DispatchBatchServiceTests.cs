@@ -565,6 +565,19 @@ public sealed class DispatchBatchServiceTests : IAsyncLifetime
         public DbSet<Package> Packages => _context.Packages;
         public DbSet<DispatchBatch> DispatchBatches => _context.DispatchBatches;
         public DbSet<DispatchBatchItem> DispatchBatchItems => _context.DispatchBatchItems;
+        public DbSet<Driver> Drivers => _context.Drivers;
+        public DbSet<Vehicle> Vehicles => _context.Vehicles;
+        public DbSet<AssignmentHistory> AssignmentHistories => _context.AssignmentHistories;
+        public DbSet<DutySchedule> DutySchedules => _context.DutySchedules;
+        public DbSet<MaintenanceRecord> MaintenanceRecords => _context.MaintenanceRecords;
+        public DbSet<User> Users => _context.Users;
+        public DbSet<Role> Roles => _context.Roles;
+        public DbSet<AgentWorkflow> AgentWorkflows => _context.AgentWorkflows;
+        public DbSet<RouteStop> RouteStops => _context.RouteStops;
+        public DbSet<Shipment> Shipments => _context.Shipments;
+        public DbSet<ApprovalDecision> ApprovalDecisions => _context.ApprovalDecisions;
+        public DbSet<TrackingEvent> TrackingEvents => _context.TrackingEvents;
+        public DbSet<ProofOfDelivery> ProofOfDeliveries => _context.ProofOfDeliveries;
         public void ClearChangeTracker() => _context.ClearChangeTracker();
 
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
