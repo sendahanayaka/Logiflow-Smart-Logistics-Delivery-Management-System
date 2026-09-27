@@ -1,5 +1,5 @@
-import { API_BASE_URL, handleApiError } from '../../app/api';
-import { CreateDeliveryOrderRequest, DeliveryOrderResponse } from './types';
+import { API_BASE_URL, handleApiError, baseApi } from '../../app/api';
+import { CreateDeliveryOrderRequest, DeliveryOrderResponse, DispatchOrder, INITIAL_DISPATCH_ORDERS } from './types';
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
@@ -47,3 +47,16 @@ export const cancelOrder = async (id: string): Promise<DeliveryOrderResponse> =>
     await handleApiError(response);
     return response.json();
 };
+
+export const ordersApi = baseApi.injectEndpoints({
+    endpoints: (builder) => ({
+        getDispatchOrders: builder.query<DispatchOrder[], void>({
+            queryFn: () => {
+                // Return pre-seeded dispatch-ready orders list for UI operations
+                return { data: INITIAL_DISPATCH_ORDERS };
+            },
+        }),
+    }),
+});
+
+export const { useGetDispatchOrdersQuery } = ordersApi;

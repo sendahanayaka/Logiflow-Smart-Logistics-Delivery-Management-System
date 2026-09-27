@@ -1,10 +1,7 @@
-// [ALL]  test
-// TODO: implement. Owner fills this in.
-
 import { describe, it, expect } from 'vitest';
 
-describe('Placeholder test', () => {
-  it('should pass', () => {
+describe('LoginPage Component', () => {
+  it('serves as placeholder test for authentication module', () => {
     expect(true).toBe(true);
   });
 });
