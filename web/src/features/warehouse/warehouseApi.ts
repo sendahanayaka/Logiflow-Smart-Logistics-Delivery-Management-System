@@ -220,27 +220,27 @@ export interface WarehouseThroughput {
 export const warehouseApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getWarehouses: build.query<Warehouse[], void>({
-      query: () => '/api/warehouse',
+      query: () => '/warehouse',
       providesTags: (result) => [
         { type: 'Warehouse', id: 'LIST' },
         ...(result?.map((warehouse) => ({ type: 'Warehouse' as const, id: warehouse.id })) ?? []),
       ],
     }),
     getWarehouse: build.query<Warehouse, Id>({
-      query: (warehouseId) => `/api/warehouse/${warehouseId}`,
+      query: (warehouseId) => `/warehouse/${warehouseId}`,
       providesTags: (_result, _error, warehouseId) => [{ type: 'Warehouse', id: warehouseId }],
     }),
     getStorageZones: build.query<StorageZone[], Id>({
-      query: (warehouseId) => `/api/warehouse/${warehouseId}/zones`,
+      query: (warehouseId) => `/warehouse/${warehouseId}/zones`,
       providesTags: (_result, _error, warehouseId) => [{ type: 'WarehouseZones', id: warehouseId }],
     }),
     createWarehouse: build.mutation<Warehouse, CreateWarehouseRequest>({
-      query: (body) => ({ url: '/api/warehouse', method: 'POST', body }),
+      query: (body) => ({ url: '/warehouse', method: 'POST', body }),
       invalidatesTags: [{ type: 'Warehouse', id: 'LIST' }],
     }),
     createStorageZone: build.mutation<StorageZone, { warehouseId: Id; body: CreateStorageZoneRequest }>({
       query: ({ warehouseId, body }) => ({
-        url: `/api/warehouse/${warehouseId}/zones`,
+        url: `/warehouse/${warehouseId}/zones`,
         method: 'POST',
         body,
       }),
@@ -250,7 +250,7 @@ export const warehouseApi = baseApi.injectEndpoints({
       ],
     }),
     receivePackage: build.mutation<WarehousePackage, PackageIntakeRequest>({
-      query: (body) => ({ url: '/api/warehouse/intake', method: 'POST', body }),
+      query: (body) => ({ url: '/warehouse/intake', method: 'POST', body }),
       invalidatesTags: (_result, _error, request) => [
         { type: 'WarehouseInventory', id: request.warehouseId },
         { type: 'Warehouse', id: request.warehouseId },
@@ -258,7 +258,7 @@ export const warehouseApi = baseApi.injectEndpoints({
     }),
     getPackages: build.query<PagedResult<WarehousePackage>, InventoryQuery>({
       query: ({ warehouseId, ...params }) => ({
-        url: `/api/warehouse/${warehouseId}/packages`,
+        url: `/warehouse/${warehouseId}/packages`,
         params,
       }),
       providesTags: (result, _error, { warehouseId }) => [
@@ -268,7 +268,7 @@ export const warehouseApi = baseApi.injectEndpoints({
     }),
     makePackageAvailable: build.mutation<WarehousePackage, Id>({
       query: (packageId) => ({
-        url: `/api/warehouse/packages/${packageId}/availability`,
+        url: `/warehouse/packages/${packageId}/availability`,
         method: 'PATCH',
       }),
       invalidatesTags: (result, _error, packageId) => [
@@ -277,7 +277,7 @@ export const warehouseApi = baseApi.injectEndpoints({
       ],
     }),
     createDispatchBatch: build.mutation<DispatchBatchCreationResponse, CreateDispatchBatchRequest>({
-      query: (body) => ({ url: '/api/dispatch/batches', method: 'POST', body }),
+      query: (body) => ({ url: '/dispatch/batches', method: 'POST', body }),
       invalidatesTags: (result, _error, request) => [
         { type: 'WarehouseInventory', id: request.warehouseId },
         ...(result?.batch ? [{ type: 'DispatchBatch' as const, id: result.batch.id }] : []),
@@ -288,7 +288,7 @@ export const warehouseApi = baseApi.injectEndpoints({
       { batchId: Id; body: ReplaceDispatchBatchItemsRequest }
     >({
       query: ({ batchId, body }) => ({
-        url: `/api/dispatch/batches/${batchId}/items`,
+        url: `/dispatch/batches/${batchId}/items`,
         method: 'PUT',
         body,
       }),
@@ -300,12 +300,12 @@ export const warehouseApi = baseApi.injectEndpoints({
       ],
     }),
     getDispatchBatchValidation: build.query<DispatchBatchValidationResponse, Id>({
-      query: (batchId) => `/api/dispatch/batches/${batchId}/validation`,
+      query: (batchId) => `/dispatch/batches/${batchId}/validation`,
       providesTags: (_result, _error, batchId) => [{ type: 'DispatchBatch', id: batchId }],
     }),
     runDispatchAgentValidation: build.mutation<DispatchAgentValidationResponse, Id>({
       query: (batchId) => ({
-        url: `/api/dispatch/batches/${batchId}/agent-validation`,
+        url: `/dispatch/batches/${batchId}/agent-validation`,
         method: 'POST',
       }),
       invalidatesTags: (_result, _error, batchId) => [{ type: 'DispatchBatch', id: batchId }],
@@ -314,15 +314,15 @@ export const warehouseApi = baseApi.injectEndpoints({
       DispatchCandidateAgentValidationResponse,
       ValidateDispatchCandidateRequest
     >({
-      query: (body) => ({ url: '/api/dispatch/validate-candidate', method: 'POST', body }),
+      query: (body) => ({ url: '/dispatch/validate-candidate', method: 'POST', body }),
     }),
     getDispatchBatchValidationContext: build.query<DispatchBatchValidationContext, Id>({
-      query: (batchId) => `/api/dispatch/batches/${batchId}/context`,
+      query: (batchId) => `/dispatch/batches/${batchId}/context`,
       providesTags: (_result, _error, batchId) => [{ type: 'DispatchBatch', id: batchId }],
     }),
     getWarehouseThroughput: build.query<WarehouseThroughput, ThroughputQuery>({
       query: ({ warehouseId, fromUtc, toUtc }) => ({
-        url: `/api/warehouse/${warehouseId}/reports/throughput`,
+        url: `/warehouse/${warehouseId}/reports/throughput`,
         params: { fromUtc, toUtc },
       }),
       providesTags: (_result, _error, { warehouseId }) => [{ type: 'Throughput', id: warehouseId }],
