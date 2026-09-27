@@ -23,4 +23,28 @@ public interface IFleetService
     Task<AssignmentResponse> EndAssignmentAsync(Guid assignmentId, EndAssignmentRequest? request = null, CancellationToken cancellationToken = default);
     Task<IEnumerable<AssignmentResponse>> GetActiveAssignmentsAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<AssignmentResponse>> GetAssignmentHistoryAsync(CancellationToken cancellationToken = default);
+
+    // Duty Schedule operations
+    Task<IEnumerable<DutyScheduleResponse>> GetAllDutySchedulesAsync(CancellationToken cancellationToken = default);
+    Task<DutyScheduleResponse?> GetDutyScheduleByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IEnumerable<DutyScheduleResponse>> GetDutySchedulesByDriverIdAsync(Guid driverId, CancellationToken cancellationToken = default);
+    Task<DutyScheduleResponse> CreateDutyScheduleAsync(CreateDutyScheduleRequest request, CancellationToken cancellationToken = default);
+    Task<DutyScheduleResponse?> UpdateDutyScheduleAsync(Guid id, UpdateDutyScheduleRequest request, CancellationToken cancellationToken = default);
+    Task<bool> DeleteDutyScheduleAsync(Guid id, CancellationToken cancellationToken = default);
+
+    // Business-Specific Operation
+    Task<DriverAvailabilityResponse> CheckDriverScheduleAvailabilityAsync(Guid driverId, DateTime startTime, DateTime endTime, CancellationToken cancellationToken = default);
+
+    // Maintenance Record operations
+    Task<IEnumerable<MaintenanceRecordResponse>> GetAllMaintenanceRecordsAsync(CancellationToken cancellationToken = default);
+    Task<MaintenanceRecordResponse?> GetMaintenanceRecordByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IEnumerable<MaintenanceRecordResponse>> GetMaintenanceRecordsByVehicleIdAsync(Guid vehicleId, CancellationToken cancellationToken = default);
+    Task<MaintenanceRecordResponse> CreateMaintenanceRecordAsync(CreateMaintenanceRecordRequest request, CancellationToken cancellationToken = default);
+    Task<MaintenanceRecordResponse?> UpdateMaintenanceRecordAsync(Guid id, UpdateMaintenanceRecordRequest request, CancellationToken cancellationToken = default);
+    Task<bool> DeleteMaintenanceRecordAsync(Guid id, CancellationToken cancellationToken = default);
+
+    // Maintenance Business-Specific Operation
+    Task<VehicleMaintenanceStatusResponse> GetVehicleMaintenanceStatusAsync(Guid vehicleId, CancellationToken cancellationToken = default);
 }
+
+

@@ -8,5 +8,9 @@ public interface IAppDbContext
     DbSet<Driver> Drivers { get; }
     DbSet<Vehicle> Vehicles { get; }
     DbSet<AssignmentHistory> AssignmentHistories { get; }
+    DbSet<DutySchedule> DutySchedules { get; }
+    DbSet<MaintenanceRecord> MaintenanceRecords { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
+
+

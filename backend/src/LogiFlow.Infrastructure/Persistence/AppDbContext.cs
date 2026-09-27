@@ -13,6 +13,9 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Driver> Drivers => Set<Driver>();
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
     public DbSet<AssignmentHistory> AssignmentHistories => Set<AssignmentHistory>();
+    public DbSet<DutySchedule> DutySchedules => Set<DutySchedule>();
+    public DbSet<MaintenanceRecord> MaintenanceRecords => Set<MaintenanceRecord>();
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
