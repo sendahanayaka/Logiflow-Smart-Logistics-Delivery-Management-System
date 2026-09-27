@@ -63,6 +63,32 @@ export const OrderForm: React.FC<Props> = ({ onSubmit, isLoading }) => {
         onSubmit(payload);
     };
 
+    const hasRequiredFields = formData.pickupCity && formData.deliveryCity && formData.weightKg > 0 && formData.lengthCm > 0 && formData.widthCm > 0 && formData.heightCm > 0;
+
+    let estimatedFee = 500;
+    let estimatedTime = '';
+
+    if (hasRequiredFields) {
+        const weight = formData.weightKg;
+        if (weight > 10) estimatedFee += 500;
+        else if (weight >= 5) estimatedFee += 250;
+        else if (weight >= 1) estimatedFee += 100;
+
+        const isExpress = formData.priority === 'Express';
+        if (isExpress) estimatedFee += 300;
+
+        const volume = formData.lengthCm * formData.widthCm * formData.heightCm;
+        if (volume > 50000) estimatedFee += 300;
+        else if (volume > 10000) estimatedFee += 150;
+
+        const sameCity = formData.pickupCity.trim().toLowerCase() === formData.deliveryCity.trim().toLowerCase();
+        if (sameCity) {
+            estimatedTime = isExpress ? '1 day' : '1–2 days';
+        } else {
+            estimatedTime = isExpress ? '1–2 days' : '2–3 days';
+        }
+    }
+
     return (
         <form onSubmit={handleSubmit} className="orders-panel">
             {error && <div style={{ color: '#dc2626', marginBottom: '1rem' }}>{error}</div>}
@@ -151,6 +177,38 @@ export const OrderForm: React.FC<Props> = ({ onSubmit, isLoading }) => {
                     <label>Recipient Contact</label>
                     <input type="text" name="recipientContact" value={formData.recipientContact} onChange={handleChange} className="orders-form-control" />
                 </div>
+            </div>
+
+            <div className="orders-estimate-card">
+                <div className="estimate-header">
+                    <h4 className="estimate-title">🚚 Delivery Estimate</h4>
+                    <p className="estimate-subtitle">Estimated based on your package details</p>
+                </div>
+                {!hasRequiredFields ? (
+                    <p className="estimate-placeholder">Enter package and delivery details to see your estimate.</p>
+                ) : (
+                    <>
+                        <div className="estimate-grid">
+                            <div className="estimate-block">
+                                <span className="estimate-label">Estimated Delivery</span>
+                                <span className="estimate-value time-value">{estimatedTime}</span>
+                            </div>
+                            <div className="estimate-block">
+                                <span className="estimate-label">Estimated Fee</span>
+                                <span className="estimate-value fee-value">LKR {estimatedFee.toLocaleString()}</span>
+                            </div>
+                            <div className="estimate-block">
+                                <span className="estimate-label">Priority</span>
+                                <span className="estimate-value">{formData.priority}</span>
+                            </div>
+                            <div className="estimate-block">
+                                <span className="estimate-label">Package Weight</span>
+                                <span className="estimate-value">{formData.weightKg.toLocaleString()} kg</span>
+                            </div>
+                        </div>
+                        <p className="estimate-note">Estimate only. Final delivery cost and time may vary.</p>
+                    </>
+                )}
             </div>
 
             <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
