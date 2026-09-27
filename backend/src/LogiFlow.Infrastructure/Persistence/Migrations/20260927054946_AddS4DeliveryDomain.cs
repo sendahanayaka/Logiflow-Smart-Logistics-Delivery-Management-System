@@ -11,6 +11,65 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "UpdatedAt",
+                table: "Warehouses",
+                type: "timestamp without time zone",
+                nullable: true,
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp with time zone",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "CreatedAt",
+                table: "Warehouses",
+                type: "timestamp without time zone",
+                nullable: false,
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp with time zone");
+
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "UpdatedAt",
+                table: "Users",
+                type: "timestamp without time zone",
+                nullable: true,
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp with time zone",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "CreatedAt",
+                table: "Users",
+                type: "timestamp without time zone",
+                nullable: false,
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp with time zone");
+
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "UpdatedAt",
+                table: "StorageZones",
+                type: "timestamp without time zone",
+                nullable: true,
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp with time zone",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "CreatedAt",
+                table: "StorageZones",
+                type: "timestamp without time zone",
+                nullable: false,
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp with time zone");
+
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "ReceivedAt",
+                table: "Packages",
+                type: "timestamp without time zone",
+                nullable: false,
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp with time zone");
+
             migrationBuilder.CreateTable(
                 name: "AgentWorkflows",
                 columns: table => new
@@ -24,8 +83,8 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                     ProposedPlanJson = table.Column<string>(type: "jsonb", nullable: true),
                     AuditJson = table.Column<string>(type: "jsonb", nullable: true),
                     Error = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -42,7 +101,7 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                     DecidedBy = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Reason = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     RevisionsJson = table.Column<string>(type: "jsonb", nullable: true),
-                    DecidedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    DecidedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -68,13 +127,13 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                     Latitude = table.Column<double>(type: "double precision", nullable: false),
                     Longitude = table.Column<double>(type: "double precision", nullable: false),
                     DistanceFromPrevKm = table.Column<decimal>(type: "numeric(18,3)", precision: 18, scale: 3, nullable: false),
-                    Eta = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    WindowStart = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    WindowEnd = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Eta = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    WindowStart = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    WindowEnd = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     OnTime = table.Column<bool>(type: "boolean", nullable: true),
                     Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -101,11 +160,11 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                     Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     TotalDistanceKm = table.Column<decimal>(type: "numeric(18,3)", precision: 18, scale: 3, nullable: false),
                     TotalDurationMin = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
-                    PlannedStartAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    DispatchedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    PlannedStartAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    DispatchedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    CompletedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -131,8 +190,8 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                     SignatureImageUrl = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     PhotoUrl = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     Notes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    DeliveredAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    DeliveredAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -153,11 +212,11 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                     ShipmentId = table.Column<Guid>(type: "uuid", nullable: false),
                     RouteStopId = table.Column<Guid>(type: "uuid", nullable: true),
                     EventType = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
-                    OccurredAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    OccurredAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Note = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     Latitude = table.Column<double>(type: "double precision", nullable: true),
                     Longitude = table.Column<double>(type: "double precision", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -261,6 +320,65 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "AgentWorkflows");
+
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "UpdatedAt",
+                table: "Warehouses",
+                type: "timestamp with time zone",
+                nullable: true,
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp without time zone",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "CreatedAt",
+                table: "Warehouses",
+                type: "timestamp with time zone",
+                nullable: false,
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp without time zone");
+
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "UpdatedAt",
+                table: "Users",
+                type: "timestamp with time zone",
+                nullable: true,
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp without time zone",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "CreatedAt",
+                table: "Users",
+                type: "timestamp with time zone",
+                nullable: false,
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp without time zone");
+
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "UpdatedAt",
+                table: "StorageZones",
+                type: "timestamp with time zone",
+                nullable: true,
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp without time zone",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "CreatedAt",
+                table: "StorageZones",
+                type: "timestamp with time zone",
+                nullable: false,
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp without time zone");
+
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "ReceivedAt",
+                table: "Packages",
+                type: "timestamp with time zone",
+                nullable: false,
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp without time zone");
         }
     }
 }

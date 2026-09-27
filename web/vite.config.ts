@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -8,14 +9,18 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
-        changeOrigin: true
-      }
-    }
+        changeOrigin: true,
+      },
+      '/agent-api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/agent-api/, ''),
+      },
+    },
   },
   test: {
-    environment: 'jsdom',
     globals: true,
-    setupFiles: ['./src/test/setup.ts'],
-    include: ['src/features/auth/**/*.test.ts', 'src/features/auth/**/*.test.tsx'],
-  }
-} as any);
+    environment: 'jsdom',
+    setupFiles: ['./tests/setup.ts', './src/test/setup.ts'],
+  },
+});

@@ -312,6 +312,12 @@ public sealed class WarehouseServiceTests : IAsyncLifetime
             _context = context;
         }
 
+        public DbSet<Driver> Drivers => _context.Drivers;
+        public DbSet<Vehicle> Vehicles => _context.Vehicles;
+        public DbSet<AssignmentHistory> AssignmentHistories => _context.AssignmentHistories;
+        public DbSet<DutySchedule> DutySchedules => _context.DutySchedules;
+        public DbSet<MaintenanceRecord> MaintenanceRecords => _context.MaintenanceRecords;
+
         public DbSet<WarehouseEntity> Warehouses => _context.Warehouses;
         public DbSet<StorageZoneEntity> StorageZones => _context.StorageZones;
         public DbSet<PackageEntity> Packages => _context.Packages;

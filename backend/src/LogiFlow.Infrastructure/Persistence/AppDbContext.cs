@@ -12,6 +12,12 @@ public class AppDbContext : DbContext, IAppDbContext
     {
     }
 
+    public DbSet<Driver> Drivers => Set<Driver>();
+    public DbSet<Vehicle> Vehicles => Set<Vehicle>();
+    public DbSet<AssignmentHistory> AssignmentHistories => Set<AssignmentHistory>();
+    public DbSet<DutySchedule> DutySchedules => Set<DutySchedule>();
+    public DbSet<MaintenanceRecord> MaintenanceRecords => Set<MaintenanceRecord>();
+
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
     public DbSet<StorageZone> StorageZones => Set<StorageZone>();
     public DbSet<Package> Packages => Set<Package>();

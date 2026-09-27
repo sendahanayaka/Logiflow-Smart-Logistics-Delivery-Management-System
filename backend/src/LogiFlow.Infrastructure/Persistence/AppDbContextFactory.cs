@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 
 namespace LogiFlow.Infrastructure.Persistence;
 
@@ -11,14 +12,31 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 
         if (string.IsNullOrWhiteSpace(connectionString))
         {
-            throw new InvalidOperationException(
-                "Set S3_MIGRATION_CONNECTION when generating EF Core migrations.");
+            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "../LogiFlow.Api");
+            if (!Directory.Exists(basePath))
+            {
+                basePath = Directory.GetCurrentDirectory();
+            }
+
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(basePath)
+                .AddJsonFile("appsettings.json", optional: true)
+                .AddJsonFile("appsettings.Development.json", optional: true)
+                .AddEnvironmentVariables()
+                .Build();
+
+            connectionString = configuration.GetConnectionString("DefaultConnection") 
+                ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
         }
 
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(connectionString)
-            .Options;
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            connectionString = "Host=localhost;Database=logiflow;Username=postgres;Password=postgres";
+        }
 
-        return new AppDbContext(options);
+        var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+        optionsBuilder.UseNpgsql(connectionString);
+
+        return new AppDbContext(optionsBuilder.Options);
     }
 }
