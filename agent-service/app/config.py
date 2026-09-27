@@ -7,16 +7,27 @@ try:
     from dotenv import load_dotenv
 
     load_dotenv()
-except Exception:  # dotenv optional; env vars may be provided by the OS/CI
+except Exception:
     pass
 
-# LLM (Ollama, local, free — satisfies the no-paid-service rule)
-OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
+# LLM (Ollama, local, free)
+OLLAMA_BASE_URL: str = os.getenv(
+    "OLLAMA_BASE_URL",
+    "http://localhost:11434"
+)
 
-# The ASP.NET Core backend the agents reach for allow-listed tool endpoints.
-BACKEND_API_BASE_URL: str = os.getenv("BACKEND_API_BASE_URL", "http://localhost:5080")
+OLLAMA_MODEL: str = os.getenv(
+    "OLLAMA_MODEL",
+    "llama3.2:3b"
+)
 
-# Shared secret so ONLY the backend can call this internal service. When unset
-# (local dev) the guard is disabled; set it in staging/demo.
-AGENT_SERVICE_API_KEY: str | None = os.getenv("AGENT_SERVICE_API_KEY") or None
+# ASP.NET Core backend
+BACKEND_API_BASE_URL: str = os.getenv(
+    "BACKEND_API_BASE_URL",
+    "http://localhost:5000"
+)
+
+# Shared secret for internal agent service
+AGENT_SERVICE_API_KEY: str | None = os.getenv(
+    "AGENT_SERVICE_API_KEY"
+) or None
