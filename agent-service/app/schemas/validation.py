@@ -28,6 +28,8 @@ class ValidationOutput(BaseModel):
     approved_batch: BatchCandidate | None = None
     rejection_reasons: list[str] = Field(default_factory=list)
     explanation: str | None = None
+    # An unavailable local LLM must never be presented to operators as AI output.
+    explanation_source: Literal["ollama", "deterministic_fallback"] | None = None
 
     @model_validator(mode="after")
     def non_passing_results_cannot_approve_a_batch(self) -> "ValidationOutput":

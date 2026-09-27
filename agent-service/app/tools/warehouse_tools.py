@@ -14,6 +14,7 @@ import httpx
 from app.config import BACKEND_API_BASE_URL
 
 _BATCH_CONTEXT_SCHEMA = "batch_validation_context"
+_CANDIDATE_CONTEXT_SCHEMA = "candidate_validation_context"
 _CAPACITY_RESULT_SCHEMA = "capacity_result"
 _STOCK_RESULT_SCHEMA = "stock_result"
 _COMPATIBILITY_RESULT_SCHEMA = "compatibility_result"
@@ -47,13 +48,58 @@ def fetch_batch_validation_context(batch_id: str) -> dict[str, Any]:
     return payload
 
 
+def fetch_candidate_validation_context(
+    warehouse_id: str,
+    package_ids: list[str],
+    vehicle_id: str,
+    max_weight_kg: float,
+    max_volume_m3: float,
+) -> dict[str, Any]:
+    """Resolve a proposed, unpersisted S3 candidate through the backend only."""
+    url = f"{BACKEND_API_BASE_URL.rstrip('/')}/api/dispatch/candidate-context"
+    payload = {
+        "warehouseId": warehouse_id,
+        "packageIds": package_ids,
+        "vehicleId": vehicle_id,
+        "maxWeightKg": max_weight_kg,
+        "maxVolumeM3": max_volume_m3,
+    }
+    try:
+        response = httpx.post(url, json=payload, timeout=_REQUEST_TIMEOUT_SECONDS)
+        response.raise_for_status()
+        context = response.json()
+    except httpx.HTTPError as exception:
+        raise WarehouseBackendError("S3 candidate validation context could not be retrieved") from exception
+    except (TypeError, ValueError) as exception:
+        raise WarehouseBackendError("S3 candidate validation context was not valid JSON") from exception
+
+    _require_schema(context, _CANDIDATE_CONTEXT_SCHEMA)
+    return context
+
+
 def capacity_calculator(batch_id: str, vehicle_id: str | None = None) -> dict[str, Any]:
     """Calculate package totals against backend-supplied explicit vehicle limits."""
     context = fetch_batch_validation_context(batch_id)
+    return _capacity_from_context(context, vehicle_id, "persisted dispatch batch")
+
+
+def candidate_capacity_calculator(
+    context: dict[str, Any],
+    vehicle_id: str,
+) -> dict[str, Any]:
+    """Calculate pre-batch capacity from backend-resolved candidate context."""
+    return _capacity_from_context(context, vehicle_id, "proposed candidate")
+
+
+def _capacity_from_context(
+    context: dict[str, Any],
+    vehicle_id: str | None,
+    context_name: str,
+) -> dict[str, Any]:
     if vehicle_id is not None and (
         not _is_non_empty_string(vehicle_id) or vehicle_id != context["vehicleId"]
     ):
-        raise WarehouseToolError("vehicle_id does not match the persisted dispatch batch")
+        raise WarehouseToolError(f"vehicle_id does not match the {context_name}")
 
     total_weight = sum((_decimal(package["weightKg"]) for package in context["packages"]), Decimal())
     total_volume = sum((_decimal(package["volumeM3"]) for package in context["packages"]), Decimal())
@@ -65,7 +111,7 @@ def capacity_calculator(batch_id: str, vehicle_id: str | None = None) -> dict[st
     )
 
     result = {
-        "batch_id": context["batchId"],
+        "batch_id": context.get("batchId", "candidate"),
         "vehicle_id": context["vehicleId"],
         "total_weight_kg": float(total_weight),
         "total_volume_m3": float(total_volume),
@@ -147,6 +193,39 @@ def warehouse_stock_query(
     return result
 
 
+def _stock_result(
+    batch_id: str,
+    warehouse_id: str,
+    expected_status: str,
+    package_results: list[dict[str, Any]],
+) -> dict[str, Any]:
+    result = {
+        "batch_id": batch_id,
+        "warehouse_id": warehouse_id,
+        "batch_warehouse_id": warehouse_id,
+        "expected_status": expected_status,
+        "packages": package_results,
+        "all_packages_present": all(package["exists"] for package in package_results),
+        "all_belong_to_expected_warehouse": all(
+            package["belongs_to_expected_warehouse"] for package in package_results
+        ),
+        "all_belong_to_batch": all(package["belongs_to_batch"] for package in package_results),
+        "all_in_expected_dispatch_state": all(
+            package["has_expected_dispatch_state"] for package in package_results
+        ),
+        "none_dispatched": all(not package["already_dispatched"] for package in package_results),
+    }
+    result["valid"] = all((
+        result["all_packages_present"],
+        result["all_belong_to_expected_warehouse"],
+        result["all_belong_to_batch"],
+        result["all_in_expected_dispatch_state"],
+        result["none_dispatched"],
+    ))
+    _require_schema(result, _STOCK_RESULT_SCHEMA)
+    return result
+
+
 def compatibility_rules(batch_id: str) -> dict[str, Any]:
     """Validate the persisted deterministic Phase 2 LoadSequence safety rule."""
     context = fetch_batch_validation_context(batch_id)
@@ -176,6 +255,64 @@ def compatibility_rules(batch_id: str) -> dict[str, Any]:
     return result
 
 
+def candidate_stock_query(context: dict[str, Any], warehouse_id: str) -> dict[str, Any]:
+    """Check proposed candidate membership and Available state without persistence."""
+    requested_package_ids = context["requestedPackageIds"]
+    packages_by_id = {package["packageId"]: package for package in context["packages"]}
+    package_results: list[dict[str, Any]] = []
+    for package_id in requested_package_ids:
+        package = packages_by_id.get(package_id)
+        exists = package is not None
+        package_results.append(
+            {
+                "package_id": package_id,
+                "exists": exists,
+                "belongs_to_expected_warehouse": exists and package["warehouseId"] == warehouse_id,
+                "belongs_to_batch": exists,
+                "has_expected_dispatch_state": exists and package["status"] == "Available",
+                "already_dispatched": exists and package["status"] == "Dispatched",
+            }
+        )
+    return _stock_result("candidate", warehouse_id, "Available", package_results)
+
+
+def candidate_compatibility_rules(context: dict[str, Any]) -> dict[str, Any]:
+    """Use the backend BatchingEngine's pure plan for pre-batch load safety."""
+    if context["planningResult"] != "PASS":
+        return {
+            "batch_id": "candidate",
+            "load_sequence_valid": False,
+            "fragile_not_under_heavy": False,
+            "valid": False,
+        }
+
+    packages_by_id = {package["packageId"]: package for package in context["packages"]}
+    ordered_packages = [
+        packages_by_id[item["packageId"]]
+        for item in sorted(context["plannedItems"], key=lambda item: item["loadSequence"])
+        if item["packageId"] in packages_by_id
+    ]
+    sequences = [item["loadSequence"] for item in sorted(context["plannedItems"], key=lambda item: item["loadSequence"])]
+    load_sequence_valid = (
+        len(ordered_packages) == len(context["requestedPackageIds"])
+        and sequences == list(range(1, len(sequences) + 1))
+    )
+    first_fragile_index = next(
+        (index for index, package in enumerate(ordered_packages) if package["isFragile"]),
+        None,
+    )
+    fragile_not_under_heavy = load_sequence_valid and (
+        first_fragile_index is None
+        or all(package["isFragile"] for package in ordered_packages[first_fragile_index:])
+    )
+    return {
+        "batch_id": "candidate",
+        "load_sequence_valid": load_sequence_valid,
+        "fragile_not_under_heavy": fragile_not_under_heavy,
+        "valid": fragile_not_under_heavy,
+    }
+
+
 def schema_validator(payload: dict[str, Any], schema_name: str) -> bool:
     """Strictly validate supported tool boundary payloads without coercion."""
     if not isinstance(payload, dict):
@@ -183,6 +320,8 @@ def schema_validator(payload: dict[str, Any], schema_name: str) -> bool:
 
     if schema_name == _BATCH_CONTEXT_SCHEMA:
         return _is_batch_context(payload)
+    if schema_name == _CANDIDATE_CONTEXT_SCHEMA:
+        return _is_candidate_context(payload)
     if schema_name == _CAPACITY_RESULT_SCHEMA:
         return _has_keys_of_types(
             payload,
@@ -270,6 +409,7 @@ def _is_batch_context(payload: dict[str, Any]) -> bool:
             package,
             {
                 "packageId": _is_non_empty_string,
+                "orderId": _is_non_empty_string,
                 "warehouseId": _is_non_empty_string,
                 "trackingCode": _is_non_empty_string,
                 "status": _is_non_empty_string,
@@ -284,6 +424,55 @@ def _is_batch_context(payload: dict[str, Any]) -> bool:
             return False
         package_ids.add(package["packageId"])
     return bool(package_ids)
+
+
+def _is_candidate_context(payload: dict[str, Any]) -> bool:
+    if not _has_keys_of_types(
+        payload,
+        {
+            "warehouseId": _is_non_empty_string,
+            "vehicleId": _is_non_empty_string,
+            "maxWeightKg": _is_positive_number,
+            "maxVolumeM3": _is_positive_number,
+            "totalWeightKg": _is_non_negative_number,
+            "totalVolumeM3": _is_non_negative_number,
+            "requestedPackageIds": _is_list,
+            "packages": _is_list,
+            "planningResult": _is_non_empty_string,
+            "planningIssues": _is_list,
+            "plannedItems": _is_list,
+        },
+    ) or payload["planningResult"] not in {"PASS", "REVISE"}:
+        return False
+
+    if not payload["requestedPackageIds"] or any(
+        not _is_non_empty_string(package_id) for package_id in payload["requestedPackageIds"]
+    ) or len(set(payload["requestedPackageIds"])) != len(payload["requestedPackageIds"]):
+        return False
+
+    package_ids: set[str] = set()
+    for package in payload["packages"]:
+        if not _has_keys_of_types(
+            package,
+            {
+                "packageId": _is_non_empty_string,
+                "orderId": _is_non_empty_string,
+                "warehouseId": _is_non_empty_string,
+                "storageZoneCode": _is_non_empty_string,
+                "trackingCode": _is_non_empty_string,
+                "status": _is_non_empty_string,
+                "weightKg": _is_positive_number,
+                "volumeM3": _is_positive_number,
+                "isFragile": _is_bool,
+            },
+        ) or package["packageId"] in package_ids:
+            return False
+        package_ids.add(package["packageId"])
+
+    return all(
+        _has_keys_of_types(item, {"packageId": _is_non_empty_string, "loadSequence": _is_positive_integer})
+        for item in payload["plannedItems"]
+    )
 
 
 def _has_keys_of_types(payload: Any, validators: dict[str, Any]) -> bool:

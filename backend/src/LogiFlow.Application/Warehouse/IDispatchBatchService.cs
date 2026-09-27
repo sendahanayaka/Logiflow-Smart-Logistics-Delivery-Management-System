@@ -21,6 +21,10 @@ public interface IDispatchBatchService
         Guid batchId,
         CancellationToken cancellationToken = default);
 
+    Task<DispatchCandidateValidationContextResponse> GetCandidateValidationContextAsync(
+        DispatchCandidateValidationContextCommand command,
+        CancellationToken cancellationToken = default);
+
     Task<WarehouseThroughputResponse> GetThroughputAsync(
         Guid warehouseId,
         WarehouseThroughputQuery query,

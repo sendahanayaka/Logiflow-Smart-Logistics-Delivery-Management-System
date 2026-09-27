@@ -58,6 +58,11 @@ public sealed record CreateDispatchBatchCommand(
 public sealed record ReplaceDispatchBatchItemsCommand(
     IReadOnlyCollection<Guid> PackageIds);
 
+public sealed record DispatchCandidateValidationContextCommand(
+    Guid WarehouseId,
+    VehicleCapacityContext VehicleCapacity,
+    IReadOnlyCollection<Guid> PackageIds);
+
 public sealed record WarehouseThroughputQuery(
     DateTime FromUtc,
     DateTime ToUtc);
@@ -104,6 +109,7 @@ public sealed record DispatchBatchValidationResponse(
 
 public sealed record DispatchBatchValidationPackageContextResponse(
     Guid PackageId,
+    Guid OrderId,
     Guid WarehouseId,
     string TrackingCode,
     string Status,
@@ -122,6 +128,34 @@ public sealed record DispatchBatchValidationContextResponse(
     decimal TotalWeightKg,
     decimal TotalVolumeM3,
     IReadOnlyCollection<DispatchBatchValidationPackageContextResponse> Packages);
+
+public sealed record DispatchCandidateValidationPackageContextResponse(
+    Guid PackageId,
+    Guid OrderId,
+    Guid WarehouseId,
+    string StorageZoneCode,
+    string TrackingCode,
+    string Status,
+    decimal WeightKg,
+    decimal VolumeM3,
+    bool IsFragile);
+
+public sealed record DispatchCandidateLoadPlanItemResponse(
+    Guid PackageId,
+    int LoadSequence);
+
+public sealed record DispatchCandidateValidationContextResponse(
+    Guid WarehouseId,
+    string VehicleId,
+    decimal MaxWeightKg,
+    decimal MaxVolumeM3,
+    decimal TotalWeightKg,
+    decimal TotalVolumeM3,
+    IReadOnlyCollection<Guid> RequestedPackageIds,
+    IReadOnlyCollection<DispatchCandidateValidationPackageContextResponse> Packages,
+    string PlanningResult,
+    IReadOnlyCollection<string> PlanningIssues,
+    IReadOnlyCollection<DispatchCandidateLoadPlanItemResponse> PlannedItems);
 
 public sealed record WarehouseThroughputResponse(
     Guid WarehouseId,
