@@ -154,7 +154,8 @@ public class AgentWorkflowService : IAgentWorkflowService
             ToIso(command.DeliveryWindowStart),
             command.CustomerNotes,
             orderIds,
-            stops);
+            stops,
+            command.DispatchBatchId);
     }
 
     private static void AttachRouteStops(
