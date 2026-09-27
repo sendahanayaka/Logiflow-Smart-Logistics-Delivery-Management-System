@@ -93,7 +93,7 @@ def mock_s3_validation_tools(monkeypatch):
         "maxVolumeM3": 12,
         "totalWeightKg": 100,
         "totalVolumeM3": 1,
-        "packages": [],
+        "packages": [{"orderId": order_id} for order_id in GOLDEN["order_ids"]],
     }
     capacity = {
         "batch_id": "batch-test-001",

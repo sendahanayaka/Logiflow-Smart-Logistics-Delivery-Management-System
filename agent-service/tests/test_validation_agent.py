@@ -34,7 +34,7 @@ def _context() -> dict:
         "maxVolumeM3": 12,
         "totalWeightKg": 700,
         "totalVolumeM3": 7,
-        "packages": [],
+        "packages": [{"orderId": "order-001"}],
     }
 
 
@@ -103,6 +103,7 @@ def test_run_returns_pass_only_when_every_deterministic_rule_passes(
     assert output.explanation == (
         "All deterministic S3 load, stock, capacity, and compatibility checks passed."
     )
+    assert output.explanation_source == "deterministic_fallback"
 
 
 def test_run_returns_fail_for_complete_context_with_hard_capacity_violation(
@@ -123,7 +124,7 @@ def test_run_returns_fail_for_complete_context_with_hard_capacity_violation(
     ).passed
 
 
-def test_run_returns_revise_for_missing_persisted_batch_identifier(
+def test_run_returns_revise_when_a_pre_batch_candidate_has_no_candidate_context(
     monkeypatch: pytest.MonkeyPatch,
 ):
     _patch_passing_tools(monkeypatch)
@@ -134,7 +135,7 @@ def test_run_returns_revise_for_missing_persisted_batch_identifier(
     assert output.approved_batch is None
     assert len(output.rule_results) == 1
     assert output.rule_results[0].rule == "input_complete"
-    assert "batch_id" in output.rejection_reasons[0]
+    assert "candidate" in output.rejection_reasons[0]
 
 
 def test_graph_validation_router_only_routes_deterministic_pass():

@@ -94,6 +94,44 @@ public sealed class DispatchBatchServiceTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetCandidateValidationContextAsync_ReportsUnsafeProposalWithoutPersistingOrReserving()
+    {
+        var (warehouse, zone) = await CreateWarehouseAndZoneAsync("A1");
+        var first = await AddPackageAsync(warehouse.Id, zone.Id, "PKG-CANDIDATE-1", 400, 2);
+        var second = await AddPackageAsync(warehouse.Id, zone.Id, "PKG-CANDIDATE-2", 300, 2);
+
+        var context = await _service.GetCandidateValidationContextAsync(
+            new DispatchCandidateValidationContextCommand(
+                warehouse.Id,
+                new VehicleCapacityContext(VehicleId, 500, MaxVolumeM3),
+                new[] { first.Id, second.Id }));
+
+        Assert.Equal("REVISE", context.PlanningResult);
+        Assert.Contains(context.PlanningIssues, issue => issue.Contains("weight capacity", StringComparison.OrdinalIgnoreCase));
+        Assert.All(await _context.Packages.ToListAsync(), package => Assert.Equal(PackageStatus.Available, package.Status));
+        Assert.Empty(await _context.DispatchBatches.ToListAsync());
+    }
+
+    [Fact]
+    public async Task GetCandidateValidationContextAsync_ProducesSafePlanWithoutPersistingTheCandidate()
+    {
+        var (warehouse, zone) = await CreateWarehouseAndZoneAsync("A1");
+        var heavy = await AddPackageAsync(warehouse.Id, zone.Id, "PKG-CANDIDATE-HEAVY", 700, 2);
+        var fragile = await AddPackageAsync(warehouse.Id, zone.Id, "PKG-CANDIDATE-FRAGILE", 100, 1, isFragile: true);
+
+        var context = await _service.GetCandidateValidationContextAsync(
+            new DispatchCandidateValidationContextCommand(
+                warehouse.Id,
+                new VehicleCapacityContext(VehicleId, MaxWeightKg, MaxVolumeM3),
+                new[] { heavy.Id, fragile.Id }));
+
+        Assert.Equal("PASS", context.PlanningResult);
+        Assert.Equal(new[] { heavy.Id, fragile.Id }, context.PlannedItems.OrderBy(item => item.LoadSequence).Select(item => item.PackageId));
+        Assert.All(await _context.Packages.ToListAsync(), package => Assert.Equal(PackageStatus.Available, package.Status));
+        Assert.Empty(await _context.DispatchBatches.ToListAsync());
+    }
+
+    [Fact]
     public async Task CreateBatchAsync_ReturnsReviseForUnavailablePackage()
     {
         var (warehouse, zone) = await CreateWarehouseAndZoneAsync("A1");
@@ -367,6 +405,41 @@ public sealed class DispatchBatchServiceTests : IAsyncLifetime
             (await verificationContext.Packages.SingleAsync(item => item.Id == package.Id)).Status);
         Assert.Equal(0, await verificationContext.DispatchBatches.CountAsync());
         Assert.Equal(0, await verificationContext.DispatchBatchItems.CountAsync());
+    }
+
+    [Fact]
+    public async Task ReplaceItemsAsync_ReplacesReservedItemsAndReleasesRemovedPackage()
+    {
+        var (warehouse, zone) = await CreateWarehouseAndZoneAsync("A1");
+        var retained = await AddPackageAsync(warehouse.Id, zone.Id, "PKG-RETAINED", 500, 5);
+        var removed = await AddPackageAsync(warehouse.Id, zone.Id, "PKG-REMOVED", 200, 2);
+        var added = await AddPackageAsync(
+            warehouse.Id,
+            zone.Id,
+            "PKG-ADDED-FRAGILE",
+            100,
+            1,
+            isFragile: true);
+        var creation = await _service.CreateBatchAsync(
+            CreateCommand(warehouse.Id, new[] { retained.Id, removed.Id }));
+
+        var replacement = await _service.ReplaceItemsAsync(
+            creation.Batch!.Id,
+            new ReplaceDispatchBatchItemsCommand(new[] { retained.Id, added.Id }));
+
+        Assert.Equal("PASS", replacement.Result);
+        Assert.Equal(new[] { retained.Id, added.Id }, replacement.Batch!.Items
+            .OrderBy(item => item.LoadSequence)
+            .Select(item => item.PackageId));
+        Assert.Equal(
+            PackageStatus.Available,
+            (await _context.Packages.SingleAsync(item => item.Id == removed.Id)).Status);
+        Assert.Equal(
+            PackageStatus.Reserved,
+            (await _context.Packages.SingleAsync(item => item.Id == retained.Id)).Status);
+        Assert.Equal(
+            PackageStatus.Reserved,
+            (await _context.Packages.SingleAsync(item => item.Id == added.Id)).Status);
     }
 
     [Fact]

@@ -11,6 +11,7 @@ def _context(*, packages: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     package_data = packages or [
         {
             "packageId": "pkg-001",
+            "orderId": "order-001",
             "warehouseId": "warehouse-001",
             "trackingCode": "PKG-001",
             "status": "Reserved",
@@ -21,6 +22,7 @@ def _context(*, packages: list[dict[str, Any]] | None = None) -> dict[str, Any]:
         },
         {
             "packageId": "pkg-002",
+            "orderId": "order-002",
             "warehouseId": "warehouse-001",
             "trackingCode": "PKG-002",
             "status": "Reserved",
@@ -78,7 +80,7 @@ def test_capacity_calculator_uses_backend_context_and_explicit_capacity(
     assert result["total_weight_kg"] == 700
     assert result["total_volume_m3"] == 7
     assert result["backend_totals_match"] is True
-    assert urls == ["http://localhost:5080/api/dispatch/batches/batch-001/context"]
+    assert urls == ["http://localhost:5000/api/dispatch/batches/batch-001/context"]
 
 
 def test_warehouse_stock_query_detects_missing_or_dispatched_packages(
@@ -107,6 +109,7 @@ def test_compatibility_rules_rejects_fragile_below_later_non_fragile_package(
         packages=[
             {
                 "packageId": "pkg-fragile",
+                "orderId": "order-fragile",
                 "warehouseId": "warehouse-001",
                 "trackingCode": "PKG-FRAGILE",
                 "status": "Reserved",
@@ -117,6 +120,7 @@ def test_compatibility_rules_rejects_fragile_below_later_non_fragile_package(
             },
             {
                 "packageId": "pkg-heavy",
+                "orderId": "order-heavy",
                 "warehouseId": "warehouse-001",
                 "trackingCode": "PKG-HEAVY",
                 "status": "Reserved",
