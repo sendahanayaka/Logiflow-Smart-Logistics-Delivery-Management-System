@@ -323,6 +323,7 @@ public sealed class WarehouseServiceTests : IAsyncLifetime
         public DbSet<PackageEntity> Packages => _context.Packages;
         public DbSet<LogiFlow.Domain.Entities.User> Users => _context.Users;
         public DbSet<LogiFlow.Domain.Entities.Role> Roles => _context.Roles;
+        public DbSet<DeliveryOrder> DeliveryOrders => _context.DeliveryOrders;
 
         // [S4] delivery-execution DbSets added to IAppDbContext; delegate to the inner context.
         public DbSet<LogiFlow.Domain.Entities.AgentWorkflow> AgentWorkflows => _context.AgentWorkflows;
