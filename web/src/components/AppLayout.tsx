@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
 import { AgenticAIDrawer } from '../features/fleet/components/AgenticAIDrawer';
 
 export const AppLayout: React.FC = () => {
@@ -7,7 +6,6 @@ export const AppLayout: React.FC = () => {
 
   return (
     <>
-      <Outlet />
 
       {/* Floating Agentic AI Trigger Button in Bottom-Right Corner - Global across all pages */}
       <button

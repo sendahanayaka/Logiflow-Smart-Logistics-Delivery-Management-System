@@ -22,6 +22,52 @@ from app.state import initial_state
 GOLDEN = json.loads((Path(__file__).parent / "golden_cases" / "kasun_case.json").read_text())
 
 
+@pytest.fixture(autouse=True)
+def mock_fleet_api(monkeypatch):
+    MOCK_DRIVERS = [
+        {
+            "id": "drv-001",
+            "fullName": "Kasun Perera",
+            "licenseNumber": "B9876543",
+            "licenseExpiryDate": "2030-01-01T00:00:00Z",
+            "phoneNumber": "0712345678",
+            "status": 1,
+        }
+    ]
+    MOCK_VEHICLES = [
+        {
+            "id": "veh-001",
+            "registrationNumber": "WP-ABC-1234",
+            "vehicleType": "Van",
+            "make": "Toyota",
+            "model": "Hiace",
+            "capacity": 1000.0,
+            "status": 0,
+        }
+    ]
+
+    def mock_get(path: str):
+        if path == "/api/Vehicles":
+            return MOCK_VEHICLES
+        elif path == "/api/Drivers":
+            return MOCK_DRIVERS
+        elif path in ("/api/Assignments/active", "/api/Assignments/history"):
+            return []
+        elif path.startswith("/api/Drivers/"):
+            return MOCK_DRIVERS[0]
+        elif path.startswith("/api/Vehicles/"):
+            return MOCK_VEHICLES[0]
+        return []
+
+    def mock_post(path: str, payload: dict):
+        if path == "/api/Assignments":
+            return {"id": "assign-mock-123", **payload}
+        return {}
+
+    monkeypatch.setattr("app.tools.fleet_tools._get", mock_get)
+    monkeypatch.setattr("app.tools.fleet_tools._post", mock_post)
+
+
 def _payload(**overrides):
     data = dict(GOLDEN)
     data.update(overrides)

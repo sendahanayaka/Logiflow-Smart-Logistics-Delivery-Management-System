@@ -78,9 +78,10 @@ builder.Services.AddHttpClient<IAgentServiceClient, AgentServiceClient>(client =
 });
 
 // Configure JWT Authentication
-var jwtSecret = builder.Configuration["Jwt:Key"]
-    ?? Environment.GetEnvironmentVariable("JWT_SECRET")
-    ?? "LogiFlowSuperSecretKeyForDevelopment1234567890!";
+var jwtKeyFromConfig = builder.Configuration["Jwt:Key"];
+var jwtSecret = !string.IsNullOrWhiteSpace(jwtKeyFromConfig)
+    ? jwtKeyFromConfig
+    : (Environment.GetEnvironmentVariable("JWT_SECRET") ?? "LogiFlowSuperSecretKeyForDevelopment1234567890!");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
