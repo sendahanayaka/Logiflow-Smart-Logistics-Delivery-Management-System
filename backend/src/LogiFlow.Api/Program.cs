@@ -3,8 +3,11 @@ using LogiFlow.Api.Controllers;
 using LogiFlow.Api.Middleware;
 using LogiFlow.Application.Auth;
 using LogiFlow.Application.Common.Interfaces;
+using LogiFlow.Application.Delivery;
 using LogiFlow.Application.Fleet;
 using LogiFlow.Application.Warehouse;
+using LogiFlow.Application.Workflows;
+using LogiFlow.Infrastructure.Agents;
 using LogiFlow.Infrastructure.Auth;
 using LogiFlow.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -50,6 +53,24 @@ builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+// [S4] Delivery execution: workflow + approval + shipment services, and the typed
+// HttpClient to the internal Python agent.
+builder.Services.AddScoped<IAgentWorkflowService, AgentWorkflowService>();
+builder.Services.AddScoped<IApprovalService, ApprovalService>();
+builder.Services.AddScoped<IShipmentService, ShipmentService>();
+
+var agentBaseUrl = builder.Configuration["AgentService:BaseUrl"] ?? "http://localhost:8000";
+var agentApiKey = builder.Configuration["AgentService:ApiKey"];
+builder.Services.AddHttpClient<IAgentServiceClient, AgentServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(agentBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+    if (!string.IsNullOrWhiteSpace(agentApiKey))
+    {
+        client.DefaultRequestHeaders.Add("X-Internal-Api-Key", agentApiKey);
+    }
+});
 
 // Configure JWT Authentication
 var jwtKeyFromConfig = builder.Configuration["Jwt:Key"];
