@@ -31,6 +31,30 @@
   --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }

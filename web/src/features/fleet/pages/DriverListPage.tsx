@@ -4,6 +4,7 @@ import { useGetDriversQuery, useDeleteDriverMutation } from '../api/fleetApi';
 import { DriverTable, SortField, SortDirection } from '../components/DriverTable';
 import { Driver, DriverStatus } from '../types';
 import { DeleteConfirmModal } from '../components/DeleteConfirmModal';
+import { FleetHeader } from '../components/FleetHeader';
 
 export const DriverListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export const DriverListPage: React.FC = () => {
   // Search & Filter State
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+
 
   // Sorting State
   const [sortField, setSortField] = useState<SortField>('licenseNumber');
@@ -99,15 +101,15 @@ export const DriverListPage: React.FC = () => {
 
   // Action Handlers
   const handleAddDriver = () => {
-    navigate('/drivers/new');
+    navigate('/fleet/drivers/new');
   };
 
   const handleViewDriver = (driver: Driver) => {
-    navigate(`/drivers/${driver.id}`);
+    navigate(`/fleet/drivers/${driver.id}`);
   };
 
   const handleEditDriver = (driver: Driver) => {
-    navigate(`/drivers/${driver.id}/edit`);
+    navigate(`/fleet/drivers/${driver.id}/edit`);
   };
 
   const handleDeleteDriver = (driver: Driver) => {
@@ -137,27 +139,22 @@ export const DriverListPage: React.FC = () => {
 
   return (
     <section className="users-page" aria-labelledby="driver-management-title">
-      <header className="users-page__header">
-        <div className="page-heading">
-          <span className="eyebrow">Fleet Operations</span>
-          <h1 id="driver-management-title">Driver Management</h1>
-          <p>Monitor driver availability, manage licenses, and oversee active duty shifts.</p>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'nowrap', flexShrink: 0 }}>
-          <button type="button" className="button button--secondary" onClick={() => navigate('/vehicles')}>
-            Vehicles List
-          </button>
-          <button type="button" className="button button--secondary" onClick={() => navigate('/assignments')}>
-            Assignments
-          </button>
-          <button type="button" className="button button--secondary" onClick={() => refetch()}>
-            Refresh
-          </button>
-          <button type="button" className="button button--primary" onClick={handleAddDriver}>
-            + Add New Driver
-          </button>
-        </div>
-      </header>
+      <FleetHeader
+        title="Driver Management"
+        subtitle="Manage drivers, availability and licensing information."
+        breadcrumbs={[{ label: 'Drivers' }]}
+        activeTab="drivers"
+        actionButton={
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button type="button" className="button button--secondary" onClick={() => refetch()}>
+              Refresh
+            </button>
+            <button type="button" className="button button--primary" onClick={handleAddDriver}>
+              + Add Driver
+            </button>
+          </div>
+        }
+      />
 
       {/* Top Stat Metric Cards */}
       <div className="stats-grid">
@@ -299,7 +296,9 @@ export const DriverListPage: React.FC = () => {
                 onViewDriver={handleViewDriver}
                 onEditDriver={handleEditDriver}
                 onDeleteDriver={handleDeleteDriver}
+                onScheduleDriver={(driver) => navigate(`/schedules?driverId=${driver.id}`)}
               />
+
 
               {/* Pagination Controls */}
               {totalItems > 0 && (
@@ -350,5 +349,6 @@ export const DriverListPage: React.FC = () => {
     </section>
   );
 };
+
 
 export default DriverListPage;

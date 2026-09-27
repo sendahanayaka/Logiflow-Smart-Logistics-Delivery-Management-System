@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetDriverByIdQuery } from '../api/fleetApi';
 import { DriverForm } from '../components/DriverForm';
+import { FleetHeader } from '../components/FleetHeader';
 
 export const DriverEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -35,7 +36,7 @@ export const DriverEditPage: React.FC = () => {
             type="button"
             className="button button--secondary"
             style={{ marginTop: '0.75rem' }}
-            onClick={() => navigate('/drivers')}
+            onClick={() => navigate('/fleet/drivers')}
           >
             Back to Driver List
           </button>
@@ -46,22 +47,22 @@ export const DriverEditPage: React.FC = () => {
 
   return (
     <section className="users-page">
-      <a
-        href={`/drivers/${id}`}
-        className="back-link"
-        onClick={(e) => {
-          e.preventDefault();
-          navigate(`/drivers/${id}`);
-        }}
-      >
-        &larr; Back to Driver Details
-      </a>
+      <FleetHeader
+        title={`Edit Driver: ${driver.fullName}`}
+        subtitle={`Update driver information for License: ${driver.licenseNumber}`}
+        breadcrumbs={[
+          { label: 'Drivers', path: '/fleet/drivers' },
+          { label: driver.fullName, path: `/fleet/drivers/${id}` },
+          { label: 'Edit' },
+        ]}
+        activeTab="drivers"
+      />
       <DriverForm
         isEditMode={true}
         driverId={id}
         initialValues={driver}
-        onCancel={() => navigate(`/drivers/${id}`)}
-        onSuccess={() => navigate(`/drivers/${id}`)}
+        onCancel={() => navigate(`/fleet/drivers/${id}`)}
+        onSuccess={() => navigate(`/fleet/drivers/${id}`)}
       />
     </section>
   );

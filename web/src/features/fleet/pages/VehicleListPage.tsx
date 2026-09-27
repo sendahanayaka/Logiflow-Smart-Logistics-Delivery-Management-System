@@ -4,6 +4,7 @@ import { useGetVehiclesQuery, useDeleteVehicleMutation } from '../api/fleetApi';
 import { VehicleTable, VehicleSortField, VehicleSortDirection } from '../components/VehicleTable';
 import { Vehicle, VehicleStatus } from '../types';
 import { DeleteConfirmModal } from '../components/DeleteConfirmModal';
+import { FleetHeader } from '../components/FleetHeader';
 
 export const VehicleListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -99,15 +100,15 @@ export const VehicleListPage: React.FC = () => {
 
   // Action Handlers
   const handleAddVehicle = () => {
-    navigate('/vehicles/new');
+    navigate('/fleet/vehicles/new');
   };
 
   const handleViewVehicle = (vehicle: Vehicle) => {
-    navigate(`/vehicles/${vehicle.id}`);
+    navigate(`/fleet/vehicles/${vehicle.id}`);
   };
 
   const handleEditVehicle = (vehicle: Vehicle) => {
-    navigate(`/vehicles/${vehicle.id}/edit`);
+    navigate(`/fleet/vehicles/${vehicle.id}/edit`);
   };
 
   const handleDeleteVehicle = (vehicle: Vehicle) => {
@@ -137,27 +138,22 @@ export const VehicleListPage: React.FC = () => {
 
   return (
     <section className="users-page" aria-labelledby="vehicle-management-title">
-      <header className="users-page__header">
-        <div className="page-heading">
-          <span className="eyebrow">Fleet Operations</span>
-          <h1 id="vehicle-management-title">Vehicle Management</h1>
-          <p>Oversee fleet assets, capacity specifications, maintenance schedules, and active transit.</p>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'nowrap', flexShrink: 0 }}>
-          <button type="button" className="button button--secondary" onClick={() => navigate('/drivers')}>
-            Drivers List
-          </button>
-          <button type="button" className="button button--secondary" onClick={() => navigate('/assignments')}>
-            Assignments
-          </button>
-          <button type="button" className="button button--secondary" onClick={() => refetch()}>
-            Refresh
-          </button>
-          <button type="button" className="button button--primary" onClick={handleAddVehicle}>
-            + Register Vehicle
-          </button>
-        </div>
-      </header>
+      <FleetHeader
+        title="Vehicle Management"
+        subtitle="Manage fleet vehicles, capacity and operational status."
+        breadcrumbs={[{ label: 'Vehicles' }]}
+        activeTab="vehicles"
+        actionButton={
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button type="button" className="button button--secondary" onClick={() => refetch()}>
+              Refresh
+            </button>
+            <button type="button" className="button button--primary" onClick={handleAddVehicle}>
+              + Add Vehicle
+            </button>
+          </div>
+        }
+      />
 
       {/* Top Stat Metric Cards */}
       <div className="stats-grid">
@@ -301,6 +297,7 @@ export const VehicleListPage: React.FC = () => {
                 onViewVehicle={handleViewVehicle}
                 onEditVehicle={handleEditVehicle}
                 onDeleteVehicle={handleDeleteVehicle}
+                onMaintenanceVehicle={() => navigate('/maintenance')}
               />
 
               {/* Pagination Controls */}

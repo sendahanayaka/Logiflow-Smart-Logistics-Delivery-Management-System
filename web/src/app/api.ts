@@ -5,6 +5,7 @@ export const baseApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_API_BASE_URL || '/api',
   }),
-  tagTypes: ['Driver', 'Vehicle', 'Assignment'],
+  tagTypes: ['Driver', 'Vehicle', 'Assignment', 'DutySchedule', 'MaintenanceRecord'],
+
   endpoints: () => ({}),
 });

@@ -9,6 +9,14 @@ import {
   CreateAssignmentRequest,
   EndAssignmentRequest,
   AssignmentResponse,
+  DutyScheduleResponse,
+  CreateDutyScheduleRequest,
+  UpdateDutyScheduleRequest,
+  DriverAvailabilityResponse,
+  MaintenanceRecordResponse,
+  CreateMaintenanceRecordRequest,
+  UpdateMaintenanceRecordRequest,
+  VehicleMaintenanceStatusResponse,
 } from '../types';
 
 export const fleetApi = baseApi.injectEndpoints({
@@ -139,6 +147,134 @@ export const fleetApi = baseApi.injectEndpoints({
             ]
           : [{ type: 'Assignment', id: 'LIST' }],
     }),
+
+    // Duty Schedule Endpoints
+    getDutySchedules: builder.query<DutyScheduleResponse[], void>({
+      query: () => '/DutySchedules',
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: 'DutySchedule' as const, id })),
+              { type: 'DutySchedule', id: 'LIST' },
+            ]
+          : [{ type: 'DutySchedule', id: 'LIST' }],
+    }),
+    getDutyScheduleById: builder.query<DutyScheduleResponse, string>({
+      query: (id) => `/DutySchedules/${id}`,
+      providesTags: (_result, _error, id) => [{ type: 'DutySchedule', id }],
+    }),
+    getDutySchedulesByDriver: builder.query<DutyScheduleResponse[], string>({
+      query: (driverId) => `/DutySchedules/driver/${driverId}`,
+      providesTags: (result, _error, driverId) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: 'DutySchedule' as const, id })),
+              { type: 'DutySchedule', id: `DRIVER_${driverId}` },
+              { type: 'DutySchedule', id: 'LIST' },
+            ]
+          : [
+              { type: 'DutySchedule', id: `DRIVER_${driverId}` },
+              { type: 'DutySchedule', id: 'LIST' },
+            ],
+    }),
+    createDutySchedule: builder.mutation<DutyScheduleResponse, CreateDutyScheduleRequest>({
+      query: (body) => ({
+        url: '/DutySchedules',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [{ type: 'DutySchedule', id: 'LIST' }],
+    }),
+    updateDutySchedule: builder.mutation<DutyScheduleResponse, { id: string; data: UpdateDutyScheduleRequest }>({
+      query: ({ id, data }) => ({
+        url: `/DutySchedules/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'DutySchedule', id },
+        { type: 'DutySchedule', id: 'LIST' },
+      ],
+    }),
+    deleteDutySchedule: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/DutySchedules/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: [{ type: 'DutySchedule', id: 'LIST' }],
+    }),
+    checkDriverAvailability: builder.query<DriverAvailabilityResponse, { driverId: string; startTime: string; endTime: string }>({
+      query: ({ driverId, startTime, endTime }) =>
+        `/DutySchedules/driver/${driverId}/availability?startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}`,
+      providesTags: (_result, _error, { driverId }) => [{ type: 'DutySchedule', id: `AVAILABILITY_${driverId}` }],
+    }),
+
+    // Maintenance Record Endpoints
+    getMaintenanceRecords: builder.query<MaintenanceRecordResponse[], void>({
+      query: () => '/MaintenanceRecords',
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: 'MaintenanceRecord' as const, id })),
+              { type: 'MaintenanceRecord', id: 'LIST' },
+            ]
+          : [{ type: 'MaintenanceRecord', id: 'LIST' }],
+    }),
+    getMaintenanceRecordById: builder.query<MaintenanceRecordResponse, string>({
+      query: (id) => `/MaintenanceRecords/${id}`,
+      providesTags: (_result, _error, id) => [{ type: 'MaintenanceRecord', id }],
+    }),
+    getMaintenanceRecordsByVehicle: builder.query<MaintenanceRecordResponse[], string>({
+      query: (vehicleId) => `/MaintenanceRecords/vehicle/${vehicleId}`,
+      providesTags: (result, _error, vehicleId) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: 'MaintenanceRecord' as const, id })),
+              { type: 'MaintenanceRecord', id: `VEHICLE_${vehicleId}` },
+              { type: 'MaintenanceRecord', id: 'LIST' },
+            ]
+          : [
+              { type: 'MaintenanceRecord', id: `VEHICLE_${vehicleId}` },
+              { type: 'MaintenanceRecord', id: 'LIST' },
+            ],
+    }),
+    createMaintenanceRecord: builder.mutation<MaintenanceRecordResponse, CreateMaintenanceRecordRequest>({
+      query: (body) => ({
+        url: '/MaintenanceRecords',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [
+        { type: 'MaintenanceRecord', id: 'LIST' },
+        { type: 'Vehicle', id: 'LIST' },
+      ],
+    }),
+    updateMaintenanceRecord: builder.mutation<MaintenanceRecordResponse, { id: string; data: UpdateMaintenanceRecordRequest }>({
+      query: ({ id, data }) => ({
+        url: `/MaintenanceRecords/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'MaintenanceRecord', id },
+        { type: 'MaintenanceRecord', id: 'LIST' },
+        { type: 'Vehicle', id: 'LIST' },
+      ],
+    }),
+    deleteMaintenanceRecord: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/MaintenanceRecords/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: [
+        { type: 'MaintenanceRecord', id: 'LIST' },
+        { type: 'Vehicle', id: 'LIST' },
+      ],
+    }),
+    getVehicleMaintenanceStatus: builder.query<VehicleMaintenanceStatusResponse, string>({
+      query: (vehicleId) => `/MaintenanceRecords/vehicle/${vehicleId}/status`,
+      providesTags: (_result, _error, vehicleId) => [{ type: 'MaintenanceRecord', id: `STATUS_${vehicleId}` }],
+    }),
   }),
 });
 
@@ -157,4 +293,21 @@ export const {
   useEndAssignmentMutation,
   useGetActiveAssignmentsQuery,
   useGetAssignmentHistoryQuery,
+  useGetDutySchedulesQuery,
+  useGetDutyScheduleByIdQuery,
+  useGetDutySchedulesByDriverQuery,
+  useCreateDutyScheduleMutation,
+  useUpdateDutyScheduleMutation,
+  useDeleteDutyScheduleMutation,
+  useLazyCheckDriverAvailabilityQuery,
+  useGetMaintenanceRecordsQuery,
+  useGetMaintenanceRecordByIdQuery,
+  useGetMaintenanceRecordsByVehicleQuery,
+  useCreateMaintenanceRecordMutation,
+  useUpdateMaintenanceRecordMutation,
+  useDeleteMaintenanceRecordMutation,
+  useGetVehicleMaintenanceStatusQuery,
+  useLazyGetVehicleMaintenanceStatusQuery,
 } = fleetApi;
+
+

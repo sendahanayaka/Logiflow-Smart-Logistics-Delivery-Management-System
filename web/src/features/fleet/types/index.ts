@@ -97,3 +97,97 @@ export interface AssignmentResponse {
   isActive: boolean;
   notes?: string | null;
 }
+
+export enum DutyScheduleStatus {
+  Scheduled = 0,
+  Active = 1,
+  Completed = 2,
+  Cancelled = 3,
+}
+
+export interface DutyScheduleResponse {
+  id: string;
+  driverId: string;
+  driverName: string;
+  startTime: string;
+  endTime: string;
+  status: DutyScheduleStatus;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface CreateDutyScheduleRequest {
+  driverId: string;
+  startTime: string;
+  endTime: string;
+  status?: DutyScheduleStatus;
+  notes?: string | null;
+}
+
+export interface UpdateDutyScheduleRequest {
+  startTime: string;
+  endTime: string;
+  status: DutyScheduleStatus;
+  notes?: string | null;
+}
+
+export interface DriverAvailabilityResponse {
+  driverId: string;
+  driverName: string;
+  available: boolean;
+  reason: string;
+  requestedStartTime: string;
+  requestedEndTime: string;
+  conflictingScheduleId?: string | null;
+}
+
+export enum MaintenanceStatus {
+  Scheduled = 0,
+  InProgress = 1,
+  Completed = 2,
+  Cancelled = 3,
+}
+
+export interface MaintenanceRecordResponse {
+  id: string;
+  vehicleId: string;
+  vehicleRegistrationNumber: string;
+  maintenanceDate: string;
+  maintenanceType: string;
+  description?: string | null;
+  cost: number;
+  nextMaintenanceDate?: string | null;
+  status: MaintenanceStatus;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface CreateMaintenanceRecordRequest {
+  vehicleId: string;
+  maintenanceDate: string;
+  maintenanceType: string;
+  description?: string | null;
+  cost: number;
+  nextMaintenanceDate?: string | null;
+  status?: MaintenanceStatus;
+}
+
+export interface UpdateMaintenanceRecordRequest {
+  maintenanceDate: string;
+  maintenanceType: string;
+  description?: string | null;
+  cost: number;
+  nextMaintenanceDate?: string | null;
+  status: MaintenanceStatus;
+}
+
+export interface VehicleMaintenanceStatusResponse {
+  vehicleId: string;
+  currentlyInMaintenance: boolean;
+  maintenanceDue: boolean;
+  nextMaintenanceDate?: string | null;
+  latestMaintenanceDate?: string | null;
+}
+
+
