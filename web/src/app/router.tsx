@@ -6,6 +6,7 @@ import { LoginPage } from '../features/auth/pages/LoginPage';
 import { RegisterPage } from '../features/auth/pages/RegisterPage';
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute';
 import { AdminPortalPage } from '../features/portals/pages/AdminPortalPage';
+import { UserListPage } from '../features/users/pages/UserListPage';
 import { CustomerOrderListPage, OrderListPage } from '../features/orders/pages/OrderListPage';
 import { OrderCreatePage } from '../features/orders/pages/OrderCreatePage';
 import { OrderDetailsPage } from '../features/orders/pages/OrderDetailsPage';
@@ -46,6 +47,11 @@ export const router = createBrowserRouter([
         path: 'admin',
         element: <ProtectedRoute allowedRoles={['ADMIN']} />,
         children: [{ index: true, element: <AdminPortalPage /> }],
+      },
+      {
+        path: 'users',
+        element: <ProtectedRoute allowedRoles={['ADMIN']} />,
+        children: [{ index: true, element: <UserListPage /> }],
       },
       {
         path: 'orders',

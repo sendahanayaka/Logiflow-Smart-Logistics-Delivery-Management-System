@@ -92,11 +92,8 @@ export const AdminPortalPage: React.FC = () => {
                 {tab === 'users' && (
                     <div className="admin-link-card">
                         <h3>User Management</h3>
-                        <p>
-                            Owned by S1 (Customer &amp; User Management). The admin user-management screen
-                            isn’t built yet — this tab will surface it here once it’s available.
-                        </p>
-                        <span className="admin-btn admin-btn--disabled" aria-disabled="true">Not yet available</span>
+                        <p>Create accounts and manage roles &amp; access across the platform.</p>
+                        <Link className="admin-btn" to="/users">Open User Management</Link>
                     </div>
                 )}
             </main>
