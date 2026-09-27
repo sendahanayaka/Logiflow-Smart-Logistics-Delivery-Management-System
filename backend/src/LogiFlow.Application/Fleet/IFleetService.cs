@@ -46,5 +46,3 @@ public interface IFleetService
     // Maintenance Business-Specific Operation
     Task<VehicleMaintenanceStatusResponse> GetVehicleMaintenanceStatusAsync(Guid vehicleId, CancellationToken cancellationToken = default);
 }
-
-

@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using LogiFlow.Application.Orders;
+using LogiFlow.Application.Common.Interfaces;
 
 // Enable Npgsql legacy timestamp behavior for flexible DateTime handling with PostgreSQL
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -53,6 +55,9 @@ builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IOrdersService, OrdersService>();
 
 // [S4] Delivery execution: workflow + approval + shipment services, and the typed
 // HttpClient to the internal Python agent.
@@ -73,9 +78,10 @@ builder.Services.AddHttpClient<IAgentServiceClient, AgentServiceClient>(client =
 });
 
 // Configure JWT Authentication
-var jwtSecret = builder.Configuration["Jwt:Key"]
-    ?? Environment.GetEnvironmentVariable("JWT_SECRET")
-    ?? "LogiFlowSuperSecretKeyForDevelopment1234567890!";
+var jwtKeyFromConfig = builder.Configuration["Jwt:Key"];
+var jwtSecret = !string.IsNullOrWhiteSpace(jwtKeyFromConfig)
+    ? jwtKeyFromConfig
+    : (Environment.GetEnvironmentVariable("JWT_SECRET") ?? "LogiFlowSuperSecretKeyForDevelopment1234567890!");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

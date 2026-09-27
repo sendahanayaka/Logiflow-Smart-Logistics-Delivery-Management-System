@@ -150,6 +150,102 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("AssignmentHistories", (string)null);
                 });
 
+            modelBuilder.Entity("LogiFlow.Domain.Entities.DeliveryOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DeliveryAddress")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("DeliveryCity")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("HeightCm")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<decimal>("LengthCm")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<string>("PackageDescription")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("PickupAddress")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("PickupCity")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("PreferredPickupDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<TimeSpan>("PreferredPickupTime")
+                        .HasColumnType("interval");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("RecipientContact")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("RecipientName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("SpecialHandling")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("WeightKg")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<decimal>("WidthCm")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("DeliveryOrders", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_DeliveryOrders_Dimensions_Positive", "\"LengthCm\" > 0 AND \"WidthCm\" > 0 AND \"HeightCm\" > 0");
+
+                            t.HasCheckConstraint("CK_DeliveryOrders_Weight_Positive", "\"WeightKg\" > 0");
+                        });
+                });
+
             modelBuilder.Entity("LogiFlow.Domain.Entities.Driver", b =>
                 {
                     b.Property<Guid>("Id")
@@ -662,6 +758,17 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("TrackingEvents", (string)null);
                 });
 
+            modelBuilder.Entity("LogiFlow.Domain.Entities.DeliveryOrder", b =>
+                {
+                    b.HasOne("LogiFlow.Domain.Entities.User", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
             modelBuilder.Entity("LogiFlow.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -917,6 +1024,17 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Shipment");
+                });
+
+            modelBuilder.Entity("LogiFlow.Domain.Entities.DeliveryOrder", b =>
+                {
+                    b.HasOne("LogiFlow.Domain.Entities.User", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("LogiFlow.Domain.Entities.User", b =>

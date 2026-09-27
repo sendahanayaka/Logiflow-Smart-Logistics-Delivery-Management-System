@@ -23,6 +23,7 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Package> Packages => Set<Package>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
+    public DbSet<DeliveryOrder> DeliveryOrders => Set<DeliveryOrder>();
 
     // [S4] Delivery execution & tracking
     public DbSet<AgentWorkflow> AgentWorkflows => Set<AgentWorkflow>();

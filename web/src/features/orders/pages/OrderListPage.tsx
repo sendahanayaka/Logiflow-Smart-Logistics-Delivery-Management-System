@@ -1,9 +1,60 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGetDispatchOrdersQuery } from '../ordersApi';
-import { DispatchOrder } from '../types';
+import { DeliveryOrderResponse, DispatchOrder } from '../types';
+import { getMyOrders, useGetDispatchOrdersQuery } from '../ordersApi';
+import { OrderTable } from '../components/OrderTable';
 import { MultiOrderTripPanel } from '../../fleet/components/MultiOrderTripPanel';
 import { FleetHeader } from '../../fleet/components/FleetHeader';
+import '../Orders.css';
+
+export const CustomerOrderListPage: React.FC = () => {
+  const [orders, setOrders] = useState<DeliveryOrderResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  const loadOrders = async () => {
+    try {
+      const data = await getMyOrders();
+      setOrders(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch orders.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="orders-container">
+      <div className="orders-header">
+        <h1 className="orders-title">My Delivery Orders</h1>
+        <button
+          onClick={() => navigate('/orders/create')}
+          className="orders-btn-primary"
+        >
+          Create Delivery Order
+        </button>
+      </div>
+
+      {error && (
+        <div style={{ color: '#dc2626', marginBottom: '1.5rem', fontWeight: 'bold' }}>
+          {error}
+        </div>
+      )}
+
+      {isLoading ? (
+        <div>Loading orders...</div>
+      ) : (
+        <OrderTable orders={orders} />
+      )}
+    </div>
+  );
+};
+
 
 export const OrderListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -175,13 +226,12 @@ export const OrderListPage: React.FC = () => {
                           <td>{order.volumeM3} m³</td>
                           <td>
                             <span
-                              className={`badge ${
-                                order.priority === 'EXPRESS'
+                              className={`badge ${order.priority === 'EXPRESS'
                                   ? 'badge--danger'
                                   : order.priority === 'HIGH'
-                                  ? 'badge--warning'
-                                  : 'badge--info'
-                              }`}
+                                    ? 'badge--warning'
+                                    : 'badge--info'
+                                }`}
                               style={{ fontSize: '0.72rem' }}
                             >
                               {order.priority}

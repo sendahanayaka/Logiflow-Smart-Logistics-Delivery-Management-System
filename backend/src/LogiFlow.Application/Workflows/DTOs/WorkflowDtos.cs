@@ -60,3 +60,14 @@ public sealed record ApprovalResult(
     Guid? ShipmentId,
     string? ShipmentCode,
     string Message);
+
+/// <summary>Lightweight workflow row for the admin monitor / approval queue.</summary>
+public sealed record WorkflowSummary(
+    Guid Id,
+    string WorkflowKey,
+    string Status,
+    string? Objective,
+    string? Summary,
+    int StopCount,
+    DateTime CreatedAt,
+    DateTime? UpdatedAt);

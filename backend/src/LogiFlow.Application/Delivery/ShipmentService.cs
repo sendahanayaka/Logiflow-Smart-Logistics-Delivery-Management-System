@@ -19,6 +19,33 @@ public class ShipmentService : IShipmentService
         _logger = logger;
     }
 
+    public async Task<IReadOnlyList<ShipmentSummary>> ListShipmentsAsync(CancellationToken cancellationToken = default)
+    {
+        var rows = await _context.Shipments
+            .AsNoTracking()
+            .OrderByDescending(shipment => shipment.CreatedAt)
+            .Select(shipment => new
+            {
+                shipment.Id,
+                shipment.ShipmentCode,
+                shipment.Status,
+                shipment.DriverId,
+                shipment.VehicleId,
+                shipment.TotalDistanceKm,
+                StopCount = shipment.AgentWorkflow.RouteStops.Count,
+                DeliveredCount = shipment.AgentWorkflow.RouteStops.Count(stop => stop.Status == RouteStopStatus.Delivered),
+                shipment.DispatchedAt,
+                shipment.CreatedAt
+            })
+            .ToListAsync(cancellationToken);
+
+        return rows
+            .Select(row => new ShipmentSummary(
+                row.Id, row.ShipmentCode, row.Status.ToString(), row.DriverId, row.VehicleId,
+                row.TotalDistanceKm, row.StopCount, row.DeliveredCount, row.DispatchedAt, row.CreatedAt))
+            .ToList();
+    }
+
     public async Task<TrackingView?> GetTrackingAsync(Guid shipmentId, CancellationToken cancellationToken = default)
     {
         var shipment = await LoadAsync(shipmentId, track: false, cancellationToken);
@@ -195,7 +222,8 @@ public class ShipmentService : IShipmentService
 
         var plannedStops = routeStops
             .Select(stop => new TimelineStop(
-                stop.Sequence, stop.StopKey, stop.Address, stop.Eta, stop.Status.ToString(), stop.OnTime))
+                stop.Sequence, stop.StopKey, stop.Address, stop.Eta, stop.Status.ToString(),
+                stop.OnTime, stop.Latitude, stop.Longitude))
             .ToList();
 
         var events = shipment.TrackingEvents
