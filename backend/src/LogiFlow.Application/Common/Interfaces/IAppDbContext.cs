@@ -25,6 +25,7 @@ public interface IAppDbContext
     // [S1] Identity
     DbSet<User> Users { get; }
     DbSet<Role> Roles { get; }
+    DbSet<DeliveryOrder> DeliveryOrders { get; }
 
     // [S4] Delivery execution & tracking
     DbSet<AgentWorkflow> AgentWorkflows { get; }
@@ -35,6 +36,7 @@ public interface IAppDbContext
     DbSet<ProofOfDelivery> ProofOfDeliveries { get; }
 
     void ClearChangeTracker();
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
     // Transaction support

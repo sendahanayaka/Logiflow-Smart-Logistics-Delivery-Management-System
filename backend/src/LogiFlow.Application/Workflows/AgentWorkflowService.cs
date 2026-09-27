@@ -97,6 +97,37 @@ public class AgentWorkflowService : IAgentWorkflowService
         return workflow is null ? null : Map(workflow);
     }
 
+    public async Task<IReadOnlyList<WorkflowSummary>> ListWorkflowsAsync(
+        WorkflowStatus? status = null, CancellationToken cancellationToken = default)
+    {
+        var query = _context.AgentWorkflows.AsNoTracking();
+        if (status is not null)
+        {
+            query = query.Where(workflow => workflow.Status == status.Value);
+        }
+
+        var rows = await query
+            .OrderByDescending(workflow => workflow.CreatedAt)
+            .Select(workflow => new
+            {
+                workflow.Id,
+                workflow.WorkflowKey,
+                workflow.Status,
+                workflow.Objective,
+                workflow.Summary,
+                StopCount = workflow.RouteStops.Count,
+                workflow.CreatedAt,
+                workflow.UpdatedAt
+            })
+            .ToListAsync(cancellationToken);
+
+        return rows
+            .Select(row => new WorkflowSummary(
+                row.Id, row.WorkflowKey, row.Status.ToString(), row.Objective, row.Summary,
+                row.StopCount, row.CreatedAt, row.UpdatedAt))
+            .ToList();
+    }
+
     // --- payload assembly ----------------------------------------------------
 
     private static AgentRunPayload BuildPayload(string workflowKey, RunWorkflowCommand command)

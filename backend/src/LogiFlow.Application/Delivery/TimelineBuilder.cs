@@ -36,7 +36,9 @@ public static class TimelineBuilder
                     stop.Status,
                     actual?.OccurredAt,
                     actual?.Note,
-                    stop.OnTime);
+                    stop.OnTime,
+                    stop.Latitude,
+                    stop.Longitude);
             })
             .ToList();
     }

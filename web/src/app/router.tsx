@@ -6,7 +6,9 @@ import { LoginPage } from '../features/auth/pages/LoginPage';
 import { RegisterPage } from '../features/auth/pages/RegisterPage';
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute';
 import { AdminPortalPage } from '../features/portals/pages/AdminPortalPage';
-import { CustomerOrdersPage } from '../features/portals/pages/CustomerOrdersPage';
+import { CustomerOrderListPage, OrderListPage } from '../features/orders/pages/OrderListPage';
+import { OrderCreatePage } from '../features/orders/pages/OrderCreatePage';
+import { OrderDetailsPage } from '../features/orders/pages/OrderDetailsPage';
 import { WarehousePortalPage } from '../features/portals/pages/WarehousePortalPage';
 import { DriverPortalPage } from '../features/portals/pages/DriverPortalPage';
 
@@ -22,7 +24,6 @@ import VehicleEditPage from '../features/fleet/pages/VehicleEditPage';
 import AssignmentPage from '../features/fleet/pages/AssignmentPage';
 import DutySchedulePage from '../features/fleet/pages/DutySchedulePage';
 import MaintenancePage from '../features/fleet/pages/MaintenancePage';
-import OrderListPage from '../features/orders/pages/OrderListPage';
 
 export const router = createBrowserRouter([
   {
@@ -45,6 +46,16 @@ export const router = createBrowserRouter([
         path: 'admin',
         element: <ProtectedRoute allowedRoles={['ADMIN']} />,
         children: [{ index: true, element: <AdminPortalPage /> }],
+      },
+      {
+        path: 'orders',
+        element: <ProtectedRoute allowedRoles={['CUSTOMER']} />,
+        children: [
+          { index: true, element: <CustomerOrderListPage /> },
+          { path: 'new', element: <OrderCreatePage /> },
+          { path: 'create', element: <OrderCreatePage /> },
+          { path: ':id', element: <OrderDetailsPage /> }
+        ]
       },
       {
         path: 'warehouse',
@@ -109,11 +120,6 @@ export const router = createBrowserRouter([
         path: 'fleet/trips',
         element: <OrderListPage />,
       },
-      {
-        path: 'orders',
-        element: <OrderListPage />,
-      },
-      // Backward Compatibility Preserved Aliases
       {
         path: 'drivers',
         element: <DriverListPage />,

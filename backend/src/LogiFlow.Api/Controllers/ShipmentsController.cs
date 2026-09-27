@@ -38,6 +38,15 @@ public class ShipmentsController : ControllerBase
         return run is null ? NotFound() : Ok(run);
     }
 
+    /// <summary>Admin/ops list of all dispatched shipments.</summary>
+    [HttpGet]
+    [Authorize(Roles = "ADMIN")]
+    [ProducesResponseType(typeof(IReadOnlyList<ShipmentSummary>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<ShipmentSummary>>> List(CancellationToken cancellationToken)
+    {
+        return Ok(await _shipments.ListShipmentsAsync(cancellationToken));
+    }
+
     /// <summary>Driver reports progress at a stop (ARRIVED recomputes downstream ETAs).</summary>
     [HttpPost("{id:guid}/events")]
     [ProducesResponseType(typeof(TrackingView), StatusCodes.Status200OK)]

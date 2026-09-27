@@ -19,8 +19,17 @@ from pydantic import BaseModel
 from app import config
 from app.schemas.common import ApprovalDecision
 from app.state import initial_state
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="LogiFlow Agent Service", version="0.1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # One in-process checkpointer keeps paused workflows between /run and /approval.
 # NOTE: durable state is owned by PostgreSQL via the backend; this is the runtime

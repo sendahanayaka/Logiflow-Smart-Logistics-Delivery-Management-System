@@ -572,6 +572,7 @@ public sealed class DispatchBatchServiceTests : IAsyncLifetime
         public DbSet<MaintenanceRecord> MaintenanceRecords => _context.MaintenanceRecords;
         public DbSet<User> Users => _context.Users;
         public DbSet<Role> Roles => _context.Roles;
+        public DbSet<DeliveryOrder> DeliveryOrders => _context.DeliveryOrders;
         public DbSet<AgentWorkflow> AgentWorkflows => _context.AgentWorkflows;
         public DbSet<RouteStop> RouteStops => _context.RouteStops;
         public DbSet<Shipment> Shipments => _context.Shipments;

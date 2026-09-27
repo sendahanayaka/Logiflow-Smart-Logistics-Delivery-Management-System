@@ -1,4 +1,4 @@
-# [S4] Runtime configuration, read from environment (.env is git-ignored).
+# [Shared] Runtime configuration, read from environment (.env is git-ignored).
 from __future__ import annotations
 
 import os
@@ -22,15 +22,25 @@ try:
     from dotenv import load_dotenv
 
     load_dotenv()
-except Exception:  # dotenv optional; env vars may be provided by the OS/CI
+except Exception:
     pass
 
-# LLM (Ollama, local, free — satisfies the no-paid-service rule)
-OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
+# LLM (Ollama, local, free)
+OLLAMA_BASE_URL: str = os.getenv(
+    "OLLAMA_BASE_URL",
+    "http://localhost:11434"
+)
 
-# The ASP.NET Core backend the agents reach for allow-listed tool endpoints.
-BACKEND_API_BASE_URL: str = os.getenv("BACKEND_API_BASE_URL", "http://localhost:5080")
+OLLAMA_MODEL: str = os.getenv(
+    "OLLAMA_MODEL",
+    "llama3.2:3b"
+)
+
+# ASP.NET Core backend
+BACKEND_API_BASE_URL: str = os.getenv(
+    "BACKEND_API_BASE_URL",
+    "http://localhost:5000"
+)
 
 # Maps / routing for the S4 distance-matrix tool. Speaks the OSRM protocol.
 # In production point this at a self-hosted OSRM (or the backend MapsGateway that
