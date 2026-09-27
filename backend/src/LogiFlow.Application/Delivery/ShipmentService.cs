@@ -52,6 +52,18 @@ public class ShipmentService : IShipmentService
         return shipment is null ? null : ToTrackingView(shipment);
     }
 
+    public async Task<TrackingView?> GetTrackingByCodeAsync(string shipmentCode, CancellationToken cancellationToken = default)
+    {
+        var code = (shipmentCode ?? string.Empty).Trim();
+        var shipment = await _context.Shipments
+            .AsNoTracking()
+            .Include(s => s.TrackingEvents)
+            .Include(s => s.ProofOfDeliveries)
+            .Include(s => s.AgentWorkflow).ThenInclude(w => w.RouteStops)
+            .FirstOrDefaultAsync(s => s.ShipmentCode == code, cancellationToken);
+        return shipment is null ? null : ToTrackingView(shipment);
+    }
+
     public async Task<DriverRunView?> GetDriverRunAsync(Guid shipmentId, CancellationToken cancellationToken = default)
     {
         var shipment = await LoadAsync(shipmentId, track: false, cancellationToken);

@@ -27,4 +27,14 @@ public class TrackingController : ControllerBase
         var tracking = await _shipments.GetTrackingAsync(shipmentId, cancellationToken);
         return tracking is null ? NotFound() : Ok(tracking);
     }
+
+    /// <summary>Track by the friendly shipment code (e.g. for a customer who has the code).</summary>
+    [HttpGet("code/{shipmentCode}")]
+    [ProducesResponseType(typeof(TrackingView), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<TrackingView>> GetByCode(string shipmentCode, CancellationToken cancellationToken)
+    {
+        var tracking = await _shipments.GetTrackingByCodeAsync(shipmentCode, cancellationToken);
+        return tracking is null ? NotFound() : Ok(tracking);
+    }
 }

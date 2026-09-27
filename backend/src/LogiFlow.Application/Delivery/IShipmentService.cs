@@ -11,6 +11,9 @@ public interface IShipmentService
     /// <summary>Customer / ops live-tracking timeline for a shipment (null if not found).</summary>
     Task<TrackingView?> GetTrackingAsync(Guid shipmentId, CancellationToken cancellationToken = default);
 
+    /// <summary>Live-tracking timeline looked up by the friendly shipment code (null if not found).</summary>
+    Task<TrackingView?> GetTrackingByCodeAsync(string shipmentCode, CancellationToken cancellationToken = default);
+
     /// <summary>The driver's assigned run (ordered stops + statuses + ETAs), null if not found.</summary>
     Task<DriverRunView?> GetDriverRunAsync(Guid shipmentId, CancellationToken cancellationToken = default);
 
