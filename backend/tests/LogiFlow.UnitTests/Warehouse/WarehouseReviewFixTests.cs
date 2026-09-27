@@ -297,6 +297,16 @@ public sealed class WarehouseReviewFixTests : IAsyncLifetime
             CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
+        public Task<DispatchBatchValidationContextResponse> GetValidationContextAsync(
+            Guid batchId,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<DispatchCandidateValidationContextResponse> GetCandidateValidationContextAsync(
+            DispatchCandidateValidationContextCommand command,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
         public Task<WarehouseThroughputResponse> GetThroughputAsync(
             Guid warehouseId,
             WarehouseThroughputQuery query,

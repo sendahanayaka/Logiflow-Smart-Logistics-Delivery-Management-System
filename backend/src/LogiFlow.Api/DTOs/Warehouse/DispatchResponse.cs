@@ -9,3 +9,19 @@ public sealed record CreateDispatchBatchRequest(
 
 public sealed record ReplaceDispatchBatchItemsRequest(
     IReadOnlyCollection<Guid> PackageIds);
+
+public sealed record ValidateDispatchCandidateRequest(
+    Guid WarehouseId,
+    IReadOnlyCollection<Guid>? PackageIds,
+    IReadOnlyCollection<Guid>? OrderIds,
+    string? VehicleId,
+    decimal MaxWeightKg,
+    decimal MaxVolumeM3,
+    string? DriverId);
+
+public sealed record DispatchCandidateContextRequest(
+    Guid WarehouseId,
+    IReadOnlyCollection<Guid>? PackageIds,
+    string? VehicleId,
+    decimal MaxWeightKg,
+    decimal MaxVolumeM3);

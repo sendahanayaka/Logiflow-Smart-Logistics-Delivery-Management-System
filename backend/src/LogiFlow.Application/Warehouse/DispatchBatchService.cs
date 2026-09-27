@@ -152,8 +152,25 @@ public sealed class DispatchBatchService : IDispatchBatchService
             }
 
             _context.DispatchBatchItems.RemoveRange(existingItems);
+
+            // Flush the removals before recreating deterministic item rows. Doing
+            // both in one SaveChanges call can insert before delete and collide
+            // with the unique PackageId/LoadSequence indexes. Both saves remain
+            // inside the serializable transaction, so no partial replacement is
+            // observable and any later failure rolls everything back.
+            await _context.SaveChangesAsync(cancellationToken);
+
+            // Deleted dependents can remain in the in-memory navigation after
+            // AcceptAllChanges. Remove those detached objects before attaching
+            // the replacement rows.
+            foreach (var existingItem in existingItems)
+            {
+                existingItem.Package.DispatchBatchItems.Remove(existingItem);
+            }
+
             batch.Items.Clear();
             AddReservedItems(batch, packages, plan);
+            _context.DispatchBatchItems.AddRange(batch.Items);
             batch.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync(cancellationToken);
@@ -312,6 +329,116 @@ public sealed class DispatchBatchService : IDispatchBatchService
             dispatchedPackageCount,
             createdDispatchBatchCount,
             batchedPackageCount);
+    }
+
+    public async Task<DispatchBatchValidationContextResponse> GetValidationContextAsync(
+        Guid batchId,
+        CancellationToken cancellationToken = default)
+    {
+        if (batchId == Guid.Empty)
+        {
+            throw new ArgumentException("Dispatch batch ID is required.", nameof(batchId));
+        }
+
+        var batch = await _context.DispatchBatches
+            .AsNoTracking()
+            .Include(item => item.Items)
+                .ThenInclude(item => item.Package)
+            .FirstOrDefaultAsync(item => item.Id == batchId, cancellationToken);
+
+        if (batch is null)
+        {
+            throw new KeyNotFoundException($"Dispatch batch '{batchId}' was not found.");
+        }
+
+        var packages = batch.Items
+            .OrderBy(item => item.LoadSequence)
+            .Select(item => new DispatchBatchValidationPackageContextResponse(
+                item.PackageId,
+                item.Package.OrderId,
+                item.Package.WarehouseId,
+                item.Package.TrackingCode,
+                item.Package.Status.ToString(),
+                item.Package.WeightKg,
+                item.Package.VolumeM3,
+                item.Package.IsFragile,
+                item.LoadSequence))
+            .ToList();
+
+        return new DispatchBatchValidationContextResponse(
+            batch.Id,
+            batch.WarehouseId,
+            batch.VehicleId,
+            batch.Status.ToString(),
+            batch.MaxWeightKg,
+            batch.MaxVolumeM3,
+            packages.Sum(package => package.WeightKg),
+            packages.Sum(package => package.VolumeM3),
+            packages);
+    }
+
+    public async Task<DispatchCandidateValidationContextResponse> GetCandidateValidationContextAsync(
+        DispatchCandidateValidationContextCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        if (command.WarehouseId == Guid.Empty)
+        {
+            throw new ArgumentException("Warehouse ID is required.", nameof(command.WarehouseId));
+        }
+
+        if (string.IsNullOrWhiteSpace(command.VehicleCapacity.VehicleId) ||
+            command.VehicleCapacity.MaxWeightKg <= 0 ||
+            command.VehicleCapacity.MaxVolumeM3 <= 0)
+        {
+            throw new ArgumentException("A complete positive vehicle capacity context is required.");
+        }
+
+        ValidatePackageIds(command.PackageIds);
+
+        var warehouseExists = await _context.Warehouses
+            .AnyAsync(warehouse => warehouse.Id == command.WarehouseId, cancellationToken);
+        if (!warehouseExists)
+        {
+            throw new KeyNotFoundException($"Warehouse '{command.WarehouseId}' was not found.");
+        }
+
+        var packages = await LoadPackagesAsync(command.PackageIds, cancellationToken);
+        var plan = _batchingEngine.Plan(
+            command.WarehouseId,
+            command.VehicleCapacity,
+            CreateCandidates(packages));
+        var packageContexts = packages
+            .OrderBy(package => package.Id)
+            .Select(package => new DispatchCandidateValidationPackageContextResponse(
+                package.Id,
+                package.OrderId,
+                package.WarehouseId,
+                package.StorageZone.Code,
+                package.TrackingCode,
+                package.Status.ToString(),
+                package.WeightKg,
+                package.VolumeM3,
+                package.IsFragile))
+            .ToList();
+        var plannedItems = plan.Items
+            .OrderBy(item => item.LoadSequence)
+            .Select(item => new DispatchCandidateLoadPlanItemResponse(
+                item.PackageId,
+                item.LoadSequence))
+            .ToList();
+
+        return new DispatchCandidateValidationContextResponse(
+            command.WarehouseId,
+            command.VehicleCapacity.VehicleId,
+            command.VehicleCapacity.MaxWeightKg,
+            command.VehicleCapacity.MaxVolumeM3,
+            packageContexts.Sum(package => package.WeightKg),
+            packageContexts.Sum(package => package.VolumeM3),
+            command.PackageIds,
+            packageContexts,
+            plan.Result,
+            plan.Issues,
+            plannedItems);
     }
 
     private static DispatchBatch CreateReservedBatch(

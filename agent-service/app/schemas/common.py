@@ -63,3 +63,7 @@ class BatchCandidate(BaseModel):
 
     order_ids: list[str]
     vehicle_id: str
+    # Optional: S3 validates unpersisted S1/S2 candidates through its allow-listed
+    # backend candidate-context tool, while a batch ID still supports audit-time
+    # revalidation of an already persisted dispatch batch.
+    batch_id: str | None = Field(default=None, min_length=1, strict=True)

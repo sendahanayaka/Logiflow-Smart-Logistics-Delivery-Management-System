@@ -130,6 +130,58 @@ public sealed class DispatchController : ControllerBase
         }
     }
 
+    [HttpGet("batches/{id:guid}/context")]
+    [ProducesResponseType(typeof(DispatchBatchValidationContextResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<DispatchBatchValidationContextResponse>> GetValidationContext(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await _dispatchBatchService.GetValidationContextAsync(id, cancellationToken));
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+    }
+
+    [HttpPost("candidate-context")]
+    [ProducesResponseType(typeof(DispatchCandidateValidationContextResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<DispatchCandidateValidationContextResponse>> GetCandidateValidationContext(
+        [FromBody] DispatchCandidateContextRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await _dispatchBatchService.GetCandidateValidationContextAsync(
+                new DispatchCandidateValidationContextCommand(
+                    request.WarehouseId,
+                    new VehicleCapacityContext(
+                        request.VehicleId ?? string.Empty,
+                        request.MaxWeightKg,
+                        request.MaxVolumeM3),
+                    request.PackageIds ?? Array.Empty<Guid>()),
+                cancellationToken));
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+    }
+
     private ActionResult ValidationFailure(ValidationResult validationResult)
     {
         var errors = validationResult.Errors
