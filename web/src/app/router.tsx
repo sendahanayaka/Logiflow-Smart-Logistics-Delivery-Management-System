@@ -23,6 +23,7 @@ import AssignmentPage from '../features/fleet/pages/AssignmentPage';
 import DutySchedulePage from '../features/fleet/pages/DutySchedulePage';
 import MaintenancePage from '../features/fleet/pages/MaintenancePage';
 import OrderListPage from '../features/orders/pages/OrderListPage';
+import { AIPlanningPage } from '../features/ai-planning/pages/AIPlanningPage';
 
 export const router = createBrowserRouter([
   {
@@ -112,6 +113,10 @@ export const router = createBrowserRouter([
       {
         path: 'orders',
         element: <OrderListPage />,
+      },
+      {
+        path: 'ai-planning',
+        element: <AIPlanningPage />,
       },
       // Backward Compatibility Preserved Aliases
       {

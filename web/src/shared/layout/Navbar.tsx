@@ -31,6 +31,7 @@ export const Navbar: React.FC = () => {
                         <li><a href="#how-it-works">How It Works</a></li>
                         <li><a href="#about">About</a></li>
                         <li><a href="#contact">Contact</a></li>
+                        <li><Link to="/ai-planning" style={{ color: 'var(--color-navy, #08006C)', fontWeight: 'bold' }}>AI Planning</Link></li>
                     </ul>
                 </nav>
 
