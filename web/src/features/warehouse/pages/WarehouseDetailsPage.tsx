@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 
 import { ApiMessage, userFacingApiError } from '../components/ApiMessage'
 import { CapacityIndicator } from '../components/CapacityIndicator'
+import { CreateStorageZoneForm } from '../components/CreateStorageZoneForm'
 import { useGetStorageZonesQuery, useGetWarehouseQuery } from '../warehouseApi'
 
 export function WarehouseDetailsPage() {
@@ -17,25 +18,37 @@ export function WarehouseDetailsPage() {
   if (!warehouse.data) return null
 
   return (
-    <section>
-      <h1>{warehouse.data.name}</h1>
-      <p>{warehouse.data.location}</p>
-      <CapacityIndicator label="Warehouse volume" occupied={warehouse.data.occupiedVolumeM3} total={warehouse.data.totalVolumeM3} unit="m³" />
-      <p>
-        <Link to={`/warehouse/${warehouseId}/inventory`}>Inventory</Link>{' · '}
-        <Link to={`/warehouse/${warehouseId}/intake`}>Package intake</Link>{' · '}
-        <Link to={`/warehouse/${warehouseId}/dispatch`}>Dispatch</Link>{' · '}
-        <Link to={`/warehouse/${warehouseId}/throughput`}>Throughput</Link>
-      </p>
+    <section className="warehouse-page">
+      <Link className="back-link" to="/warehouse">← All warehouses</Link>
+      <div className="detail-hero">
+        <div>
+          <p className="eyebrow">Warehouse operations</p>
+          <h1>{warehouse.data.name}</h1>
+          <p>{warehouse.data.location}</p>
+        </div>
+        <div className="hero-capacity">
+          <CapacityIndicator label="Warehouse volume" occupied={warehouse.data.occupiedVolumeM3} total={warehouse.data.totalVolumeM3} unit="m³" />
+        </div>
+      </div>
+      <nav className="action-nav" aria-label="Warehouse actions">
+        <Link to={`/warehouse/${warehouseId}/inventory`}><strong>Inventory</strong><span>Search and update package state</span></Link>
+        <Link to={`/warehouse/${warehouseId}/intake`}><strong>Package intake</strong><span>Receive packages into a zone</span></Link>
+        <Link to={`/warehouse/${warehouseId}/dispatch`}><strong>Dispatch</strong><span>Build and validate vehicle loads</span></Link>
+        <Link to={`/warehouse/${warehouseId}/throughput`}><strong>Throughput</strong><span>Review date-range metrics</span></Link>
+      </nav>
       <h2>Storage zones</h2>
       {!zones.data?.length ? <ApiMessage>No storage zones are configured for this warehouse.</ApiMessage> : (
-        <table>
-          <thead><tr><th>Code</th><th>Name</th><th>Occupied volume</th><th>Total volume</th></tr></thead>
-          <tbody>{zones.data.map((zone) => (
-            <tr key={zone.id}><td>{zone.code}</td><td>{zone.name}</td><td>{zone.occupiedVolumeM3} m³</td><td>{zone.totalVolumeM3} m³</td></tr>
-          ))}</tbody>
-        </table>
+        <div className="zone-grid">
+          {zones.data.map((zone) => (
+            <article className="zone-card" key={zone.id}>
+              <span className="zone-code">{zone.code}</span>
+              <h3>{zone.name}</h3>
+              <CapacityIndicator label="Zone volume" occupied={zone.occupiedVolumeM3} total={zone.totalVolumeM3} unit="m³" />
+            </article>
+          ))}
+        </div>
       )}
+      <CreateStorageZoneForm warehouseId={warehouseId} />
     </section>
   )
 }

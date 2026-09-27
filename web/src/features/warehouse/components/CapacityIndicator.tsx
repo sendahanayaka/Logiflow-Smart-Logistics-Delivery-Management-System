@@ -11,11 +11,11 @@ export function CapacityIndicator({ label, occupied, total, unit }: CapacityIndi
   const percentage = total > 0 ? Math.min((occupied / total) * 100, 100) : 0
 
   return (
-    <section aria-label={`${label} capacity`}>
+    <section className="capacity-indicator" aria-label={`${label} capacity`}>
       <strong>{label}</strong>
-      <div>{occupied.toLocaleString()} / {total.toLocaleString()} {unit}</div>
-      <div aria-hidden="true" style={{ background: '#e5e7eb', height: 10, margin: '6px 0', width: '100%' }}>
-        <div style={{ background: '#2563eb', height: '100%', width: `${percentage}%` }} />
+      <div className="capacity-values">{occupied.toLocaleString()} / {total.toLocaleString()} {unit}</div>
+      <div className="capacity-track" aria-hidden="true">
+        <div className="capacity-bar" style={{ width: `${percentage}%` }} />
       </div>
       <small>{remaining.toLocaleString()} {unit} remaining ({percentage.toFixed(1)}% occupied)</small>
     </section>

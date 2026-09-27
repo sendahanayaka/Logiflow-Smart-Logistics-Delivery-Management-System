@@ -9,9 +9,9 @@ export function ApiMessage({ children, kind = 'info' }: ApiMessageProps) {
   const colors = {
     error: '#991b1b',
     success: '#166534',
-    info: '#1d4ed8',
+    info: '#08006C',
   }
-  return <p role={kind === 'error' ? 'alert' : 'status'} style={{ color: colors[kind] }}>{children}</p>
+  return <p role={kind === 'error' ? 'alert' : 'status'} className={`api-message api-message-${kind}`} style={{ color: colors[kind] }}>{children}</p>
 }
 
 export function userFacingApiError(error: unknown, fallback = 'The request could not be completed. Please try again.') {

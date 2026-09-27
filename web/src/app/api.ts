@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 export const handleApiError = async (response: Response) => {
   if (!response.ok) {

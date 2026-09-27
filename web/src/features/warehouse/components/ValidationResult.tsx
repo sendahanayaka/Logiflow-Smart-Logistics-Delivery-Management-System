@@ -16,10 +16,10 @@ export function ValidationResult({ batchId }: { batchId: string }) {
   ]
   const kind = data.result === 'PASS' ? 'success' : 'error'
   return (
-    <section aria-label="Dispatch batch validation">
+    <section className="surface validation-panel" aria-label="Dispatch batch validation">
       <h2>Backend validation: {data.result}</h2>
       <ApiMessage kind={kind}>{data.result === 'PASS' ? 'The backend approved this dispatch batch.' : 'The backend did not approve this dispatch batch.'}</ApiMessage>
-      <ul>{rules.map(([label, passed]) => <li key={String(label)}>{label}: {passed ? 'Pass' : 'Fail'}</li>)}</ul>
+      <ul className="validation-rules">{rules.map(([label, passed]) => <li className={passed ? 'rule-pass' : 'rule-fail'} key={String(label)}><span>{passed ? '✓' : '×'}</span>{label}: {passed ? 'Pass' : 'Fail'}</li>)}</ul>
       {data.issues.length > 0 && <ul>{data.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul>}
     </section>
   )

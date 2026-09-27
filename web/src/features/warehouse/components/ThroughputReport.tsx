@@ -11,8 +11,8 @@ export function ThroughputReport({ report }: { report: WarehouseThroughput }) {
     ['Batched packages', report.batchedPackageCount, ''],
   ]
   return (
-    <dl>
-      {metrics.map(([label, value, unit]) => <div key={label}><dt>{label}</dt><dd>{value.toLocaleString()}{unit}</dd></div>)}
+    <dl className="metric-grid">
+      {metrics.map(([label, value, unit]) => <div className="metric-card" key={label}><dt>{label}</dt><dd>{value.toLocaleString()}{unit}</dd></div>)}
     </dl>
   )
 }

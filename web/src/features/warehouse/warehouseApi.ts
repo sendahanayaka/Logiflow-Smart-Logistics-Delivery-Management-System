@@ -139,6 +139,43 @@ export interface DispatchBatchValidationResponse {
   issues: string[]
 }
 
+export interface AgentValidationRule {
+  rule: string
+  passed: boolean
+  detail: string | null
+}
+
+/** Internal agent output returned only through the ASP.NET Core backend. */
+export interface DispatchAgentValidationResponse {
+  batchId: Id
+  deterministicResult: DispatchBatchResult
+  deterministicIssues: string[]
+  agentAvailable: boolean
+  agentConsistent: boolean
+  agentResult: DispatchBatchResult | null
+  ruleResults: AgentValidationRule[]
+  explanation: string | null
+  explanationSource: 'ollama' | 'deterministic_fallback' | null
+  agentMessage: string | null
+}
+
+export interface ValidateDispatchCandidateRequest extends VehicleCapacityContextInput {
+  warehouseId: Id
+  packageIds: Id[]
+  orderIds: Id[]
+  driverId?: string | null
+}
+
+export interface DispatchCandidateAgentValidationResponse {
+  result: DispatchBatchResult
+  agentAvailable: boolean
+  ruleResults: AgentValidationRule[]
+  explanation: string | null
+  explanationSource: 'ollama' | 'deterministic_fallback' | null
+  rejectionReasons: string[]
+  agentMessage: string | null
+}
+
 /** Internal/debug response for the S3 validation agent; do not render in normal UI. */
 export interface DispatchBatchValidationContext {
   batchId: Id
@@ -255,11 +292,29 @@ export const warehouseApi = baseApi.injectEndpoints({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: (_result, _error, { batchId }) => [{ type: 'DispatchBatch', id: batchId }],
+      invalidatesTags: (result, _error, { batchId }) => [
+        { type: 'DispatchBatch', id: batchId },
+        ...(result?.batch
+          ? [{ type: 'WarehouseInventory' as const, id: result.batch.warehouseId }]
+          : []),
+      ],
     }),
     getDispatchBatchValidation: build.query<DispatchBatchValidationResponse, Id>({
       query: (batchId) => `/api/dispatch/batches/${batchId}/validation`,
       providesTags: (_result, _error, batchId) => [{ type: 'DispatchBatch', id: batchId }],
+    }),
+    runDispatchAgentValidation: build.mutation<DispatchAgentValidationResponse, Id>({
+      query: (batchId) => ({
+        url: `/api/dispatch/batches/${batchId}/agent-validation`,
+        method: 'POST',
+      }),
+      invalidatesTags: (_result, _error, batchId) => [{ type: 'DispatchBatch', id: batchId }],
+    }),
+    validateDispatchCandidate: build.mutation<
+      DispatchCandidateAgentValidationResponse,
+      ValidateDispatchCandidateRequest
+    >({
+      query: (body) => ({ url: '/api/dispatch/validate-candidate', method: 'POST', body }),
     }),
     getDispatchBatchValidationContext: build.query<DispatchBatchValidationContext, Id>({
       query: (batchId) => `/api/dispatch/batches/${batchId}/context`,
@@ -287,5 +342,7 @@ export const {
   useCreateDispatchBatchMutation,
   useReplaceDispatchBatchItemsMutation,
   useGetDispatchBatchValidationQuery,
+  useRunDispatchAgentValidationMutation,
+  useValidateDispatchCandidateMutation,
   useGetWarehouseThroughputQuery,
 } = warehouseApi

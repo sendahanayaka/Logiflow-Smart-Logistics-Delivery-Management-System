@@ -22,8 +22,16 @@ export function PackageIntakeForm({ warehouseId, zones }: PackageIntakeFormProps
     setError(undefined)
     const weightKg = Number(form.weightKg)
     const volumeM3 = Number(form.volumeM3)
-    if (!form.orderId.trim() || !form.storageZoneId || !form.trackingCode.trim() || weightKg <= 0 || volumeM3 <= 0) {
-      setError('Order, storage zone, tracking code, and positive weight and volume are required.')
+    if (
+      !isUuid(form.orderId.trim())
+      || !form.storageZoneId
+      || !form.trackingCode.trim()
+      || !Number.isFinite(weightKg)
+      || !Number.isFinite(volumeM3)
+      || weightKg <= 0
+      || volumeM3 <= 0
+    ) {
+      setError('A valid order UUID, storage zone, tracking code, and positive weight and volume are required.')
       return
     }
     try {
@@ -40,7 +48,7 @@ export function PackageIntakeForm({ warehouseId, zones }: PackageIntakeFormProps
   }
 
   return (
-    <form onSubmit={submit} noValidate>
+    <form className="surface stacked-form" onSubmit={submit} noValidate>
       <label>Order ID<input value={form.orderId} onChange={(event) => setForm({ ...form, orderId: event.target.value })} required /></label>
       <label>Storage zone
         <select value={form.storageZoneId} onChange={(event) => setForm({ ...form, storageZoneId: event.target.value })} required>
@@ -58,4 +66,8 @@ export function PackageIntakeForm({ warehouseId, zones }: PackageIntakeFormProps
       {error && <ApiMessage kind="error">{error}</ApiMessage>}
     </form>
   )
+}
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
 }

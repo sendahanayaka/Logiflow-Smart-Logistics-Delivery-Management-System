@@ -32,12 +32,14 @@ export function ThroughputPage() {
 
   if (!warehouseId) return <ApiMessage kind="error">A warehouse identifier is required.</ApiMessage>
   return (
-    <section>
-      <h1>Warehouse throughput</h1>
-      <p><Link to={`/warehouse/${warehouseId}`}>Back to warehouse</Link></p>
-      <form onSubmit={submit}>
-        <label>From <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} required /></label>
-        <label>To <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} required /></label>
+    <section className="warehouse-page">
+      <Link className="back-link" to={`/warehouse/${warehouseId}`}>← Back to warehouse</Link>
+      <div className="page-heading"><div><p className="eyebrow">Operational reporting</p><h1>Warehouse throughput</h1><p>Review received, reserved, dispatched, and batched activity for a selected period.</p></div></div>
+      <form className="surface report-form" onSubmit={submit}>
+        <div className="form-grid">
+          <label>From <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} required /></label>
+          <label>To <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} required /></label>
+        </div>
         <button type="submit">Load report</button>
       </form>
       {validationError && <ApiMessage kind="error">{validationError}</ApiMessage>}

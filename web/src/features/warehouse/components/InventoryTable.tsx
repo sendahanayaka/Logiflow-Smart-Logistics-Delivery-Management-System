@@ -27,7 +27,7 @@ export function InventoryTable({ packages, zones, availabilityPendingId, onMakeA
             <td>{item.weightKg} kg</td>
             <td>{item.volumeM3} m³</td>
             <td>{item.isFragile ? 'Yes' : 'No'}</td>
-            <td>{item.status}</td>
+            <td><span className={`status-pill status-${item.status.toLowerCase()}`}>{item.status}</span></td>
             <td>{new Date(item.receivedAt).toLocaleString()}</td>
             <td>
               {item.status === 'Received' && (

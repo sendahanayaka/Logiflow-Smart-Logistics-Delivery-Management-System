@@ -9,18 +9,18 @@ interface WarehouseTableProps {
 
 export function WarehouseTable({ warehouses }: WarehouseTableProps) {
   return (
-    <div>
+    <div className="warehouse-grid">
       {warehouses.map((warehouse) => (
-        <article key={warehouse.id} style={{ border: '1px solid #d1d5db', marginBottom: 12, padding: 16 }}>
+        <article key={warehouse.id} className="warehouse-card">
           <h2>{warehouse.name}</h2>
-          <p>{warehouse.location}</p>
+          <p className="warehouse-location">{warehouse.location}</p>
           <CapacityIndicator
             label="Warehouse volume"
             occupied={warehouse.occupiedVolumeM3}
             total={warehouse.totalVolumeM3}
             unit="m³"
           />
-          <p><Link to={`/warehouse/${warehouse.id}`}>Open warehouse</Link></p>
+          <Link className="button-link" to={`/warehouse/${warehouse.id}`}>Open warehouse</Link>
         </article>
       ))}
     </div>
