@@ -1,6 +1,15 @@
 import React from 'react';
 import { createBrowserRouter } from 'react-router-dom';
-import AppLayout from '../components/AppLayout';
+import { MainLayout } from '../shared/layout/MainLayout';
+import { LandingPage } from '../features/landing/LandingPage';
+import { LoginPage } from '../features/auth/pages/LoginPage';
+import { RegisterPage } from '../features/auth/pages/RegisterPage';
+import { ProtectedRoute } from '../features/auth/components/ProtectedRoute';
+import { AdminPortalPage } from '../features/portals/pages/AdminPortalPage';
+import { CustomerOrdersPage } from '../features/portals/pages/CustomerOrdersPage';
+import { WarehousePortalPage } from '../features/portals/pages/WarehousePortalPage';
+import { DriverPortalPage } from '../features/portals/pages/DriverPortalPage';
+
 import FleetLandingPage from '../features/fleet/pages/FleetLandingPage';
 import DriverListPage from '../features/fleet/pages/DriverListPage';
 import DriverCreatePage from '../features/fleet/pages/DriverCreatePage';
@@ -17,111 +26,136 @@ import OrderListPage from '../features/orders/pages/OrderListPage';
 
 export const router = createBrowserRouter([
   {
-    element: <AppLayout />,
+    path: '/',
+    element: <MainLayout />,
     children: [
       {
-        path: '/',
-        element: <DriverListPage />,
+        index: true,
+        element: <LandingPage />,
       },
       {
-        path: '/fleet',
+        path: 'login',
+        element: <LoginPage />,
+      },
+      {
+        path: 'register',
+        element: <RegisterPage />,
+      },
+      {
+        path: 'admin',
+        element: <ProtectedRoute allowedRoles={['ADMIN']} />,
+        children: [{ index: true, element: <AdminPortalPage /> }],
+      },
+      {
+        path: 'warehouse',
+        element: <ProtectedRoute allowedRoles={['WAREHOUSE_STAFF']} />,
+        children: [{ index: true, element: <WarehousePortalPage /> }],
+      },
+      {
+        path: 'driver',
+        element: <ProtectedRoute allowedRoles={['DRIVER']} />,
+        children: [{ index: true, element: <DriverPortalPage /> }],
+      },
+      // Fleet & Order Management Routes
+      {
+        path: 'fleet',
         element: <FleetLandingPage />,
       },
       {
-        path: '/fleet/drivers',
+        path: 'fleet/drivers',
         element: <DriverListPage />,
       },
       {
-        path: '/fleet/drivers/new',
+        path: 'fleet/drivers/new',
         element: <DriverCreatePage />,
       },
       {
-        path: '/fleet/drivers/:id',
+        path: 'fleet/drivers/:id',
         element: <DriverDetailsPage />,
       },
       {
-        path: '/fleet/drivers/:id/edit',
+        path: 'fleet/drivers/:id/edit',
         element: <DriverEditPage />,
       },
       {
-        path: '/fleet/vehicles',
+        path: 'fleet/vehicles',
         element: <VehicleListPage />,
       },
       {
-        path: '/fleet/vehicles/new',
+        path: 'fleet/vehicles/new',
         element: <VehicleCreatePage />,
       },
       {
-        path: '/fleet/vehicles/:id',
+        path: 'fleet/vehicles/:id',
         element: <VehicleDetailsPage />,
       },
       {
-        path: '/fleet/vehicles/:id/edit',
+        path: 'fleet/vehicles/:id/edit',
         element: <VehicleEditPage />,
       },
       {
-        path: '/fleet/assignments',
+        path: 'fleet/assignments',
         element: <AssignmentPage />,
       },
       {
-        path: '/fleet/schedules',
+        path: 'fleet/schedules',
         element: <DutySchedulePage />,
       },
       {
-        path: '/fleet/maintenance',
+        path: 'fleet/maintenance',
         element: <MaintenancePage />,
       },
       {
-        path: '/fleet/trips',
+        path: 'fleet/trips',
         element: <OrderListPage />,
       },
       {
-        path: '/orders',
+        path: 'orders',
         element: <OrderListPage />,
       },
       // Backward Compatibility Preserved Aliases
       {
-        path: '/drivers',
+        path: 'drivers',
         element: <DriverListPage />,
       },
       {
-        path: '/drivers/new',
+        path: 'drivers/new',
         element: <DriverCreatePage />,
       },
       {
-        path: '/drivers/:id',
+        path: 'drivers/:id',
         element: <DriverDetailsPage />,
       },
       {
-        path: '/drivers/:id/edit',
+        path: 'drivers/:id/edit',
         element: <DriverEditPage />,
       },
       {
-        path: '/vehicles',
+        path: 'vehicles',
         element: <VehicleListPage />,
       },
       {
-        path: '/vehicles/new',
+        path: 'vehicles/new',
         element: <VehicleCreatePage />,
       },
       {
-        path: '/vehicles/:id',
+        path: 'vehicles/:id',
         element: <VehicleDetailsPage />,
       },
       {
-        path: '/vehicles/:id/edit',
+        path: 'vehicles/:id/edit',
         element: <VehicleEditPage />,
       },
       {
-        path: '/assignments',
+        path: 'assignments',
         element: <AssignmentPage />,
       },
       {
-        path: '/schedules',
+        path: 'schedules',
         element: <DutySchedulePage />,
       },
       {
-        path: '/maintenance',
+        path: 'maintenance',
         element: <MaintenancePage />,
       },
     ],

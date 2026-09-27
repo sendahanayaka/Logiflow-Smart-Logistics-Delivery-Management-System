@@ -1,12 +1,15 @@
 # [S4] Route Planning & Notification agent — last agent before the human gate.
 #
-# SKELETON STUB: `_run` returns deterministic, schema-valid dummy output, and sets
-# the workflow to AWAITING_APPROVAL so the graph pauses at the human gate. Phase 3
-# (owner S4 — this repo's author) replaces `_run` with the real agent whose
-# allow-listed tools are: distance-matrix API (via backend) · route sequencer
-# (heuristic) · ETA calculator · notification composer.
+# "Code drives, LLM narrates." `_run` orchestrates the four deterministic tools
+# (sequence -> distances -> ETAs -> notifications) that MAKE every decision; the
+# LLM (in `routing_node`, via app.llm) only writes the human-readable summary for
+# the approval screen. A model failure can never produce a wrong route or ETA — and
+# if the LLM is down, narration degrades to a template while the plan stays valid.
 from __future__ import annotations
 
+from datetime import datetime
+
+from app import llm
 from app.schemas.common import AuditEntry, BatchCandidate, WorkflowStatus
 from app.schemas.routing import (
     NotificationPlan,
@@ -16,6 +19,15 @@ from app.schemas.routing import (
     Stop,
 )
 from app.state import WorkflowState
+from app.tools.routing_tools import (
+    eta_calculator,
+    notification_composer,
+    route_legs,
+    route_sequencer,
+)
+
+# Minutes spent unloading/servicing each stop before departing to the next.
+SERVICE_MIN = 5.0
 
 
 def _build_input(state: WorkflowState) -> RoutingInput:
@@ -36,42 +48,71 @@ def _build_input(state: WorkflowState) -> RoutingInput:
     )
 
 
-def _run(inp: RoutingInput) -> RoutingOutput:
-    """STUB [S4] — replace with the real routing agent + ETA engine in Phase 3."""
-    sequenced: list[SequencedStop] = []
-    per_leg_km, per_leg_min = 12.0, 25.0
-    for i, stop in enumerate(inp.stops):
-        sequenced.append(SequencedStop(
-            sequence=i + 1,
-            stop_id=stop.stop_id,
-            eta=stop.window_start,  # placeholder ETA; real ETA engine in Phase 3
-            distance_from_prev_km=0.0 if i == 0 else per_leg_km,
-        ))
-    n = len(sequenced)
+def _run(inp: RoutingInput, *, start_time: str, fragile: bool = False) -> RoutingOutput:
+    """Deterministically build the routing plan by orchestrating the four tools.
+
+    1. route_sequencer  -> order the stops (nearest-neighbour, window-aware)
+    2. route_legs       -> real leg distances/durations (OSRM, haversine fallback)
+    3. eta_calculator   -> per-stop ETAs from those legs
+    4. notification_composer -> the customer message set
+    """
+    stops = [s.model_dump() for s in inp.stops]
+
+    ordered = route_sequencer(stops)                              # tool 1
+    legs = route_legs(ordered)                                    # tool 2
+
+    # Use the real (OSRM/haversine) leg distances so ETAs and distances agree.
+    for i, stop in enumerate(ordered):
+        stop["distance_from_prev_km"] = legs["leg_distances_km"][i]
+
+    timed = eta_calculator(                                       # tool 3
+        ordered, leg_durations_min=legs["leg_durations_min"],
+        start_time=start_time, service_min=SERVICE_MIN,
+    )
+
+    sequenced = [
+        SequencedStop(
+            sequence=s["sequence"], stop_id=s["stop_id"],
+            eta=s["eta"], distance_from_prev_km=s["distance_from_prev_km"],
+        )
+        for s in timed
+    ]
+    notifications = notification_composer(timed, fragile=fragile)  # tool 4
+
     return RoutingOutput(
         workflow_id=inp.workflow_id,
         sequenced_stops=sequenced,
-        total_distance_km=per_leg_km * max(n - 1, 0),
-        total_duration_min=per_leg_min * n,
-        notification_plan=[
-            NotificationPlan(trigger="ON_THE_WAY", channel="PUSH", message="Your delivery is on the way."),
-            NotificationPlan(trigger="TEN_MIN_OUT", channel="PUSH", message="Your driver is about 10 minutes away."),
-            NotificationPlan(trigger="DELIVERED", channel="PUSH", message="Your package has been delivered."),
-        ],
+        total_distance_km=round(sum(s.distance_from_prev_km for s in sequenced), 3),
+        total_duration_min=timed[-1]["cumulative_min"] if timed else 0.0,
+        notification_plan=[NotificationPlan(**n) for n in notifications],
     )
 
 
 def routing_node(state: WorkflowState) -> dict:
     inp = _build_input(state)
-    out = _run(inp)
+    raw = state["input"]
+
+    start_time = raw.get("delivery_window_start") or datetime.now().isoformat(timespec="seconds")
+    fragile = "fragile" in ((state.get("triage") or {}).get("special_handling_flags") or [])
+
+    out = _run(inp, start_time=start_time, fragile=fragile)
+
+    # LLM narration for the approval screen (data-only customer notes; degrades to a
+    # template if Ollama is unavailable).
+    summary = llm.summarize_plan({
+        "stops": [s.model_dump() for s in out.sequenced_stops],
+        "total_distance_km": out.total_distance_km,
+        "total_duration_min": out.total_duration_min,
+        "notification_count": len(out.notification_plan),
+        "customer_notes": raw.get("customer_notes", ""),
+    })
+
     return {
         # last planning step — hand over to the human approval gate
         "status": WorkflowStatus.AWAITING_APPROVAL.value,
         "routing": out.model_dump(),
         "audit": [AuditEntry(
-            step="route", agent="routing",
-            summary=f"Sequenced {len(out.sequenced_stops)} stop(s), "
-                    f"{out.total_distance_km:.1f} km, {len(out.notification_plan)} notifications drafted.",
-            tool_calls=["distance_matrix", "route_sequencer", "eta_calculator", "notification_composer"],
+            step="route", agent="routing", summary=summary,
+            tool_calls=["route_sequencer", "distance_matrix", "eta_calculator", "notification_composer"],
         ).model_dump()],
     }
