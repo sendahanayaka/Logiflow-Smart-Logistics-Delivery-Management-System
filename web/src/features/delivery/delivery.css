@@ -107,3 +107,7 @@
     border-radius: 6px; padding: 0.6rem 0.8rem; }
 .pod-list__time { font-size: 0.8rem; color: var(--color-muted, #5e6982); }
 .pod-list__note { font-size: 0.82rem; color: var(--color-text, #1a2035); }
+
+/* customer track-by-code */
+.track-form { display: flex; gap: 0.6rem; max-width: 480px; }
+.track-form input { flex: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border, #e3e6f0); border-radius: 6px; font-size: 0.95rem; }

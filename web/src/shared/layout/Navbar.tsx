@@ -37,6 +37,7 @@ export const Navbar: React.FC = () => {
                 <div className="navbar-actions">
                     {isAuthenticated && user ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
+                            <Link to="/track" className="btn-login">Track</Link>
                             <span style={{ fontWeight: '500', color: 'var(--color-navy, #08006C)' }}>
                                 Welcome, {user.name}
                             </span>
