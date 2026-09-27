@@ -1,0 +1,65 @@
+/* [S4] Delivery admin — approvals, monitor, plan review */
+
+/* split: queue | detail */
+.wf-split { display: grid; grid-template-columns: 260px 1fr; gap: 1.5rem; align-items: start; }
+@media (max-width: 800px) { .wf-split { grid-template-columns: 1fr; } }
+
+.wf-queue { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.wf-queue__item {
+    width: 100%; text-align: left; background: #fff; border: 1px solid var(--color-border, #e3e6f0);
+    border-radius: 8px; padding: 0.75rem 0.9rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.2rem;
+}
+.wf-queue__item:hover { border-color: var(--color-primary, #ff5000); }
+.wf-queue__item.is-active { border-color: var(--color-primary, #ff5000); box-shadow: 0 0 0 1px var(--color-primary, #ff5000); }
+.wf-queue__item span { font-size: 0.8rem; color: var(--color-muted, #5e6982); }
+
+/* panel */
+.wf-panel { background: #fff; border: 1px solid var(--color-border, #e3e6f0); border-radius: 10px; padding: 1.5rem; }
+.wf-panel__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+.wf-panel__head h3 { color: var(--color-navy, #08006c); margin: 0; }
+.wf-summary { font-style: italic; color: var(--color-text, #1a2035); background: var(--color-orange-soft, #fff1eb);
+    border-left: 3px solid var(--color-primary, #ff5000); padding: 0.6rem 0.9rem; border-radius: 4px; margin: 1rem 0; }
+
+/* status badge */
+.wf-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.3px;
+    padding: 0.25rem 0.6rem; border-radius: 999px; text-transform: uppercase; white-space: nowrap; }
+.wf-badge--AwaitingApproval { background: #fef3c7; color: #92400e; }
+.wf-badge--Approved { background: #dbeafe; color: #1e40af; }
+.wf-badge--Completed { background: var(--color-success-bg, #e6f7f0); color: var(--color-success, #0a8754); }
+.wf-badge--Rejected, .wf-badge--Failed { background: #fee2e2; color: #b91c1c; }
+.wf-badge--Pending, .wf-badge--Planning { background: #eef1f6; color: #5e6982; }
+
+/* pipeline */
+.wf-pipeline { display: flex; align-items: center; flex-wrap: wrap; gap: 0.15rem; margin: 0.5rem 0 1rem; }
+.wf-pipeline--failed { color: #b91c1c; font-weight: 600; }
+.wf-stage { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 600;
+    padding: 0.3rem 0.6rem; border-radius: 6px; color: var(--color-muted, #5e6982); background: #f4f5fa; }
+.wf-stage__dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.wf-stage--done { color: var(--color-success, #0a8754); background: var(--color-success-bg, #e6f7f0); }
+.wf-stage--current { color: var(--color-primary, #ff5000); background: var(--color-orange-soft, #fff1eb); }
+.wf-stage--rejected { color: #b91c1c; background: #fee2e2; }
+.wf-connector { width: 16px; height: 2px; background: #cbd1e1; }
+.wf-connector--done { background: var(--color-success, #0a8754); }
+
+/* tables */
+.wf-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+.wf-table th, .wf-table td { text-align: left; padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--color-border, #e3e6f0); }
+.wf-table th { color: var(--color-muted, #5e6982); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
+.wf-table tfoot td { font-weight: 700; color: var(--color-navy, #08006c); border-bottom: none; }
+.wf-table--clickable tbody tr { cursor: pointer; }
+.wf-table--clickable tbody tr:hover { background: #f9fafc; }
+.wf-table--clickable tbody tr.is-active { background: var(--color-orange-soft, #fff1eb); }
+
+/* actions */
+.wf-actions { margin-top: 1.25rem; border-top: 1px solid var(--color-border, #e3e6f0); padding-top: 1.25rem; }
+.wf-assign { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.wf-assign label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.82rem; font-weight: 600; color: var(--color-muted, #5e6982); }
+.wf-assign select, .wf-reason { padding: 0.5rem 0.6rem; border: 1px solid var(--color-border, #e3e6f0); border-radius: 6px; font-size: 0.9rem; }
+.wf-reason { width: 100%; margin-bottom: 0.9rem; }
+.wf-btn-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.wf-btn { border: none; border-radius: 6px; padding: 0.6rem 1.1rem; font-weight: 600; cursor: pointer; color: #fff; }
+.wf-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.wf-btn--approve { background: var(--color-success, #0a8754); }
+.wf-btn--reject { background: var(--color-danger, #d92550); }
+.wf-btn--revise { background: var(--color-navy, #08006c); }
+.wf-ok { color: var(--color-success, #0a8754); font-weight: 600; margin: 0.5rem 0; }

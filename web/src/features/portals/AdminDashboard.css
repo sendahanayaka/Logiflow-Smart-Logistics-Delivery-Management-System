@@ -1,0 +1,102 @@
+/* [S4] Admin (ops) dashboard */
+
+.admin-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    border-bottom: 1px solid #E5E7EB;
+    margin-bottom: 1.5rem;
+}
+
+.admin-tab {
+    background: none;
+    border: none;
+    padding: 0.7rem 1.1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #6B7280;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.admin-tab:hover {
+    color: var(--color-navy, #08006C);
+}
+
+.admin-tab--active {
+    color: var(--color-navy, #08006C);
+    border-bottom-color: var(--color-primary, #FD5901);
+}
+
+.admin-content {
+    min-height: 240px;
+}
+
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.25rem;
+}
+
+.admin-stat {
+    background-color: var(--color-white, #FFFFFF);
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.admin-stat--accent {
+    border-left: 4px solid var(--color-primary, #FD5901);
+}
+
+.admin-stat__value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--color-navy, #08006C);
+    line-height: 1;
+}
+
+.admin-stat__label {
+    font-size: 0.9rem;
+    color: #6B7280;
+}
+
+.admin-muted { color: #6B7280; }
+.admin-error { color: #B91C1C; }
+
+.admin-link-card {
+    background-color: var(--color-white, #FFFFFF);
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.admin-link-card h3 {
+    color: var(--color-navy, #08006C);
+    margin-bottom: 0.5rem;
+}
+
+.admin-link-card p {
+    color: #6B7280;
+    margin-bottom: 1.25rem;
+}
+
+.admin-btn {
+    display: inline-block;
+    background-color: var(--color-primary, #FD5901);
+    color: var(--color-white, #FFFFFF);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.admin-btn:hover { filter: brightness(0.95); }
