@@ -24,6 +24,14 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
 
+    // [S4] Delivery execution & tracking
+    public DbSet<AgentWorkflow> AgentWorkflows => Set<AgentWorkflow>();
+    public DbSet<RouteStop> RouteStops => Set<RouteStop>();
+    public DbSet<Shipment> Shipments => Set<Shipment>();
+    public DbSet<ApprovalDecision> ApprovalDecisions => Set<ApprovalDecision>();
+    public DbSet<TrackingEvent> TrackingEvents => Set<TrackingEvent>();
+    public DbSet<ProofOfDelivery> ProofOfDeliveries => Set<ProofOfDelivery>();
+
     public Task<IDbContextTransaction> BeginTransactionAsync(
         IsolationLevel isolationLevel,
         CancellationToken cancellationToken = default) =>
