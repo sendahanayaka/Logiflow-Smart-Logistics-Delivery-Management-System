@@ -5,12 +5,14 @@ using LogiFlow.Api.DTOs.Workflows;
 using LogiFlow.Application.Workflows;
 using LogiFlow.Application.Workflows.DTOs;
 using LogiFlow.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LogiFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/workflows")]
+[Authorize(Roles = "ADMIN")] // ops manager (S1 seeds Operations Manager as the ADMIN role)
 public class WorkflowsController : ControllerBase
 {
     private readonly IAgentWorkflowService _workflows;
@@ -30,7 +32,6 @@ public class WorkflowsController : ControllerBase
         _approveValidator = approveValidator;
     }
 
-    // TODO(S1-auth): restrict to Operations Manager once authentication is wired.
     [HttpPost]
     [ProducesResponseType(typeof(WorkflowResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -85,7 +86,6 @@ public class WorkflowsController : ControllerBase
         return workflow is null ? NotFound() : Ok(workflow);
     }
 
-    // TODO(S1-auth): restrict to Operations Manager once authentication is wired.
     [HttpPost("{id:guid}/approval")]
     [ProducesResponseType(typeof(ApprovalResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

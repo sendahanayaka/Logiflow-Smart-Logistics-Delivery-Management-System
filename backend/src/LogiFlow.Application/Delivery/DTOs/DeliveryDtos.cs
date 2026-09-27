@@ -30,7 +30,8 @@ public sealed record TimelineStop(
     string StopKey,
     string Address,
     DateTime PlannedEta,
-    string Status);
+    string Status,
+    bool? OnTime = null);
 
 /// <summary>An actual tracking event recorded against a run.</summary>
 public sealed record TimelineEvent(
@@ -47,4 +48,41 @@ public sealed record TimelineEntry(
     DateTime PlannedEta,
     string Status,
     DateTime? ActualAt,
-    string? Note);
+    string? Note,
+    bool? OnTime = null);
+
+// --- Phase 5 views + commands ------------------------------------------------
+
+/// <summary>Customer / ops live-tracking view of a shipment.</summary>
+public sealed record TrackingView(
+    Guid ShipmentId,
+    string ShipmentCode,
+    string Status,
+    IReadOnlyList<TimelineEntry> Stops);
+
+/// <summary>Driver's assigned run.</summary>
+public sealed record DriverRunView(
+    Guid ShipmentId,
+    string ShipmentCode,
+    string Status,
+    Guid DriverId,
+    Guid VehicleId,
+    IReadOnlyList<TimelineEntry> Stops);
+
+/// <summary>Driver reports progress at a stop; ARRIVED triggers a downstream ETA recompute.</summary>
+public sealed record RecordStopEventCommand(
+    string StopKey,
+    string Kind,               // ARRIVED | DEPARTED
+    DateTime? OccurredAt,
+    string? Note,
+    double? Latitude,
+    double? Longitude);
+
+/// <summary>Proof of delivery captured at a stop.</summary>
+public sealed record RecordPodCommand(
+    string StopKey,
+    string? ReceivedByName,
+    string? SignatureImageUrl,
+    string? PhotoUrl,
+    string? Notes,
+    DateTime? DeliveredAt);

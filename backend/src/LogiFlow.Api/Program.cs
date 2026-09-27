@@ -2,6 +2,7 @@ using FluentValidation;
 using LogiFlow.Api.Controllers;
 using LogiFlow.Api.Middleware;
 using LogiFlow.Application.Common.Interfaces;
+using LogiFlow.Application.Delivery;
 using LogiFlow.Application.Warehouse;
 using LogiFlow.Application.Workflows;
 using LogiFlow.Infrastructure.Agents;
@@ -58,6 +59,7 @@ builder.Services.AddAuthorization();
 // [S4] Delivery execution: workflow service + typed HttpClient to the internal agent.
 builder.Services.AddScoped<IAgentWorkflowService, AgentWorkflowService>();
 builder.Services.AddScoped<IApprovalService, ApprovalService>();
+builder.Services.AddScoped<IShipmentService, ShipmentService>();
 
 var agentBaseUrl = builder.Configuration["AgentService:BaseUrl"] ?? "http://localhost:8000";
 var agentApiKey = builder.Configuration["AgentService:ApiKey"];

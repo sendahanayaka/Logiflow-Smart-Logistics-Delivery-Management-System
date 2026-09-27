@@ -35,7 +35,8 @@ public static class TimelineBuilder
                     stop.PlannedEta,
                     stop.Status,
                     actual?.OccurredAt,
-                    actual?.Note);
+                    actual?.Note,
+                    stop.OnTime);
             })
             .ToList();
     }
