@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LogiFlow.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260926074821_AddDeliveryOrders")]
+    [Migration("20260926182615_AddDeliveryOrders")]
     partial class AddDeliveryOrders
     {
         /// <inheritdoc />

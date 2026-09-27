@@ -50,7 +50,17 @@ export const OrderForm: React.FC<Props> = ({ onSubmit, isLoading }) => {
             return;
         }
 
-        onSubmit(formData);
+        const payload = { ...formData };
+
+        if (payload.preferredPickupDate && payload.preferredPickupDate.length === 10) {
+            payload.preferredPickupDate = `${payload.preferredPickupDate}T00:00:00Z`;
+        }
+
+        if (payload.preferredPickupTime && payload.preferredPickupTime.length === 5) {
+            payload.preferredPickupTime = `${payload.preferredPickupTime}:00`;
+        }
+
+        onSubmit(payload);
     };
 
     return (

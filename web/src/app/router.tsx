@@ -6,7 +6,9 @@ import { LoginPage } from '../features/auth/pages/LoginPage';
 import { RegisterPage } from '../features/auth/pages/RegisterPage';
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute';
 import { AdminPortalPage } from '../features/portals/pages/AdminPortalPage';
-import { CustomerOrdersPage } from '../features/portals/pages/CustomerOrdersPage';
+import { OrderListPage } from '../features/orders/pages/OrderListPage';
+import { OrderCreatePage } from '../features/orders/pages/OrderCreatePage';
+import { OrderDetailsPage } from '../features/orders/pages/OrderDetailsPage';
 import { WarehousePortalPage } from '../features/portals/pages/WarehousePortalPage';
 import { DriverPortalPage } from '../features/portals/pages/DriverPortalPage';
 
@@ -38,7 +40,10 @@ export const router = createBrowserRouter([
                 path: 'orders',
                 element: <ProtectedRoute allowedRoles={['CUSTOMER']} />,
                 children: [
-                    { index: true, element: <CustomerOrdersPage /> }
+                    { index: true, element: <OrderListPage /> },
+                    { path: 'new', element: <OrderCreatePage /> },
+                    { path: 'create', element: <OrderCreatePage /> },
+                    { path: ':id', element: <OrderDetailsPage /> }
                 ]
             },
             {

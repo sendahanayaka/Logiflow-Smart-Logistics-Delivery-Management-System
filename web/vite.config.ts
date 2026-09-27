@@ -15,7 +15,6 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['./src/test/setup.ts'],
-    include: ['src/features/auth/**/*.test.ts', 'src/features/auth/**/*.test.tsx'],
+    setupFiles: ['./src/test/setup.ts']
   }
 } as any);

@@ -28,6 +28,7 @@ public sealed class ExceptionMiddleware
         }
         catch (Exception exception) when (!context.Response.HasStarted)
         {
+
             var isConflict = IsExpectedConflict(exception);
             var problem = new ProblemDetails
             {
