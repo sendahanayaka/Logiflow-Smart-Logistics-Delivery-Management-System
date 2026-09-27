@@ -31,7 +31,7 @@ import { ThroughputPage } from '../features/warehouse/pages/ThroughputPage';
 import { WarehouseDetailsPage } from '../features/warehouse/pages/WarehouseDetailsPage';
 import { WarehouseListPage } from '../features/warehouse/pages/WarehouseListPage';
 
-export const router = createBrowserRouter([
+export const routes = [
   {
     path: '/',
     element: <MainLayout />,
@@ -180,4 +180,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-]);
+];
+
+export const router = createBrowserRouter(routes);
