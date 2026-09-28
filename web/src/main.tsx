@@ -6,6 +6,7 @@ import { store } from './app/store';
 import { router } from './app/router';
 import { InteractiveDotGrid } from './components/InteractiveDotGrid';
 import './index.css';
+import './styles.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

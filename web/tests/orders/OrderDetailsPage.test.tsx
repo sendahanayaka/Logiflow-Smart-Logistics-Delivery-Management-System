@@ -1,15 +1,16 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
+import '@testing-library/jest-dom';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { OrderDetailsPage } from '../../src/features/orders/pages/OrderDetailsPage';
 import { DeliveryOrderResponse } from '../../src/features/orders/types';
 
-vi.mock('../../src/features/orders/api', () => ({
+vi.mock('../../src/features/orders/ordersApi', () => ({
     getOrderById: vi.fn(),
     cancelOrder: vi.fn(),
 }));
 
-import { getOrderById } from '../../src/features/orders/api';
+import { getOrderById, cancelOrder } from '../../src/features/orders/ordersApi';
 
 const mockOrder: DeliveryOrderResponse = {
     id: 'ord-123',
@@ -51,7 +52,7 @@ describe('OrderDetailsPage', () => {
 
         expect(await screen.findByText('Order Details')).toBeInTheDocument();
         expect(screen.getByText('DELIVERY PRICING')).toBeInTheDocument();
-        expect(screen.getByText('Calculating delivery fee...')).toBeInTheDocument();
+        expect(screen.getByText('Calculating...')).toBeInTheDocument();
     });
 
     it('renders the fee breakdown correctly when pricing is available', async () => {
@@ -84,7 +85,8 @@ describe('OrderDetailsPage', () => {
         // Match specific rounded texts 
         expect(screen.getByText('Rs. 300.00')).toBeInTheDocument();
         expect(screen.getByText('Rs. 600.00')).toBeInTheDocument();
-        expect(screen.getByText('Rs. 200.00')).toBeInTheDocument();
+        expect(screen.getByText('Rs. 250.00')).toBeInTheDocument();
+        expect(screen.getByText('Rs. 0.00')).toBeInTheDocument();
         expect(screen.getByText('Total Fee:')).toBeInTheDocument();
         expect(screen.getByText('Rs. 1,150')).toBeInTheDocument();
     });

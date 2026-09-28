@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from app.agents import validation_agent
 from app.agents.allocation_agent import _build_input, _run
 from app.schemas.allocation import AllocationInput
 
@@ -72,6 +73,81 @@ def mock_fleet_api(monkeypatch):
         return []
 
     monkeypatch.setattr("app.tools.fleet_tools._get", mock_get)
+
+
+@pytest.fixture(autouse=True)
+def mock_s3_validation_tools(monkeypatch):
+    context = {
+        "batchId": "batch-test-001",
+        "warehouseId": "warehouse-test-001",
+        "vehicleId": "veh-001",
+        "batchStatus": "Reserved",
+        "maxWeightKg": 1000,
+        "maxVolumeM3": 12,
+        "totalWeightKg": 400,
+        "totalVolumeM3": 1,
+        "packages": [{
+            "packageId": "package-test-001",
+            "orderId": "ORD-101",
+            "warehouseId": "warehouse-test-001",
+            "trackingCode": "TRACK-TEST-001",
+            "status": "Reserved",
+            "weightKg": 400,
+            "volumeM3": 1,
+            "isFragile": False,
+            "loadSequence": 1,
+        }],
+    }
+    capacity = {
+        "batch_id": "batch-test-001",
+        "vehicle_id": "veh-001",
+        "total_weight_kg": 400,
+        "total_volume_m3": 1,
+        "max_weight_kg": 1000,
+        "max_volume_m3": 12,
+        "within_weight_capacity": True,
+        "within_volume_capacity": True,
+        "backend_totals_match": True,
+    }
+    stock = {
+        "batch_id": "batch-test-001",
+        "warehouse_id": "warehouse-test-001",
+        "batch_warehouse_id": "warehouse-test-001",
+        "expected_status": "Reserved",
+        "packages": [{
+            "package_id": "package-test-001",
+            "exists": True,
+            "belongs_to_expected_warehouse": True,
+            "belongs_to_batch": True,
+            "has_expected_dispatch_state": True,
+            "already_dispatched": False,
+        }],
+        "all_packages_present": True,
+        "all_belong_to_expected_warehouse": True,
+        "all_belong_to_batch": True,
+        "all_in_expected_dispatch_state": True,
+        "none_dispatched": True,
+        "valid": True,
+    }
+    compatibility = {
+        "batch_id": "batch-test-001",
+        "load_sequence_valid": True,
+        "fragile_not_under_heavy": True,
+        "valid": True,
+    }
+    monkeypatch.setattr(validation_agent, "fetch_batch_validation_context", lambda *_: context)
+    monkeypatch.setattr(validation_agent, "capacity_calculator", lambda *_: capacity)
+    monkeypatch.setattr(
+        validation_agent,
+        "warehouse_stock_query",
+        lambda *_args, **_kwargs: stock,
+    )
+    monkeypatch.setattr(validation_agent, "compatibility_rules", lambda *_: compatibility)
+    monkeypatch.setattr(
+        validation_agent,
+        "_ollama_explanation",
+        lambda *_: (_ for _ in ()).throw(RuntimeError("Ollama unavailable")),
+    )
 
 
 def make_input(
@@ -377,6 +453,7 @@ def test_human_approval_and_execution_flow(monkeypatch):
         "workflow_id": "wf-e2e-001",
         "input": {
             "order_ids": ["ORD-101"],
+            "batch_id": "batch-test-001",
             "total_weight_kg": 400.0,
             "vehicle_type": "Van",
             "delivery_window_start": "2026-09-23T10:00:00+00:00",
@@ -421,6 +498,7 @@ def test_human_rejection_prevents_assignment_execution(monkeypatch):
         "workflow_id": "wf-reject-001",
         "input": {
             "order_ids": ["ORD-101"],
+            "batch_id": "batch-test-001",
             "total_weight_kg": 400.0,
             "vehicle_type": "Van",
         },

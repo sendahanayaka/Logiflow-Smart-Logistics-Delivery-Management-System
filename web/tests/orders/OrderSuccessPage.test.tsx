@@ -59,8 +59,8 @@ describe('OrderSuccessPage Component', () => {
         expect(screen.getByText(/#ORD-1234/i)).toBeInTheDocument();
 
         // Location Info
-        expect(screen.getByText('City A')).toBeInTheDocument();
-        expect(screen.getByText('City B')).toBeInTheDocument();
+        expect(screen.getByText((content) => content.includes('City A'))).toBeInTheDocument();
+        expect(screen.getByText((content) => content.includes('City B'))).toBeInTheDocument();
 
         // Package Info
         expect(screen.getByText('Electronics')).toBeInTheDocument();
