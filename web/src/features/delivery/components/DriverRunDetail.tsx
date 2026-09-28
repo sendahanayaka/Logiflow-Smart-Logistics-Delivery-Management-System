@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import type { TimelineEntry } from '../types';
 import { useGetDriverRunQuery, useRecordStopEventMutation } from '../deliveryApi';
 import { shipmentBadgeClass, stopBadgeClass } from '../statusBadge';
+import { PodForm } from './PodForm';
 
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : '—');
 
@@ -63,6 +64,10 @@ export const DriverRunDetail: React.FC<{ shipmentId: string }> = ({ shipmentId }
 
       {error && <div className="run-detail__error">{error}</div>}
 
+      {activeSeq === null && (
+        <div className="run-detail__done">✓ Run complete — all stops delivered.</div>
+      )}
+
       <ol className="stop-list">
         {stops.map((s) => {
           const active = s.sequence === activeSeq;
@@ -107,7 +112,7 @@ export const DriverRunDetail: React.FC<{ shipmentId: string }> = ({ shipmentId }
                       </button>
                     )}
                     {s.status === 'Arrived' && (
-                      <span className="stop__hint">At stop — proof of delivery coming next.</span>
+                      <PodForm shipmentId={shipmentId} stopKey={s.stopKey} />
                     )}
                   </div>
                 )}
