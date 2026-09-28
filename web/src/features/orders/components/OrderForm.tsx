@@ -65,11 +65,8 @@ export const OrderForm: React.FC<Props> = ({ onSubmit, isLoading }) => {
 
     const hasRequiredFields = formData.pickupCity && formData.deliveryCity && formData.weightKg > 0 && formData.lengthCm > 0 && formData.widthCm > 0 && formData.heightCm > 0;
 
-    const sameCity = formData.pickupCity.trim().toLowerCase() === formData.deliveryCity.trim().toLowerCase();
-
     let estimatedFee = 500;
     let estimatedTime = '';
-    let estimatedDistance = 0;
 
     if (hasRequiredFields) {
         const weight = formData.weightKg;
@@ -85,32 +82,9 @@ export const OrderForm: React.FC<Props> = ({ onSubmit, isLoading }) => {
         if (volume > 50000) estimatedFee += 500;
         else if (volume > 10000) estimatedFee += 200;
 
+        const sameCity = formData.pickupCity.trim().toLowerCase() === formData.deliveryCity.trim().toLowerCase();
         if (!sameCity) {
-            const pickup = formData.pickupCity.trim().toLowerCase();
-            const delivery = formData.deliveryCity.trim().toLowerCase();
-
-            const distances: Record<string, number> = {
-                'colombo': 0, 'malabe': 15, 'battaramulla': 10, 'maharagama': 15, 'nugegoda': 10,
-                'dehiwala': 10, 'moratuwa': 20, 'panadura': 25, 'negombo': 40, 'gampaha': 30,
-                'kandy': 115, 'galle': 120, 'matara': 160, 'kurunegala': 95, 'anuradhapura': 205,
-                'jaffna': 395, 'trincomalee': 265, 'nuwara eliya': 160, 'ratnapura': 100,
-                'hambantota': 240, 'kegalle': 80, 'matale': 140, 'badulla': 230
-            };
-
-            const d1 = distances[pickup];
-            const d2 = distances[delivery];
-
-            if (d1 !== undefined && d2 !== undefined) {
-                if (d1 === 0) estimatedDistance = d2;
-                else if (d2 === 0) estimatedDistance = d1;
-                else if (d1 <= 25 && d2 <= 25) estimatedDistance = Math.max(10, Math.abs(d1 - d2)); // suburbs 
-                else estimatedDistance = d1 + d2; // proxy for routing via colombo
-            } else {
-                // Fallback deterministic distance based on string lengths if unknown 
-                estimatedDistance = Math.max(25, Math.abs(pickup.length - delivery.length) * 10 + 40);
-            }
-
-            estimatedFee += Math.ceil(estimatedDistance * 50); // 50 LKR per km
+            estimatedFee += 1500; // Out of city surcharge
         }
 
         const isExpress = formData.priority === 'Express';
@@ -228,10 +202,6 @@ export const OrderForm: React.FC<Props> = ({ onSubmit, isLoading }) => {
                             <div className="estimate-block">
                                 <span className="estimate-label">Estimated Delivery</span>
                                 <span className="estimate-value time-value">{estimatedTime}</span>
-                            </div>
-                            <div className="estimate-block">
-                                <span className="estimate-label">Est. Distance</span>
-                                <span className="estimate-value">{sameCity ? '< 10' : estimatedDistance} km</span>
                             </div>
                             <div className="estimate-block">
                                 <span className="estimate-label">Estimated Fee</span>
