@@ -1,15 +1,12 @@
 // [S4]  driver run detail — ordered stops + arrive/depart progress.
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { TimelineEntry } from '../types';
 import { useGetDriverRunQuery, useRecordStopEventMutation } from '../deliveryApi';
 import { shipmentBadgeClass, stopBadgeClass } from '../statusBadge';
+import { activeStopSequence, deliveredCount } from '../driverRun';
 import { PodForm } from './PodForm';
 
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : '—');
-
-// The stop the driver is currently working: the first one not yet finished.
-const isOpen = (s: TimelineEntry) => s.status !== 'Delivered' && s.status !== 'Skipped';
 
 export const DriverRunDetail: React.FC<{ shipmentId: string }> = ({ shipmentId }) => {
   const { data: run, isLoading, isError, refetch } = useGetDriverRunQuery(shipmentId);
@@ -33,8 +30,8 @@ export const DriverRunDetail: React.FC<{ shipmentId: string }> = ({ shipmentId }
   }
 
   const stops = [...run.stops].sort((a, b) => a.sequence - b.sequence);
-  const activeSeq = stops.find(isOpen)?.sequence ?? null;
-  const delivered = stops.filter((s) => s.status === 'Delivered').length;
+  const activeSeq = activeStopSequence(stops);
+  const delivered = deliveredCount(stops);
 
   const record = async (stopKey: string, kind: 'ARRIVED' | 'DEPARTED') => {
     setError(null);
