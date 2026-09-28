@@ -11,18 +11,49 @@ namespace LogiFlow.Application.Delivery;
 public class ShipmentService : IShipmentService
 {
     private readonly IAppDbContext _context;
+    private readonly ICurrentUserService _currentUser;
     private readonly ILogger<ShipmentService> _logger;
 
-    public ShipmentService(IAppDbContext context, ILogger<ShipmentService> logger)
+    public ShipmentService(IAppDbContext context, ICurrentUserService currentUser, ILogger<ShipmentService> logger)
     {
         _context = context;
+        _currentUser = currentUser;
         _logger = logger;
     }
 
-    public async Task<IReadOnlyList<ShipmentSummary>> ListShipmentsAsync(CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ShipmentSummary>> ListShipmentsAsync(CancellationToken cancellationToken = default) =>
+        ProjectSummariesAsync(_context.Shipments.AsNoTracking(), cancellationToken);
+
+    public async Task<IReadOnlyList<ShipmentSummary>> GetMyRunsAsync(CancellationToken cancellationToken = default)
     {
-        var rows = await _context.Shipments
+        var userId = _currentUser.UserId;
+        if (userId is null)
+        {
+            return Array.Empty<ShipmentSummary>();
+        }
+
+        // Resolve the signed-in driver's fleet profile (Driver.UserId links to the account),
+        // then list only the shipments assigned to that driver.
+        var driverId = await _context.Drivers
             .AsNoTracking()
+            .Where(driver => driver.UserId == userId)
+            .Select(driver => (Guid?)driver.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (driverId is null)
+        {
+            return Array.Empty<ShipmentSummary>();
+        }
+
+        return await ProjectSummariesAsync(
+            _context.Shipments.AsNoTracking().Where(shipment => shipment.DriverId == driverId),
+            cancellationToken);
+    }
+
+    private static async Task<IReadOnlyList<ShipmentSummary>> ProjectSummariesAsync(
+        IQueryable<Shipment> query, CancellationToken cancellationToken)
+    {
+        var rows = await query
             .OrderByDescending(shipment => shipment.CreatedAt)
             .Select(shipment => new
             {
