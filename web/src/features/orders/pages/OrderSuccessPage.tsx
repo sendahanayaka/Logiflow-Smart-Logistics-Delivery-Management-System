@@ -65,7 +65,7 @@ export const OrderSuccessPage: React.FC = () => {
                                 <div><strong>Priority:</strong> {order.priority}</div>
                                 <div><strong>Handling:</strong> {order.specialHandling || 'Standard'}</div>
                                 <div><strong>Weight:</strong> {order.weightKg} kg</div>
-                                <div><strong>Dimensions:</strong> {order.lengthCm}x{order.widthCm}x{order.heightCm} cm</div>
+                                <div><strong>Volume:</strong> {((order.lengthCm * order.widthCm * order.heightCm) / 1000000).toFixed(4)} m³</div>
                             </div>
                         </div>
                     </div>
