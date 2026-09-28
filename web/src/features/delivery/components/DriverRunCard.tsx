@@ -1,14 +1,7 @@
 // [S4]  one assigned-run card in the driver portal.
 import React from 'react';
 import type { ShipmentSummary } from '../types';
-
-const STATUS_CLASS: Record<string, string> = {
-  Created: 'run-badge--planned',
-  Dispatched: 'run-badge--dispatched',
-  InTransit: 'run-badge--transit',
-  Delivered: 'run-badge--delivered',
-  Cancelled: 'run-badge--cancelled',
-};
+import { shipmentBadgeClass } from '../statusBadge';
 
 const formatDispatched = (iso: string | null): string => {
   if (!iso) return 'Not dispatched yet';
@@ -27,7 +20,7 @@ export const DriverRunCard: React.FC<Props> = ({ run, onOpen }) => {
   const total = run.stopCount || 0;
   const done = run.deliveredCount || 0;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-  const badgeClass = STATUS_CLASS[run.status] ?? 'run-badge--planned';
+  const badgeClass = shipmentBadgeClass(run.status);
 
   return (
     <article className="run-card">

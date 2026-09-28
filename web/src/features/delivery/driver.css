@@ -141,3 +141,173 @@
   color: #9CA3AF;
   cursor: default;
 }
+
+/* --- run detail --- */
+.run-detail__top {
+  margin-bottom: 1rem;
+}
+
+.run-detail__back {
+  color: var(--color-navy, #08006C);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.92rem;
+}
+
+.run-detail__back:hover {
+  text-decoration: underline;
+}
+
+.run-detail__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.run-detail__title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.run-detail__progress {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4B5563;
+}
+
+.run-detail__error {
+  background: #FADBD9;
+  color: #B02A24;
+  border: 1px solid #F0B4B1;
+  border-radius: 6px;
+  padding: 0.7rem 1rem;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+/* --- stop list --- */
+.stop-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.stop {
+  display: flex;
+  gap: 1rem;
+  background: var(--color-white, #FFFFFF);
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  padding: 1rem 1.15rem;
+}
+
+.stop--active {
+  border-color: var(--color-primary, #FD5901);
+  box-shadow: 0 0 0 2px rgba(253, 89, 1, 0.12);
+}
+
+.stop__seq {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-navy, #08006C);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stop__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.stop__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.stop__head strong {
+  color: #1F2937;
+  font-size: 0.98rem;
+}
+
+.stop-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.stop-badge--pending   { background: #EEF0F5; color: #4B5563; }
+.stop-badge--enroute   { background: #DCEBFF; color: #1D4ED8; }
+.stop-badge--arrived   { background: #FFE9D6; color: #B4530A; }
+.stop-badge--delivered { background: #DAF5E4; color: #1B7A43; }
+.stop-badge--skipped   { background: #FADBD9; color: #B02A24; }
+
+.stop__meta {
+  font-size: 0.82rem;
+  color: #6B7280;
+  margin-top: 0.35rem;
+}
+
+.stop__ontime { color: #1B7A43; font-weight: 600; }
+.stop__late   { color: #B02A24; font-weight: 600; }
+
+.stop__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.stop__btn {
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.stop__btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.stop__btn--primary {
+  background: var(--color-primary, #FD5901);
+  color: #FFFFFF;
+}
+
+.stop__btn--secondary {
+  background: #EEF0F5;
+  color: var(--color-navy, #08006C);
+}
+
+.stop__btn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.stop__hint {
+  font-size: 0.85rem;
+  color: #6B7280;
+  font-style: italic;
+}

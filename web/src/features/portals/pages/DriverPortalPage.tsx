@@ -1,11 +1,13 @@
 // [S4]  driver portal — the signed-in driver's assigned runs.
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../Portal.css';
 import '../../delivery/driver.css';
 import { useGetMyRunsQuery } from '../../delivery/deliveryApi';
 import { DriverRunCard } from '../../delivery/components/DriverRunCard';
 
 export const DriverPortalPage: React.FC = () => {
+    const navigate = useNavigate();
     const { data: runs = [], isLoading, isError, refetch } = useGetMyRunsQuery();
 
     return (
@@ -39,7 +41,11 @@ export const DriverPortalPage: React.FC = () => {
                     <p className="driver-hint">{runs.length} run{runs.length === 1 ? '' : 's'} assigned to you.</p>
                     <div className="driver-runs">
                         {runs.map((run) => (
-                            <DriverRunCard key={run.id} run={run} />
+                            <DriverRunCard
+                                key={run.id}
+                                run={run}
+                                onOpen={(r) => navigate(`/driver/runs/${r.id}`)}
+                            />
                         ))}
                     </div>
                 </>
