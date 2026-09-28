@@ -1,6 +1,13 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+// Browser requests use the Vite /api proxy. Node-based RTK Query tests need an
+// absolute URL because the platform Request implementation cannot parse a
+// relative URL without a browser location.
+export const API_BASE_URL = configuredApiBaseUrl || '/api';
+const apiRequestBaseUrl = configuredApiBaseUrl ||
+  (typeof window === 'undefined' ? 'http://localhost:5173/api' : '/api');
 
 export const handleApiError = async (response: Response) => {
   if (!response.ok) {
@@ -18,7 +25,7 @@ export const handleApiError = async (response: Response) => {
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: API_BASE_URL,
+    baseUrl: apiRequestBaseUrl,
     prepareHeaders: (headers, { getState }: any) => {
       const token = getState()?.auth?.token;
       if (token) {
@@ -27,6 +34,21 @@ export const baseApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Driver', 'Vehicle', 'Assignment', 'DutySchedule', 'MaintenanceRecord', 'Workflow', 'Shipment', 'Tracking'],
+  tagTypes: [
+    'Driver',
+    'Vehicle',
+    'Assignment',
+    'DutySchedule',
+    'MaintenanceRecord',
+    'Workflow',
+    'Shipment',
+    'Tracking',
+    'Warehouse',
+    'WarehouseZones',
+    'WarehouseInventory',
+    'Package',
+    'DispatchBatch',
+    'Throughput',
+  ],
   endpoints: () => ({}),
 });
