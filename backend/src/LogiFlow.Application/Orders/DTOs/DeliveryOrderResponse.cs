@@ -23,4 +23,5 @@ public record DeliveryOrderResponse(
     string Status,
     DateTime CreatedAt,
     DateTime? UpdatedAt,
-    OrderIntelligenceResponse? Intelligence = null);
+    OrderIntelligenceResponse? Intelligence = null,
+    DeliveryFeeBreakdown? Pricing = null);

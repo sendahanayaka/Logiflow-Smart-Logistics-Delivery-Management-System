@@ -16,15 +16,18 @@ public class OrdersService : IOrdersService
     private readonly IAppDbContext _context;
     private readonly ICurrentUserService _currentUserService;
     private readonly IOrderIntelligenceService _intelligenceService;
+    private readonly IDeliveryPricingService _pricingService;
 
     public OrdersService(
         IAppDbContext context, 
         ICurrentUserService currentUserService,
-        IOrderIntelligenceService intelligenceService)
+        IOrderIntelligenceService intelligenceService,
+        IDeliveryPricingService pricingService)
     {
         _context = context;
         _currentUserService = currentUserService;
         _intelligenceService = intelligenceService;
+        _pricingService = pricingService;
     }
 
     private Guid GetAuthenticatedCustomerId()
@@ -89,7 +92,13 @@ public class OrdersService : IOrdersService
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync(cancellationToken);
 
-        return orders.Select(MapOrder);
+        var orderIds = orders.Select(o => o.Id).ToList();
+        var routeStops = await _context.RouteStops
+            .AsNoTracking()
+            .Where(r => orderIds.Contains(r.OrderId))
+            .ToDictionaryAsync(r => r.OrderId, cancellationToken);
+            
+        return orders.Select(o => MapOrder(o, routeStops.TryGetValue(o.Id, out var stop) ? stop.DistanceFromPrevKm : null));
     }
 
     public async Task<DeliveryOrderResponse> GetOrderByIdAsync(
@@ -107,7 +116,11 @@ public class OrdersService : IOrdersService
             throw new KeyNotFoundException($"Order '{id}' was not found.");
         }
 
-        return MapOrder(order);
+        var routeStop = await _context.RouteStops
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.OrderId == id, cancellationToken);
+
+        return MapOrder(order, routeStop?.DistanceFromPrevKm);
     }
 
     public async Task<DeliveryOrderResponse> CancelOrderAsync(
@@ -134,7 +147,52 @@ public class OrdersService : IOrdersService
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return MapOrder(order);
+        var routeStop = await _context.RouteStops
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.OrderId == id, cancellationToken);
+
+        return MapOrder(order, routeStop?.DistanceFromPrevKm);
+    }
+
+    public async Task<DeliveryOrderResponse> ConfirmOrderAsync(
+        Guid id,
+        string paymentMethod,
+        CancellationToken cancellationToken = default)
+    {
+        var customerId = GetAuthenticatedCustomerId();
+
+        var order = await _context.DeliveryOrders
+            .FirstOrDefaultAsync(o => o.Id == id && o.CustomerId == customerId, cancellationToken);
+
+        if (order is null)
+        {
+            throw new KeyNotFoundException($"Order '{id}' was not found.");
+        }
+
+        if (order.Status != OrderStatus.Pending)
+        {
+            var message = order.Status == OrderStatus.Confirmed 
+                ? "This order has already been confirmed." 
+                : $"Cannot confirm order in status '{order.Status}'.";
+            throw new InvalidOperationException(message);
+        }
+
+        if (string.IsNullOrWhiteSpace(paymentMethod))
+        {
+            throw new ArgumentException("Payment method is required.", nameof(paymentMethod));
+        }
+
+        order.PaymentMethod = paymentMethod;
+        order.Status = OrderStatus.Confirmed;
+        order.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var routeStop = await _context.RouteStops
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.OrderId == id, cancellationToken);
+
+        return MapOrder(order, routeStop?.DistanceFromPrevKm);
     }
 
     private static void ValidateOrder(CreateDeliveryOrderCommand command)
@@ -198,8 +256,17 @@ public class OrdersService : IOrdersService
     private static string? NormalizeOptional(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    private DeliveryOrderResponse MapOrder(DeliveryOrder order) =>
-        new(
+    private DeliveryOrderResponse MapOrder(DeliveryOrder order, decimal? distanceKm = null)
+    {
+        var intelligence = _intelligenceService.Analyze(order);
+        DeliveryFeeBreakdown? pricing = null;
+
+        if (distanceKm.HasValue)
+        {
+            pricing = _pricingService.CalculateFee(order, intelligence.HandlingRequirement, distanceKm.Value);
+        }
+
+        return new DeliveryOrderResponse(
             order.Id,
             order.CustomerId,
             order.PickupAddress,
@@ -220,5 +287,7 @@ public class OrdersService : IOrdersService
             order.Status.ToString(),
             order.CreatedAt,
             order.UpdatedAt,
-            _intelligenceService.Analyze(order));
+            intelligence,
+            pricing);
+    }
 }

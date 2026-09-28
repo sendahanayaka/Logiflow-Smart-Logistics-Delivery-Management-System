@@ -123,6 +123,35 @@ public class OrdersController : ControllerBase
         }
     }
 
+    [HttpPatch("{id:guid}/checkout")]
+    [ProducesResponseType(typeof(DeliveryOrderResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<DeliveryOrderResponse>> CheckoutOrder(
+        Guid id,
+        [FromBody] CheckoutOrderRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var order = await _ordersService.ConfirmOrderAsync(id, request.PaymentMethod, cancellationToken);
+            return Ok(order);
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+    }
+
     private ActionResult ValidationFailure(ValidationResult validationResult)
     {
         var errors = validationResult.Errors

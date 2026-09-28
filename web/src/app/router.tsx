@@ -9,6 +9,8 @@ import { AdminPortalPage } from '../features/portals/pages/AdminPortalPage';
 import { CustomerOrderListPage, OrderListPage } from '../features/orders/pages/OrderListPage';
 import { OrderCreatePage } from '../features/orders/pages/OrderCreatePage';
 import { OrderDetailsPage } from '../features/orders/pages/OrderDetailsPage';
+import { OrderCheckoutPage } from '../features/orders/pages/OrderCheckoutPage';
+import { OrderSuccessPage } from '../features/orders/pages/OrderSuccessPage';
 import { WarehousePortalPage } from '../features/portals/pages/WarehousePortalPage';
 import { DriverPortalPage } from '../features/portals/pages/DriverPortalPage';
 
@@ -54,6 +56,8 @@ export const router = createBrowserRouter([
           { index: true, element: <CustomerOrderListPage /> },
           { path: 'new', element: <OrderCreatePage /> },
           { path: 'create', element: <OrderCreatePage /> },
+          { path: ':id/checkout', element: <OrderCheckoutPage /> },
+          { path: ':id/success', element: <OrderSuccessPage /> },
           { path: ':id', element: <OrderDetailsPage /> }
         ]
       },
