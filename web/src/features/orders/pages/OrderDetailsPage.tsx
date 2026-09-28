@@ -133,6 +133,46 @@ export const OrderDetailsPage: React.FC = () => {
                         </div>
                     </div>
 
+                    {/* Order Intelligence AI Dashboard */}
+                    {order.intelligence && (
+                        <div style={{ marginTop: '2.5rem', backgroundColor: '#fdfdfd', border: '1px solid #e0e0e0', borderRadius: '8px', padding: '1.5rem' }}>
+                            <h3 style={{ marginBottom: '1.5rem', color: 'var(--color-navy, #08006C)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                                Order Intelligence
+                            </h3>
+                            <div className="orders-info-grid">
+                                <div className="orders-info-card" style={{ borderColor: 'var(--color-orange, #FD5901)' }}>
+                                    <h4 className="info-card-title" style={{ color: 'var(--color-orange, #FD5901)' }}>ORDER ANALYSIS</h4>
+                                    <p className="info-card-primary">Package Volume: {order.intelligence.volumeM3} m³</p>
+                                    <p className="info-card-secondary">Weight Classification: {order.intelligence.weightClassification}</p>
+                                    <div className="info-card-footer">
+                                        <span>Handling Requirement: <strong>{order.intelligence.handlingRequirement}</strong></span>
+                                    </div>
+                                </div>
+
+                                <div className="orders-info-card" style={{ borderColor: 'var(--color-orange, #FD5901)' }}>
+                                    <h4 className="info-card-title" style={{ color: 'var(--color-orange, #FD5901)' }}>PLANNING INFORMATION</h4>
+                                    <p className="info-card-primary">Recommended Priority: {order.intelligence.recommendedPriority}</p>
+                                    <p className="info-card-secondary">
+                                        Risks / Ambiguities: {order.intelligence.risksOrAmbiguities?.length ? order.intelligence.risksOrAmbiguities.join(', ') : 'None detected'}
+                                    </p>
+                                    <div className="info-card-footer">
+                                        <span>Status: <strong>Agentic AI Ready</strong></span>
+                                    </div>
+                                </div>
+
+                                <div className="orders-info-card" style={{ backgroundColor: '#f5f7fa', opacity: 0.8 }}>
+                                    <h4 className="info-card-title" style={{ color: '#4a5568' }}>FLEET INTEGRATION</h4>
+                                    <p className="info-card-primary" style={{ color: '#718096' }}>Recommended Vehicle: <em>Not available yet</em></p>
+                                    <p className="info-card-secondary" style={{ color: '#718096' }}>Estimated Distance / Time: <em>Pending integration</em></p>
+                                    <div className="info-card-footer">
+                                        <span>Estimated Cost: <strong>Pending integration</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Cancel Actions */}
                     {order.status.toUpperCase() === 'PENDING' && (
                         <div className="orders-actions-row">

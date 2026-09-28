@@ -58,6 +58,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IOrdersService, OrdersService>();
+builder.Services.AddScoped<IOrderIntelligenceService, OrderIntelligenceService>();
 
 // [S4] Delivery execution: workflow + approval + shipment services, and the typed
 // HttpClient to the internal Python agent.

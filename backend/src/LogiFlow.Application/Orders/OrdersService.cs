@@ -15,11 +15,16 @@ public class OrdersService : IOrdersService
 {
     private readonly IAppDbContext _context;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IOrderIntelligenceService _intelligenceService;
 
-    public OrdersService(IAppDbContext context, ICurrentUserService currentUserService)
+    public OrdersService(
+        IAppDbContext context, 
+        ICurrentUserService currentUserService,
+        IOrderIntelligenceService intelligenceService)
     {
         _context = context;
         _currentUserService = currentUserService;
+        _intelligenceService = intelligenceService;
     }
 
     private Guid GetAuthenticatedCustomerId()
@@ -193,7 +198,7 @@ public class OrdersService : IOrdersService
     private static string? NormalizeOptional(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    private static DeliveryOrderResponse MapOrder(DeliveryOrder order) =>
+    private DeliveryOrderResponse MapOrder(DeliveryOrder order) =>
         new(
             order.Id,
             order.CustomerId,
@@ -214,5 +219,6 @@ public class OrdersService : IOrdersService
             order.RecipientContact,
             order.Status.ToString(),
             order.CreatedAt,
-            order.UpdatedAt);
+            order.UpdatedAt,
+            _intelligenceService.Analyze(order));
 }

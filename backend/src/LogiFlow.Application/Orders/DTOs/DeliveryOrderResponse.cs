@@ -22,4 +22,5 @@ public record DeliveryOrderResponse(
     string? RecipientContact,
     string Status,
     DateTime CreatedAt,
-    DateTime? UpdatedAt);
+    DateTime? UpdatedAt,
+    OrderIntelligenceResponse? Intelligence = null);

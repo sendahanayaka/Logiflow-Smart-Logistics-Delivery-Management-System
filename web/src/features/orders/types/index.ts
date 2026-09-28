@@ -37,6 +37,15 @@ export interface DeliveryOrderResponse {
   status: string;
   createdAt: string;
   updatedAt?: string;
+  intelligence?: OrderIntelligenceResponse;
+}
+
+export interface OrderIntelligenceResponse {
+  volumeM3: number;
+  weightClassification: string;
+  handlingRequirement: string;
+  recommendedPriority: string;
+  risksOrAmbiguities: string[];
 }
 
 export interface PackageItem {

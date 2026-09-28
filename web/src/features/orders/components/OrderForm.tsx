@@ -70,20 +70,30 @@ export const OrderForm: React.FC<Props> = ({ onSubmit, isLoading }) => {
 
     if (hasRequiredFields) {
         const weight = formData.weightKg;
-        if (weight > 10) estimatedFee += 500;
-        else if (weight >= 5) estimatedFee += 250;
-        else if (weight >= 1) estimatedFee += 100;
-
-        const isExpress = formData.priority === 'Express';
-        if (isExpress) estimatedFee += 300;
+        if (weight > 10) {
+            estimatedFee += 500 + Math.ceil(weight - 10) * 100; // 100 LKR per extra kg
+        } else if (weight >= 5) {
+            estimatedFee += 250;
+        } else if (weight >= 1) {
+            estimatedFee += 100;
+        }
 
         const volume = formData.lengthCm * formData.widthCm * formData.heightCm;
-        if (volume > 50000) estimatedFee += 300;
-        else if (volume > 10000) estimatedFee += 150;
+        if (volume > 50000) estimatedFee += 500;
+        else if (volume > 10000) estimatedFee += 200;
 
         const sameCity = formData.pickupCity.trim().toLowerCase() === formData.deliveryCity.trim().toLowerCase();
+        if (!sameCity) {
+            estimatedFee += 1500; // Out of city surcharge
+        }
+
+        const isExpress = formData.priority === 'Express';
+        if (isExpress) {
+            estimatedFee = Math.ceil(estimatedFee * 1.5); // 50% premium for express
+        }
+
         if (sameCity) {
-            estimatedTime = isExpress ? '1 day' : '1–2 days';
+            estimatedTime = isExpress ? 'Same day' : '1–2 days';
         } else {
             estimatedTime = isExpress ? '1–2 days' : '2–3 days';
         }
