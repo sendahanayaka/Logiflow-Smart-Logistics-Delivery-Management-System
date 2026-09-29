@@ -26,11 +26,21 @@ export const Navbar: React.FC = () => {
 
                 <nav className="navbar-nav">
                     <ul className="nav-links">
-                        <li><a href="#home">Home</a></li>
-                        <li><a href="#services">Services</a></li>
-                        <li><a href="#how-it-works">How It Works</a></li>
-                        <li><a href="#about">About</a></li>
-                        <li><a href="#contact">Contact</a></li>
+                        {isAuthenticated && user?.role === 'Customer' ? (
+                            <>
+                                <li><Link to="/orders">Dashboard</Link></li>
+                                <li><Link to="/orders">My Orders</Link></li>
+                                <li><Link to="/orders/create">Create Order</Link></li>
+                            </>
+                        ) : (
+                            <>
+                                <li><a href="#home">Home</a></li>
+                                <li><a href="#services">Services</a></li>
+                                <li><a href="#how-it-works">How It Works</a></li>
+                                <li><a href="#about">About</a></li>
+                                <li><a href="#contact">Contact</a></li>
+                            </>
+                        )}
                     </ul>
                 </nav>
 

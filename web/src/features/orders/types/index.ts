@@ -37,6 +37,17 @@ export interface DeliveryOrderResponse {
   status: string;
   createdAt: string;
   updatedAt?: string;
+  intelligence?: OrderIntelligenceResponse;
+  pricing?: DeliveryFeeBreakdown;
+  paymentMethod?: string;
+}
+
+export interface OrderIntelligenceResponse {
+  volumeM3: number;
+  weightClassification: string;
+  handlingRequirement: string;
+  recommendedPriority: string;
+  risksOrAmbiguities: string[];
 }
 
 export interface PackageItem {
@@ -141,3 +152,14 @@ export const INITIAL_DISPATCH_ORDERS: DispatchOrder[] = [
     contactPhone: '0912233445',
   },
 ];
+
+export interface DeliveryFeeBreakdown {
+  baseFee: number;
+  distanceCharge: number;
+  weightCharge: number;
+  volumeCharge: number;
+  priorityCharge: number;
+  handlingCharge: number;
+  totalDeliveryFee: number;
+}
+
