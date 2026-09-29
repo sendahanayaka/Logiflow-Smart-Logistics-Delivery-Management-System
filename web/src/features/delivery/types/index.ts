@@ -44,6 +44,9 @@ export interface WorkflowResponse {
   stopCount: number;
   createdAt: string;
   stops: RouteStop[];
+  allocatedDriverId: string | null;
+  allocatedVehicleId: string | null;
+  allocationSummary: string | null;
 }
 
 export interface ApprovalResult {

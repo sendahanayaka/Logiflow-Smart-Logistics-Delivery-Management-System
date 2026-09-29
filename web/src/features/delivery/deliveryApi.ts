@@ -39,6 +39,14 @@ export const deliveryApi = baseApi.injectEndpoints({
         { type: 'Shipment', id: 'LIST' },
       ],
     }),
+    // Warehouse dispatch → ops approval queue: trigger routing for a grouped batch.
+    triggerWorkflowFromBatch: builder.mutation<WorkflowResponse, { batchId: string; objective?: string }>({
+      query: ({ batchId, objective }) => ({
+        url: `/workflows/from-batch/${batchId}${objective ? `?objective=${encodeURIComponent(objective)}` : ''}`,
+        method: 'POST',
+      }),
+      invalidatesTags: [{ type: 'Workflow', id: 'LIST' }],
+    }),
 
     // --- shipments / tracking ---
     getShipments: builder.query<ShipmentSummary[], void>({
@@ -92,6 +100,7 @@ export const {
   useGetWorkflowQuery,
   useTriggerWorkflowMutation,
   useApproveWorkflowMutation,
+  useTriggerWorkflowFromBatchMutation,
   useGetShipmentsQuery,
   useGetMyRunsQuery,
   useGetDriverRunQuery,

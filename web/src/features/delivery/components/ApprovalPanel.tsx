@@ -1,5 +1,5 @@
 // [S4]  approve/reject/revise panel + plan review
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../app/store';
 import { useGetWorkflowQuery, useApproveWorkflowMutation } from '../deliveryApi';
@@ -21,6 +21,13 @@ export const ApprovalPanel: React.FC<{ workflowId: string; readOnly?: boolean }>
     const [vehicleId, setVehicleId] = useState('');
     const [reason, setReason] = useState('');
     const [feedback, setFeedback] = useState<{ ok: boolean; msg: string } | null>(null);
+
+    // Default the driver/vehicle to the S2 allocation agent's pick; the ops manager
+    // can still override before approving.
+    useEffect(() => {
+        if (workflow?.allocatedDriverId) setDriverId((cur) => cur || workflow.allocatedDriverId!);
+        if (workflow?.allocatedVehicleId) setVehicleId((cur) => cur || workflow.allocatedVehicleId!);
+    }, [workflow?.allocatedDriverId, workflow?.allocatedVehicleId]);
 
     if (isLoading) return <p className="admin-muted">Loading plan…</p>;
     if (isError || !workflow) return <p className="admin-error">Couldn’t load this workflow.</p>;
@@ -87,6 +94,11 @@ export const ApprovalPanel: React.FC<{ workflowId: string; readOnly?: boolean }>
 
             {canDecide && (
                 <div className="wf-actions">
+                    {(workflow.allocatedDriverId || workflow.allocationSummary) && (
+                        <p className="admin-muted" style={{ margin: '0 0 0.5rem' }}>
+                            🤖 Agent allocation pre-selected{workflow.allocationSummary ? `: ${workflow.allocationSummary}` : ''}. You can override below.
+                        </p>
+                    )}
                     <div className="wf-assign">
                         <label>
                             Driver

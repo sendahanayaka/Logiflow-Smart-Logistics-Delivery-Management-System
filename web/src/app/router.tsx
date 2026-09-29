@@ -157,7 +157,8 @@ export const routes = [
       },
       {
         path: 'ai-planning',
-        element: <AIPlanningPage />,
+        element: <ProtectedRoute allowedRoles={['ADMIN']} />,
+        children: [{ index: true, element: <AIPlanningPage /> }],
       },
       // Backward Compatibility Preserved Aliases
       {
