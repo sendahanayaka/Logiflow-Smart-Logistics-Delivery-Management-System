@@ -1,0 +1,125 @@
+// [S4]  driver run detail — ordered stops + arrive/depart progress.
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useGetDriverRunQuery, useRecordStopEventMutation } from '../deliveryApi';
+import { shipmentBadgeClass, stopBadgeClass } from '../statusBadge';
+import { activeStopSequence, deliveredCount } from '../driverRun';
+import { PodForm } from './PodForm';
+
+const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : '—');
+
+export const DriverRunDetail: React.FC<{ shipmentId: string }> = ({ shipmentId }) => {
+  const { data: run, isLoading, isError, refetch } = useGetDriverRunQuery(shipmentId);
+  const [recordEvent, { isLoading: saving }] = useRecordStopEventMutation();
+  const [error, setError] = useState<string | null>(null);
+
+  if (isLoading) {
+    return <div className="driver-state">Loading run…</div>;
+  }
+
+  if (isError || !run) {
+    return (
+      <div className="driver-state driver-state--error">
+        Couldn’t load this run.
+        <div style={{ marginTop: '1rem' }}>
+          <Link to="/driver" className="run-card__open" style={{ marginRight: '0.5rem' }}>Back</Link>
+          <button type="button" className="run-card__open" onClick={() => refetch()}>Retry</button>
+        </div>
+      </div>
+    );
+  }
+
+  const stops = [...run.stops].sort((a, b) => a.sequence - b.sequence);
+  const activeSeq = activeStopSequence(stops);
+  const delivered = deliveredCount(stops);
+
+  const record = async (stopKey: string, kind: 'ARRIVED' | 'DEPARTED') => {
+    setError(null);
+    try {
+      await recordEvent({ id: shipmentId, body: { stopKey, kind } }).unwrap();
+    } catch (err) {
+      const message =
+        (err as { data?: { message?: string } })?.data?.message ??
+        'Could not record the update. Please try again.';
+      setError(message);
+    }
+  };
+
+  return (
+    <>
+      <div className="run-detail__top">
+        <Link to="/driver" className="run-detail__back">← My runs</Link>
+      </div>
+
+      <header className="run-detail__head">
+        <div className="run-detail__title">
+          <span className="run-card__code">{run.shipmentCode}</span>
+          <span className={`run-badge ${shipmentBadgeClass(run.status)}`}>{run.status}</span>
+        </div>
+        <span className="run-detail__progress">{delivered}/{stops.length} delivered</span>
+      </header>
+
+      {error && <div className="run-detail__error">{error}</div>}
+
+      {activeSeq === null && (
+        <div className="run-detail__done">✓ Run complete — all stops delivered.</div>
+      )}
+
+      <ol className="stop-list">
+        {stops.map((s) => {
+          const active = s.sequence === activeSeq;
+          return (
+            <li key={s.sequence} className={`stop${active ? ' stop--active' : ''}`}>
+              <div className="stop__seq">{s.sequence}</div>
+              <div className="stop__body">
+                <div className="stop__head">
+                  <strong>{s.address}</strong>
+                  <span className={`stop-badge ${stopBadgeClass(s.status)}`}>{s.status}</span>
+                </div>
+                <div className="stop__meta">
+                  <span>ETA {fmt(s.plannedEta)}</span>
+                  {s.actualAt && <span> · arrived {fmt(s.actualAt)}</span>}
+                  {s.onTime !== null && (
+                    <span className={s.onTime ? 'stop__ontime' : 'stop__late'}>
+                      {' '}· {s.onTime ? 'on time' : 'off window'}
+                    </span>
+                  )}
+                </div>
+
+                {active && (
+                  <div className="stop__actions">
+                    {s.status === 'Pending' && (
+                      <button
+                        type="button"
+                        className="stop__btn stop__btn--secondary"
+                        disabled={saving}
+                        onClick={() => record(s.stopKey, 'DEPARTED')}
+                      >
+                        Mark en route
+                      </button>
+                    )}
+                    {(s.status === 'Pending' || s.status === 'EnRoute') && (
+                      <button
+                        type="button"
+                        className="stop__btn stop__btn--primary"
+                        disabled={saving}
+                        onClick={() => record(s.stopKey, 'ARRIVED')}
+                      >
+                        Mark arrived
+                      </button>
+                    )}
+                    {s.status === 'Arrived' && (
+                      <PodForm shipmentId={shipmentId} stopKey={s.stopKey} />
+                    )}
+                  </div>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </>
+  );
+};
+
+export default DriverRunDetail;

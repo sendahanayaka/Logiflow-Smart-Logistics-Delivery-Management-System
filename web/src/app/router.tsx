@@ -13,6 +13,7 @@ import { OrderCheckoutPage } from '../features/orders/pages/OrderCheckoutPage';
 import { OrderSuccessPage } from '../features/orders/pages/OrderSuccessPage';
 import { WarehousePortalPage } from '../features/portals/pages/WarehousePortalPage';
 import { DriverPortalPage } from '../features/portals/pages/DriverPortalPage';
+import { DriverRunPage } from '../features/portals/pages/DriverRunPage';
 
 import FleetLandingPage from '../features/fleet/pages/FleetLandingPage';
 import DriverListPage from '../features/fleet/pages/DriverListPage';
@@ -83,7 +84,10 @@ export const routes = [
       {
         path: 'driver',
         element: <ProtectedRoute allowedRoles={['DRIVER']} />,
-        children: [{ index: true, element: <DriverPortalPage /> }],
+        children: [
+          { index: true, element: <DriverPortalPage /> },
+          { path: 'runs/:id', element: <DriverRunPage /> },
+        ],
       },
       // Fleet & Order Management Routes
       {
