@@ -13,7 +13,8 @@ public sealed record AgentRunPayload(
     string? DeliveryWindowStart,
     string? CustomerNotes,
     IReadOnlyList<string> OrderIds,
-    IReadOnlyList<AgentStop> Stops);
+    IReadOnlyList<AgentStop> Stops,
+    Guid BatchId);
 
 public sealed record AgentStop(
     string StopId,

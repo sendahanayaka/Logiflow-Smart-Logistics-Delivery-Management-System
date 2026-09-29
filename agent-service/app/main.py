@@ -17,7 +17,9 @@ from langgraph.checkpoint.memory import MemorySaver
 from pydantic import BaseModel
 
 from app import config
+from app.agents.validation_agent import _run as run_dispatch_validation
 from app.schemas.common import ApprovalDecision
+from app.schemas.validation import ValidationInput, ValidationOutput
 from app.state import initial_state
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -59,6 +61,16 @@ def _config_for(workflow_id: str) -> dict:
 
 class RunRequest(BaseModel):
     payload: dict[str, Any]
+
+
+@app.post(
+    "/validation/dispatch",
+    response_model=ValidationOutput,
+    dependencies=[Depends(require_internal_key)],
+)
+def validate_dispatch(request: ValidationInput) -> ValidationOutput:
+    """Run the S3 safety agent without invoking unfinished cross-team stages."""
+    return run_dispatch_validation(request)
 
 
 @app.get("/health")

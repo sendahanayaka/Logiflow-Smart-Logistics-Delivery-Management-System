@@ -19,6 +19,71 @@ public class WarehouseService : IWarehouseService
         _context = context;
     }
 
+    public async Task<IReadOnlyCollection<WarehouseResponse>> GetWarehousesAsync(
+        CancellationToken cancellationToken = default) =>
+        await _context.Warehouses
+            .AsNoTracking()
+            .OrderBy(warehouse => warehouse.Name)
+            .ThenBy(warehouse => warehouse.Id)
+            .Select(warehouse => new WarehouseResponse(
+                warehouse.Id,
+                warehouse.Name,
+                warehouse.Location,
+                warehouse.TotalVolumeM3,
+                warehouse.OccupiedVolumeM3,
+                warehouse.CreatedAt,
+                warehouse.UpdatedAt))
+            .ToListAsync(cancellationToken);
+
+    public async Task<WarehouseResponse> GetWarehouseAsync(
+        Guid warehouseId,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureWarehouseId(warehouseId);
+
+        var warehouse = await _context.Warehouses
+            .AsNoTracking()
+            .FirstOrDefaultAsync(item => item.Id == warehouseId, cancellationToken);
+
+        if (warehouse is null)
+        {
+            throw new KeyNotFoundException($"Warehouse '{warehouseId}' was not found.");
+        }
+
+        return MapWarehouse(warehouse);
+    }
+
+    public async Task<IReadOnlyCollection<StorageZoneResponse>> GetStorageZonesAsync(
+        Guid warehouseId,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureWarehouseId(warehouseId);
+
+        var warehouseExists = await _context.Warehouses
+            .AnyAsync(warehouse => warehouse.Id == warehouseId, cancellationToken);
+
+        if (!warehouseExists)
+        {
+            throw new KeyNotFoundException($"Warehouse '{warehouseId}' was not found.");
+        }
+
+        return await _context.StorageZones
+            .AsNoTracking()
+            .Where(zone => zone.WarehouseId == warehouseId)
+            .OrderBy(zone => zone.Code)
+            .ThenBy(zone => zone.Id)
+            .Select(zone => new StorageZoneResponse(
+                zone.Id,
+                zone.WarehouseId,
+                zone.Name,
+                zone.Code,
+                zone.TotalVolumeM3,
+                zone.OccupiedVolumeM3,
+                zone.CreatedAt,
+                zone.UpdatedAt))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<WarehouseResponse> CreateWarehouseAsync(
         CreateWarehouseCommand command,
         CancellationToken cancellationToken = default)
@@ -254,6 +319,35 @@ public class WarehouseService : IWarehouseService
             totalCount);
     }
 
+    public async Task<PackageResponse> MakePackageAvailableAsync(
+        Guid packageId,
+        CancellationToken cancellationToken = default)
+    {
+        if (packageId == Guid.Empty)
+        {
+            throw new ArgumentException("Package ID is required.", nameof(packageId));
+        }
+
+        var package = await _context.Packages
+            .FirstOrDefaultAsync(item => item.Id == packageId, cancellationToken);
+
+        if (package is null)
+        {
+            throw new KeyNotFoundException($"Package '{packageId}' was not found.");
+        }
+
+        if (package.Status != PackageStatus.Received)
+        {
+            throw new InvalidOperationException(
+                "Only received packages may be made available for dispatch.");
+        }
+
+        package.Status = PackageStatus.Available;
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return MapPackage(package);
+    }
+
     private static void ValidateWarehouse(CreateWarehouseCommand command)
     {
         if (string.IsNullOrWhiteSpace(command.Name))
@@ -271,6 +365,14 @@ public class WarehouseService : IWarehouseService
             throw new ArgumentException(
                 "Warehouse total volume must be greater than zero.",
                 nameof(command.TotalVolumeM3));
+        }
+    }
+
+    private static void EnsureWarehouseId(Guid warehouseId)
+    {
+        if (warehouseId == Guid.Empty)
+        {
+            throw new ArgumentException("Warehouse ID is required.", nameof(warehouseId));
         }
     }
 

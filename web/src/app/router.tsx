@@ -26,8 +26,14 @@ import VehicleEditPage from '../features/fleet/pages/VehicleEditPage';
 import AssignmentPage from '../features/fleet/pages/AssignmentPage';
 import DutySchedulePage from '../features/fleet/pages/DutySchedulePage';
 import MaintenancePage from '../features/fleet/pages/MaintenancePage';
+import { DispatchPage } from '../features/warehouse/pages/DispatchPage';
+import { InventoryPage } from '../features/warehouse/pages/InventoryPage';
+import { PackageIntakePage } from '../features/warehouse/pages/PackageIntakePage';
+import { ThroughputPage } from '../features/warehouse/pages/ThroughputPage';
+import { WarehouseDetailsPage } from '../features/warehouse/pages/WarehouseDetailsPage';
+import { WarehouseListPage } from '../features/warehouse/pages/WarehouseListPage';
 
-export const router = createBrowserRouter([
+export const routes = [
   {
     path: '/',
     element: <MainLayout />,
@@ -72,7 +78,15 @@ export const router = createBrowserRouter([
       {
         path: 'warehouse',
         element: <ProtectedRoute allowedRoles={['WAREHOUSE_STAFF']} />,
-        children: [{ index: true, element: <WarehousePortalPage /> }],
+        children: [
+          { index: true, element: <WarehouseListPage /> },
+          { path: 'portal', element: <WarehousePortalPage /> },
+          { path: ':warehouseId', element: <WarehouseDetailsPage /> },
+          { path: ':warehouseId/inventory', element: <InventoryPage /> },
+          { path: ':warehouseId/intake', element: <PackageIntakePage /> },
+          { path: ':warehouseId/dispatch', element: <DispatchPage /> },
+          { path: ':warehouseId/throughput', element: <ThroughputPage /> },
+        ],
       },
       {
         path: 'driver',
@@ -178,4 +192,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-]);
+];
+
+export const router = createBrowserRouter(routes);

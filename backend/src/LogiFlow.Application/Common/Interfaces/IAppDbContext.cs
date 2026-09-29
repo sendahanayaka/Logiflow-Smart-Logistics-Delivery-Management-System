@@ -19,6 +19,8 @@ public interface IAppDbContext
     DbSet<WarehouseEntity> Warehouses { get; }
     DbSet<StorageZone> StorageZones { get; }
     DbSet<Package> Packages { get; }
+    DbSet<DispatchBatch> DispatchBatches { get; }
+    DbSet<DispatchBatchItem> DispatchBatchItems { get; }
 
     // [S1] Identity
     DbSet<User> Users { get; }
@@ -32,6 +34,9 @@ public interface IAppDbContext
     DbSet<ApprovalDecision> ApprovalDecisions { get; }
     DbSet<TrackingEvent> TrackingEvents { get; }
     DbSet<ProofOfDelivery> ProofOfDeliveries { get; }
+
+    void ClearChangeTracker();
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
     // Transaction support

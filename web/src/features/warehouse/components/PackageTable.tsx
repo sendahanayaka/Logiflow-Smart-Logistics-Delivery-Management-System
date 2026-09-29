@@ -1,2 +1,5 @@
-// [S3]  warehouse component
-// TODO: implement. Owner fills this in.
+import type { WarehousePackage } from '../warehouseApi'
+
+export function PackageTable({ packages }: { packages: WarehousePackage[] }) {
+  return <ul>{packages.map((item) => <li key={item.id}>{item.trackingCode} — {item.status}</li>)}</ul>
+}

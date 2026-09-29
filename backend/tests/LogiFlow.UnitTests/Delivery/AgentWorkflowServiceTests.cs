@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 using LogiFlow.Application.Workflows;
 using LogiFlow.Application.Workflows.DTOs;
 using LogiFlow.Domain.Enums;
@@ -77,6 +78,12 @@ public sealed class AgentWorkflowServiceTests : IAsyncLifetime
         Assert.StartsWith("wf-", payload.WorkflowId);
         Assert.Equal(2, payload.Stops.Count);
         Assert.Single(payload.OrderIds);                       // both stops share one order id
+        Assert.Equal(TwoStopCommandBatchId, payload.BatchId);
+        var serialized = JsonSerializer.Serialize(payload, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+        });
+        Assert.Contains($"\"batch_id\":\"{TwoStopCommandBatchId}\"", serialized);
         Assert.Equal("2026-09-22T09:00:00", payload.DeliveryWindowStart);
         Assert.Equal("2026-09-22T17:00:00", payload.Stops[0].WindowEnd);
     }
@@ -120,6 +127,16 @@ public sealed class AgentWorkflowServiceTests : IAsyncLifetime
         await Assert.ThrowsAsync<ArgumentException>(() => _service.RunWorkflowAsync(command));
     }
 
+    [Fact]
+    public async Task RunWorkflowAsync_EmptyDispatchBatchId_DoesNotInventBatchId()
+    {
+        var command = TwoStopCommand() with { DispatchBatchId = Guid.Empty };
+
+        await Assert.ThrowsAsync<ArgumentException>(() => _service.RunWorkflowAsync(command));
+
+        Assert.Null(_agent.LastPayload);
+    }
+
     // --- read -----------------------------------------------------------------
 
     [Fact]
@@ -140,7 +157,7 @@ public sealed class AgentWorkflowServiceTests : IAsyncLifetime
     {
         var orderId = Guid.NewGuid();
         return new RunWorkflowCommand(
-            DispatchBatchId: Guid.NewGuid(),
+            DispatchBatchId: TwoStopCommandBatchId,
             Objective: "Deliver 2 Kandy stops",
             DeliveryWindowStart: new DateTime(2026, 9, 22, 9, 0, 0),
             CustomerNotes: "handle fragile carefully",
@@ -152,6 +169,9 @@ public sealed class AgentWorkflowServiceTests : IAsyncLifetime
                     new DateTime(2026, 9, 22, 9, 0, 0), new DateTime(2026, 9, 22, 17, 0, 0)),
             });
     }
+
+    private static readonly Guid TwoStopCommandBatchId =
+        Guid.Parse("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
 
     private sealed class FakeAgentServiceClient : IAgentServiceClient
     {
