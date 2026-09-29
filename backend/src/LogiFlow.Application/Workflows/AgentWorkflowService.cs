@@ -1,6 +1,7 @@
 // [S4]  agent workflow service
 using System.Globalization;
 using System.Text.Json;
+using LogiFlow.Application.Common;
 using LogiFlow.Application.Common.Interfaces;
 using LogiFlow.Application.Delivery;
 using LogiFlow.Application.Delivery.DTOs;
@@ -63,6 +64,7 @@ public class AgentWorkflowService : IAgentWorkflowService
 
         var status = MapStatus(response.Status);
         var routing = response.Proposal?.Routing;
+        var allocation = response.Proposal?.Allocation?.Proposed;
 
         var workflow = new AgentWorkflow
         {
@@ -75,6 +77,13 @@ public class AgentWorkflowService : IAgentWorkflowService
             ProposedPlanJson = routing is null ? null : JsonSerializer.Serialize(routing),
             AuditJson = response.Audit is null ? null : JsonSerializer.Serialize(response.Audit),
             Error = status == WorkflowStatus.Failed ? ExtractError(response.Errors) : null,
+            // Carry the S2 allocation pick so approval can default to it (Guid ids come
+            // from the fleet Driver/Vehicle rows the agent chose among).
+            AllocatedDriverId = Guid.TryParse(allocation?.DriverId, out var allocatedDriver) ? allocatedDriver : null,
+            AllocatedVehicleId = Guid.TryParse(allocation?.VehicleId, out var allocatedVehicle) ? allocatedVehicle : null,
+            AllocationSummary = allocation?.Reasons is { Count: > 0 } reasons
+                ? Truncate(string.Join("; ", reasons), 500)
+                : null,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -85,6 +94,83 @@ public class AgentWorkflowService : IAgentWorkflowService
         await _context.SaveChangesAsync(cancellationToken);
 
         return Map(workflow);
+    }
+
+    public async Task<WorkflowResponse> RunWorkflowForBatchAsync(
+        Guid dispatchBatchId, string? objective, CancellationToken cancellationToken = default)
+    {
+        if (dispatchBatchId == Guid.Empty)
+        {
+            throw new ArgumentException("A dispatch batch id is required.", nameof(dispatchBatchId));
+        }
+
+        var batch = await _context.DispatchBatches
+            .AsNoTracking()
+            .Include(item => item.Items)
+            .FirstOrDefaultAsync(item => item.Id == dispatchBatchId, cancellationToken)
+            ?? throw new KeyNotFoundException($"Dispatch batch '{dispatchBatchId}' was not found.");
+
+        var packageIds = batch.Items.Select(item => item.PackageId).ToList();
+        if (packageIds.Count == 0)
+        {
+            throw new ArgumentException("The dispatch batch has no packages to route.", nameof(dispatchBatchId));
+        }
+
+        // The batch is the group (group-first): resolve its packages → delivery orders,
+        // preserving the batch's load sequence for the stop order.
+        var loadOrderByPackage = batch.Items
+            .OrderBy(item => item.LoadSequence)
+            .Select((item, index) => (item.PackageId, Index: index))
+            .ToDictionary(entry => entry.PackageId, entry => entry.Index);
+
+        var packages = await _context.Packages
+            .AsNoTracking()
+            .Where(package => packageIds.Contains(package.Id))
+            .Select(package => new { package.Id, package.OrderId })
+            .ToListAsync(cancellationToken);
+
+        var orderIds = packages.Select(package => package.OrderId).Distinct().ToList();
+        var orders = await _context.DeliveryOrders
+            .AsNoTracking()
+            .Where(order => orderIds.Contains(order.Id))
+            .ToListAsync(cancellationToken);
+
+        if (orders.Count == 0)
+        {
+            throw new ArgumentException(
+                "The dispatch batch's packages have no delivery orders to route.", nameof(dispatchBatchId));
+        }
+
+        var firstSeqByOrder = packages
+            .GroupBy(package => package.OrderId)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Min(package =>
+                    loadOrderByPackage.TryGetValue(package.Id, out var index) ? index : int.MaxValue));
+
+        var stops = orders
+            .OrderBy(order => firstSeqByOrder.TryGetValue(order.Id, out var index) ? index : int.MaxValue)
+            .Select((order, index) =>
+            {
+                var (lat, lng) = GeoLookup.Resolve(order.DeliveryCity);
+                var windowStart = DateTime.SpecifyKind(
+                    order.PreferredPickupDate.Date.Add(order.PreferredPickupTime), DateTimeKind.Utc);
+                var address = string.IsNullOrWhiteSpace(order.DeliveryAddress)
+                    ? order.DeliveryCity
+                    : $"{order.DeliveryAddress}, {order.DeliveryCity}";
+                return new RunWorkflowStop($"stop-{index + 1}", order.Id, address, lat, lng,
+                    windowStart, windowStart.AddHours(4));
+            })
+            .ToList();
+
+        var command = new RunWorkflowCommand(
+            dispatchBatchId,
+            objective ?? $"Route dispatch batch {dispatchBatchId}",
+            stops.Min(stop => stop.WindowStart),
+            null,
+            stops);
+
+        return await RunWorkflowAsync(command, cancellationToken);
     }
 
     public async Task<WorkflowResponse?> GetWorkflowAsync(Guid id, CancellationToken cancellationToken = default)
@@ -266,7 +352,10 @@ public class AgentWorkflowService : IAgentWorkflowService
             stops.Sum(stop => stop.DistanceFromPrevKm),
             stops.Count,
             workflow.CreatedAt,
-            stops);
+            stops,
+            workflow.AllocatedDriverId,
+            workflow.AllocatedVehicleId,
+            workflow.AllocationSummary);
     }
 
     private static WorkflowStatus MapStatus(string? agentStatus) => agentStatus switch

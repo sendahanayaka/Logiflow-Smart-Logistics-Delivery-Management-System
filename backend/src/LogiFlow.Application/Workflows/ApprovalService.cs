@@ -69,10 +69,15 @@ public class ApprovalService : IApprovalService
         ApproveWorkflowCommand command,
         CancellationToken cancellationToken)
     {
-        if (command.DriverId is null || command.VehicleId is null
-            || command.DriverId == Guid.Empty || command.VehicleId == Guid.Empty)
+        // Default to the S2 allocation agent's pick; the approver may override either.
+        var driverId = command.DriverId is { } d && d != Guid.Empty ? d : workflow.AllocatedDriverId;
+        var vehicleId = command.VehicleId is { } v && v != Guid.Empty ? v : workflow.AllocatedVehicleId;
+
+        if (driverId is null || driverId == Guid.Empty || vehicleId is null || vehicleId == Guid.Empty)
         {
-            throw new ArgumentException("Approval requires a driver and a vehicle.", nameof(command));
+            throw new ArgumentException(
+                "Approval requires a driver and a vehicle (none supplied and the agent proposed none).",
+                nameof(command));
         }
 
         var agentResponse = await _agent.ApproveAsync(
@@ -105,8 +110,8 @@ public class ApprovalService : IApprovalService
             Id = Guid.NewGuid(),
             AgentWorkflowId = workflow.Id,
             ShipmentCode = $"SHP-{Guid.NewGuid():N}"[..16],
-            DriverId = command.DriverId.Value,
-            VehicleId = command.VehicleId.Value,
+            DriverId = driverId.Value,
+            VehicleId = vehicleId.Value,
             Status = ShipmentStatus.Dispatched,
             TotalDistanceKm = stops.Sum(stop => stop.DistanceFromPrevKm),
             TotalDurationMin = (decimal)totalDuration,

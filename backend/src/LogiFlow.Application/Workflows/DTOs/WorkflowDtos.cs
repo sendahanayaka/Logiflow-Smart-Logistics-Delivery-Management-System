@@ -27,7 +27,10 @@ public sealed record WorkflowResponse(
     decimal TotalDistanceKm,
     int StopCount,
     DateTime CreatedAt,
-    IReadOnlyList<RouteStopResponse> Stops);
+    IReadOnlyList<RouteStopResponse> Stops,
+    Guid? AllocatedDriverId = null,
+    Guid? AllocatedVehicleId = null,
+    string? AllocationSummary = null);
 
 public sealed record RouteStopResponse(
     Guid Id,

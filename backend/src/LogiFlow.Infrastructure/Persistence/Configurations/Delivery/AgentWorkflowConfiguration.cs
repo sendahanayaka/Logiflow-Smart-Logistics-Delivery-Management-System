@@ -33,6 +33,15 @@ public class AgentWorkflowConfiguration : IEntityTypeConfiguration<AgentWorkflow
         builder.Property(workflow => workflow.Summary)
             .IsRequired(false);
 
+        // S2 allocation pick carried to the approval gate.
+        builder.Property(workflow => workflow.AllocatedDriverId)
+            .IsRequired(false);
+        builder.Property(workflow => workflow.AllocatedVehicleId)
+            .IsRequired(false);
+        builder.Property(workflow => workflow.AllocationSummary)
+            .HasMaxLength(500)
+            .IsRequired(false);
+
         // Raw agent payloads kept verbatim for traceability.
         builder.Property(workflow => workflow.ProposedPlanJson)
             .HasColumnType("jsonb")

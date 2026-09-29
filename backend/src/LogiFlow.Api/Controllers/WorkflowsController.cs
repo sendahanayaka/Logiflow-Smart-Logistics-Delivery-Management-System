@@ -77,6 +77,41 @@ public class WorkflowsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Trigger routing for an already-grouped dispatch batch (the link from warehouse
+    /// dispatch to the ops approval queue). Warehouse staff may fire this; the plan then
+    /// appears in the ADMIN monitor/approvals.
+    /// </summary>
+    [HttpPost("from-batch/{batchId:guid}")]
+    [Authorize(Roles = "ADMIN,WAREHOUSE_STAFF")]
+    [ProducesResponseType(typeof(WorkflowResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status502BadGateway)]
+    public async Task<ActionResult<WorkflowResponse>> TriggerFromBatch(
+        Guid batchId,
+        [FromQuery] string? objective,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var workflow = await _workflows.RunWorkflowForBatchAsync(batchId, objective, cancellationToken);
+            return CreatedAtAction(nameof(GetById), new { id = workflow.Id }, workflow);
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+        catch (AgentServiceException exception)
+        {
+            return StatusCode(StatusCodes.Status502BadGateway, new { message = exception.Message });
+        }
+    }
+
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(WorkflowResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
