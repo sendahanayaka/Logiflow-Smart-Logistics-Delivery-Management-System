@@ -62,6 +62,8 @@ builder.Services.AddScoped<LogiFlow.Application.Users.IUserService, LogiFlow.App
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IOrdersService, OrdersService>();
+builder.Services.AddScoped<IOrderIntelligenceService, OrderIntelligenceService>();
+builder.Services.AddScoped<IDeliveryPricingService, DeliveryPricingService>();
 
 // [S4] Delivery execution: workflow + approval + shipment services, and the typed
 // HttpClient to the internal Python agent.

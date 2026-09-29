@@ -31,6 +31,8 @@ public class DeliveryOrder
     public string? RecipientName { get; set; }
     public string? RecipientContact { get; set; }
 
+    public string? PaymentMethod { get; set; }
+
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

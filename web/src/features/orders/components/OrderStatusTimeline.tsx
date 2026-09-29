@@ -23,7 +23,7 @@ export const OrderStatusTimeline: React.FC<Props> = ({ status }) => {
         ];
 
     return (
-        <div className="orders-timeline-card">
+        <div style={{ padding: '2.5rem 2rem', backgroundColor: '#FFFFFF', width: '100%', boxSizing: 'border-box' }}>
             <div className="orders-timeline-container">
                 {steps.map((step, index) => (
                     <React.Fragment key={step.label}>

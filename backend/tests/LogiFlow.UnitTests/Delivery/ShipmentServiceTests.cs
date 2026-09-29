@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LogiFlow.Application.Common.Interfaces;
 using LogiFlow.Application.Delivery;
 using LogiFlow.Application.Delivery.DTOs;
 using LogiFlow.Domain.Entities;
@@ -19,6 +20,7 @@ public sealed class ShipmentServiceTests : IAsyncLifetime
     private DbContextOptions<AppDbContext> _options = null!;
     private AppDbContext _context = null!;
     private ShipmentService _service = null!;
+    private readonly StubCurrentUser _currentUser = new();
 
     public async Task InitializeAsync()
     {
@@ -28,7 +30,12 @@ public sealed class ShipmentServiceTests : IAsyncLifetime
             .Options;
         _context = new AppDbContext(_options);
         await _context.Database.EnsureCreatedAsync();
-        _service = new ShipmentService(_context, NullLogger<ShipmentService>.Instance);
+        _service = new ShipmentService(_context, _currentUser, NullLogger<ShipmentService>.Instance);
+    }
+
+    private sealed class StubCurrentUser : ICurrentUserService
+    {
+        public Guid? UserId { get; set; }
     }
 
     public async Task DisposeAsync() => await _context.DisposeAsync();
@@ -100,9 +107,51 @@ public sealed class ShipmentServiceTests : IAsyncLifetime
                 new RecordStopEventCommand("s1", "ARRIVED", null, null, null, null)));
     }
 
+    [Fact]
+    public async Task GetMyRuns_ReturnsOnlyTheSignedInDriversShipments()
+    {
+        var userId = Guid.NewGuid();
+        var driverId = Guid.NewGuid();
+
+        await using (var seed = new AppDbContext(_options))
+        {
+            seed.Drivers.Add(new Driver
+            {
+                Id = driverId,
+                UserId = userId,
+                FullName = "Nimal",
+                LicenseNumber = "LIC-1",
+                LicenseExpiryDate = new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                CreatedAt = DateTime.UtcNow
+            });
+            await seed.SaveChangesAsync();
+        }
+
+        await SeedShipmentAsync(driverId, "SHP-MINE-0001");   // belongs to this driver
+        await SeedShipmentAsync(Guid.NewGuid(), "SHP-OTHER-01"); // belongs to someone else
+
+        _currentUser.UserId = userId;
+        var mine = await _service.GetMyRunsAsync();
+
+        Assert.Single(mine);
+        Assert.Equal("SHP-MINE-0001", mine[0].ShipmentCode);
+        Assert.Equal(driverId, mine[0].DriverId);
+    }
+
+    [Fact]
+    public async Task GetMyRuns_NoLinkedDriverProfile_ReturnsEmpty()
+    {
+        await SeedShipmentAsync();
+        _currentUser.UserId = Guid.NewGuid(); // signed in, but no Driver row links to them
+
+        var mine = await _service.GetMyRunsAsync();
+
+        Assert.Empty(mine);
+    }
+
     // --- seed -----------------------------------------------------------------
 
-    private async Task<Guid> SeedShipmentAsync()
+    private async Task<Guid> SeedShipmentAsync(Guid? driverId = null, string shipmentCode = "SHP-TEST-0001")
     {
         var workflow = new AgentWorkflow
         {
@@ -119,8 +168,8 @@ public sealed class ShipmentServiceTests : IAsyncLifetime
         {
             Id = Guid.NewGuid(),
             AgentWorkflowId = workflow.Id,
-            ShipmentCode = "SHP-TEST-0001",
-            DriverId = Guid.NewGuid(),
+            ShipmentCode = shipmentCode,
+            DriverId = driverId ?? Guid.NewGuid(),
             VehicleId = Guid.NewGuid(),
             Status = ShipmentStatus.Dispatched,
             TotalDistanceKm = 2.5m,

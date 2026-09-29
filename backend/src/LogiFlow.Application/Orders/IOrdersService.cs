@@ -12,4 +12,5 @@ public interface IOrdersService
     Task<IEnumerable<DeliveryOrderResponse>> GetMyOrdersAsync(CancellationToken cancellationToken = default);
     Task<DeliveryOrderResponse> GetOrderByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<DeliveryOrderResponse> CancelOrderAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<DeliveryOrderResponse> ConfirmOrderAsync(Guid id, string paymentMethod, CancellationToken cancellationToken = default);
 }

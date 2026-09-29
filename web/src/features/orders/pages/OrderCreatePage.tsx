@@ -15,7 +15,7 @@ export const OrderCreatePage: React.FC = () => {
         setError('');
         try {
             const response = await createOrder(request);
-            navigate(`/orders/${response.id}`);
+            navigate(`/orders/${response.id}/checkout`);
         } catch (err: any) {
             setError(err.message || 'Failed to create order.');
         } finally {
@@ -24,7 +24,7 @@ export const OrderCreatePage: React.FC = () => {
     };
 
     return (
-        <div className="orders-container">
+        <div className="orders-page-container">
             <div className="orders-header">
                 <div>
                     <button
