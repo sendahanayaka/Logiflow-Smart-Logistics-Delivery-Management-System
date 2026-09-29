@@ -38,6 +38,14 @@ public class ShipmentsController : ControllerBase
         return run is null ? NotFound() : Ok(run);
     }
 
+    /// <summary>The signed-in driver's own assigned runs.</summary>
+    [HttpGet("mine")]
+    [ProducesResponseType(typeof(IReadOnlyList<ShipmentSummary>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<ShipmentSummary>>> Mine(CancellationToken cancellationToken)
+    {
+        return Ok(await _shipments.GetMyRunsAsync(cancellationToken));
+    }
+
     /// <summary>Admin/ops list of all dispatched shipments.</summary>
     [HttpGet]
     [Authorize(Roles = "ADMIN")]

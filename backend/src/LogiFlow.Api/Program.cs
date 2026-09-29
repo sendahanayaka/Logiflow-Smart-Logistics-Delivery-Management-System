@@ -1,6 +1,7 @@
 using FluentValidation;
 using LogiFlow.Api.Controllers;
 using LogiFlow.Api.Middleware;
+using LogiFlow.Application.Agents;
 using LogiFlow.Application.Auth;
 using LogiFlow.Application.Common.Interfaces;
 using LogiFlow.Application.Delivery;
@@ -52,12 +53,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 builder.Services.AddScoped<IFleetService, FleetService>();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
+builder.Services.AddSingleton<BatchingEngine>();
+builder.Services.AddScoped<IDispatchBatchService, DispatchBatchService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IOrdersService, OrdersService>();
+builder.Services.AddScoped<IOrderIntelligenceService, OrderIntelligenceService>();
+builder.Services.AddScoped<IDeliveryPricingService, DeliveryPricingService>();
 
 // [S4] Delivery execution: workflow + approval + shipment services, and the typed
 // HttpClient to the internal Python agent.
@@ -71,6 +76,16 @@ builder.Services.AddHttpClient<IAgentServiceClient, AgentServiceClient>(client =
 {
     client.BaseAddress = new Uri(agentBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
+    if (!string.IsNullOrWhiteSpace(agentApiKey))
+    {
+        client.DefaultRequestHeaders.Add("X-Internal-Api-Key", agentApiKey);
+    }
+});
+
+builder.Services.AddHttpClient<IAgentValidationClient, S3AgentValidationClient>(client =>
+{
+    client.BaseAddress = new Uri(agentBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(12);
     if (!string.IsNullOrWhiteSpace(agentApiKey))
     {
         client.DefaultRequestHeaders.Add("X-Internal-Api-Key", agentApiKey);

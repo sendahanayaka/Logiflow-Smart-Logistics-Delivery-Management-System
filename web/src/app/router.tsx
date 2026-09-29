@@ -9,8 +9,11 @@ import { AdminPortalPage } from '../features/portals/pages/AdminPortalPage';
 import { CustomerOrderListPage, OrderListPage } from '../features/orders/pages/OrderListPage';
 import { OrderCreatePage } from '../features/orders/pages/OrderCreatePage';
 import { OrderDetailsPage } from '../features/orders/pages/OrderDetailsPage';
+import { OrderCheckoutPage } from '../features/orders/pages/OrderCheckoutPage';
+import { OrderSuccessPage } from '../features/orders/pages/OrderSuccessPage';
 import { WarehousePortalPage } from '../features/portals/pages/WarehousePortalPage';
 import { DriverPortalPage } from '../features/portals/pages/DriverPortalPage';
+import { DriverRunPage } from '../features/portals/pages/DriverRunPage';
 
 import FleetLandingPage from '../features/fleet/pages/FleetLandingPage';
 import DriverListPage from '../features/fleet/pages/DriverListPage';
@@ -25,8 +28,14 @@ import AssignmentPage from '../features/fleet/pages/AssignmentPage';
 import DutySchedulePage from '../features/fleet/pages/DutySchedulePage';
 import MaintenancePage from '../features/fleet/pages/MaintenancePage';
 import { AIPlanningPage } from '../features/ai-planning/pages/AIPlanningPage';
+import { DispatchPage } from '../features/warehouse/pages/DispatchPage';
+import { InventoryPage } from '../features/warehouse/pages/InventoryPage';
+import { PackageIntakePage } from '../features/warehouse/pages/PackageIntakePage';
+import { ThroughputPage } from '../features/warehouse/pages/ThroughputPage';
+import { WarehouseDetailsPage } from '../features/warehouse/pages/WarehouseDetailsPage';
+import { WarehouseListPage } from '../features/warehouse/pages/WarehouseListPage';
 
-export const router = createBrowserRouter([
+export const routes = [
   {
     path: '/',
     element: <MainLayout />,
@@ -55,18 +64,31 @@ export const router = createBrowserRouter([
           { index: true, element: <CustomerOrderListPage /> },
           { path: 'new', element: <OrderCreatePage /> },
           { path: 'create', element: <OrderCreatePage /> },
+          { path: ':id/checkout', element: <OrderCheckoutPage /> },
+          { path: ':id/success', element: <OrderSuccessPage /> },
           { path: ':id', element: <OrderDetailsPage /> }
         ]
       },
       {
         path: 'warehouse',
         element: <ProtectedRoute allowedRoles={['WAREHOUSE_STAFF']} />,
-        children: [{ index: true, element: <WarehousePortalPage /> }],
+        children: [
+          { index: true, element: <WarehouseListPage /> },
+          { path: 'portal', element: <WarehousePortalPage /> },
+          { path: ':warehouseId', element: <WarehouseDetailsPage /> },
+          { path: ':warehouseId/inventory', element: <InventoryPage /> },
+          { path: ':warehouseId/intake', element: <PackageIntakePage /> },
+          { path: ':warehouseId/dispatch', element: <DispatchPage /> },
+          { path: ':warehouseId/throughput', element: <ThroughputPage /> },
+        ],
       },
       {
         path: 'driver',
         element: <ProtectedRoute allowedRoles={['DRIVER']} />,
-        children: [{ index: true, element: <DriverPortalPage /> }],
+        children: [
+          { index: true, element: <DriverPortalPage /> },
+          { path: 'runs/:id', element: <DriverRunPage /> },
+        ],
       },
       // Fleet & Order Management Routes
       {
@@ -172,4 +194,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-]);
+];
+
+export const router = createBrowserRouter(routes);
