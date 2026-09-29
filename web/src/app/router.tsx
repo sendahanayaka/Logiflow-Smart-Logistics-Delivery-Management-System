@@ -27,6 +27,7 @@ import VehicleEditPage from '../features/fleet/pages/VehicleEditPage';
 import AssignmentPage from '../features/fleet/pages/AssignmentPage';
 import DutySchedulePage from '../features/fleet/pages/DutySchedulePage';
 import MaintenancePage from '../features/fleet/pages/MaintenancePage';
+import { AIPlanningPage } from '../features/ai-planning/pages/AIPlanningPage';
 import { DispatchPage } from '../features/warehouse/pages/DispatchPage';
 import { InventoryPage } from '../features/warehouse/pages/InventoryPage';
 import { PackageIntakePage } from '../features/warehouse/pages/PackageIntakePage';
@@ -142,6 +143,11 @@ export const routes = [
         path: 'fleet/trips',
         element: <OrderListPage />,
       },
+      {
+        path: 'ai-planning',
+        element: <AIPlanningPage />,
+      },
+      // Backward Compatibility Preserved Aliases
       {
         path: 'drivers',
         element: <DriverListPage />,
