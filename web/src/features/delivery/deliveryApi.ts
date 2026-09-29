@@ -48,6 +48,13 @@ export const deliveryApi = baseApi.injectEndpoints({
           ? [...result.map(({ id }) => ({ type: 'Shipment' as const, id })), { type: 'Shipment', id: 'LIST' }]
           : [{ type: 'Shipment', id: 'LIST' }],
     }),
+    getMyRuns: builder.query<ShipmentSummary[], void>({
+      query: () => '/shipments/mine',
+      providesTags: (result) =>
+        result
+          ? [...result.map(({ id }) => ({ type: 'Shipment' as const, id })), { type: 'Shipment', id: 'LIST' }]
+          : [{ type: 'Shipment', id: 'LIST' }],
+    }),
     getDriverRun: builder.query<DriverRunView, string>({
       query: (id) => `/shipments/${id}/run`,
       providesTags: (_r, _e, id) => [{ type: 'Shipment', id }],
@@ -82,6 +89,7 @@ export const {
   useTriggerWorkflowMutation,
   useApproveWorkflowMutation,
   useGetShipmentsQuery,
+  useGetMyRunsQuery,
   useGetDriverRunQuery,
   useGetTrackingQuery,
   useRecordStopEventMutation,
