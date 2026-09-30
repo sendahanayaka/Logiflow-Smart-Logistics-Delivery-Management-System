@@ -59,7 +59,7 @@ class _Response:
 def _mock_backend(monkeypatch: pytest.MonkeyPatch, payload: dict[str, Any]) -> list[str]:
     requested_urls: list[str] = []
 
-    def get(url: str, *, timeout: float) -> _Response:
+    def get(url: str, *, timeout: float, headers=None) -> _Response:
         requested_urls.append(url)
         assert timeout == 10.0
         return _Response(payload)

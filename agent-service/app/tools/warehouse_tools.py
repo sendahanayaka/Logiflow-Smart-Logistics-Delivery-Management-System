@@ -11,7 +11,12 @@ from typing import Any
 
 import httpx
 
-from app.config import BACKEND_API_BASE_URL
+from app.config import AGENT_SERVICE_API_KEY, BACKEND_API_BASE_URL
+
+
+def _internal_headers() -> dict[str, str]:
+    """Send the shared internal key so the role-locked S3 endpoints accept us."""
+    return {"X-Internal-Api-Key": AGENT_SERVICE_API_KEY} if AGENT_SERVICE_API_KEY else {}
 
 _BATCH_CONTEXT_SCHEMA = "batch_validation_context"
 _CANDIDATE_CONTEXT_SCHEMA = "candidate_validation_context"
@@ -36,7 +41,7 @@ def fetch_batch_validation_context(batch_id: str) -> dict[str, Any]:
 
     url = f"{BACKEND_API_BASE_URL.rstrip('/')}/api/dispatch/batches/{batch_id}/context"
     try:
-        response = httpx.get(url, timeout=_REQUEST_TIMEOUT_SECONDS)
+        response = httpx.get(url, headers=_internal_headers(), timeout=_REQUEST_TIMEOUT_SECONDS)
         response.raise_for_status()
         payload = response.json()
     except httpx.HTTPError as exception:
@@ -65,7 +70,7 @@ def fetch_candidate_validation_context(
         "maxVolumeM3": max_volume_m3,
     }
     try:
-        response = httpx.post(url, json=payload, timeout=_REQUEST_TIMEOUT_SECONDS)
+        response = httpx.post(url, json=payload, headers=_internal_headers(), timeout=_REQUEST_TIMEOUT_SECONDS)
         response.raise_for_status()
         context = response.json()
     except httpx.HTTPError as exception:
