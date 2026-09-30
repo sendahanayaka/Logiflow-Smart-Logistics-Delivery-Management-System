@@ -112,7 +112,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"] ?? "LogiFlow",
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
         };
-    });
+    })
+    // Internal agent service authenticates with the shared X-Internal-Api-Key.
+    .AddScheme<LogiFlow.Infrastructure.Auth.InternalApiKeyAuthenticationOptions,
+        LogiFlow.Infrastructure.Auth.InternalApiKeyAuthenticationHandler>(
+        LogiFlow.Infrastructure.Auth.InternalApiKeyAuthenticationHandler.SchemeName, _ => { });
 builder.Services.AddAuthorization();
 
 // CORS configuration
