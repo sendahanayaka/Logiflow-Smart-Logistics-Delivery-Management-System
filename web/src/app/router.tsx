@@ -85,7 +85,8 @@ export const routes = [
         path: 'warehouse',
         element: <ProtectedRoute allowedRoles={['WAREHOUSE_STAFF']} />,
         children: [
-          { index: true, element: <WarehouseListPage /> },
+          { index: true, element: <WarehousePortalPage /> },
+          { path: 'manage', element: <WarehouseListPage /> },
           { path: 'portal', element: <WarehousePortalPage /> },
           { path: ':warehouseId', element: <WarehouseDetailsPage /> },
           { path: ':warehouseId/inventory', element: <InventoryPage /> },
