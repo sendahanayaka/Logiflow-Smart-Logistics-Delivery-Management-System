@@ -168,7 +168,9 @@ public class AgentWorkflowService : IAgentWorkflowService
             objective ?? $"Route dispatch batch {dispatchBatchId}",
             stops.Min(stop => stop.WindowStart),
             null,
-            stops);
+            stops,
+            // Honour the vehicle the warehouse committed the batch to.
+            string.IsNullOrWhiteSpace(batch.VehicleId) ? null : batch.VehicleId);
 
         return await RunWorkflowAsync(command, cancellationToken);
     }
@@ -241,7 +243,8 @@ public class AgentWorkflowService : IAgentWorkflowService
             command.CustomerNotes,
             orderIds,
             stops,
-            command.DispatchBatchId);
+            command.DispatchBatchId,
+            command.RequiredVehicleId);
     }
 
     private static void AttachRouteStops(

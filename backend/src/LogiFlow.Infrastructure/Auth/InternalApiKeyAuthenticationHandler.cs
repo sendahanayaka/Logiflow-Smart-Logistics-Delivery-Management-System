@@ -26,7 +26,12 @@ public sealed class InternalApiKeyAuthenticationHandler
     public const string SchemeName = "InternalApiKey";
     public const string HeaderName = "X-Internal-Api-Key";
 
-    private readonly string? _configuredKey;
+    // Matches the agent's config.py default so local runs work with zero setup,
+    // regardless of ASPNETCORE_ENVIRONMENT. Override in staging/prod via
+    // AgentService:ApiKey (config) or the env var.
+    private const string DevFallbackKey = "dev-internal-agent-key-change-me";
+
+    private readonly string _configuredKey;
 
     public InternalApiKeyAuthenticationHandler(
         IOptionsMonitor<InternalApiKeyAuthenticationOptions> options,
@@ -35,7 +40,8 @@ public sealed class InternalApiKeyAuthenticationHandler
         IConfiguration configuration)
         : base(options, logger, encoder)
     {
-        _configuredKey = configuration["AgentService:ApiKey"];
+        var configured = configuration["AgentService:ApiKey"];
+        _configuredKey = string.IsNullOrWhiteSpace(configured) ? DevFallbackKey : configured;
     }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()

@@ -12,7 +12,7 @@ namespace LogiFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/workflows")]
-[Authorize(Roles = "ADMIN")] // ops manager (S1 seeds Operations Manager as the ADMIN role)
+[Authorize] // ops-manager (ADMIN) for most actions; from-batch also allows WAREHOUSE_STAFF (per-method)
 public class WorkflowsController : ControllerBase
 {
     private readonly IAgentWorkflowService _workflows;
@@ -33,6 +33,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "ADMIN")]
     [ProducesResponseType(typeof(WorkflowResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status502BadGateway)]
@@ -113,6 +114,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize(Roles = "ADMIN")]
     [ProducesResponseType(typeof(WorkflowResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<WorkflowResponse>> GetById(Guid id, CancellationToken cancellationToken)
@@ -122,6 +124,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "ADMIN")]
     [ProducesResponseType(typeof(IReadOnlyList<WorkflowSummary>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<WorkflowSummary>>> List(
         [FromQuery] WorkflowStatus? status,
@@ -131,6 +134,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpPost("{id:guid}/approval")]
+    [Authorize(Roles = "ADMIN")]
     [ProducesResponseType(typeof(ApprovalResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -14,7 +14,8 @@ public sealed record AgentRunPayload(
     string? CustomerNotes,
     IReadOnlyList<string> OrderIds,
     IReadOnlyList<AgentStop> Stops,
-    Guid BatchId);
+    Guid BatchId,
+    string? VehicleId = null);
 
 public sealed record AgentStop(
     string StopId,
