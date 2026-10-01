@@ -13,6 +13,9 @@ class AllocationInput(BaseModel):
     total_weight_kg: float
     total_volume_m3: float
     vehicle_type: str | None = None
+    # When the dispatch batch is already committed to a vehicle, allocation is
+    # constrained to it (S3 validation requires allocation.vehicle == batch.vehicle).
+    vehicle_id: str | None = None
     delivery_window_start: str
     delivery_window_end: str
     order_ids: list[str] = Field(default_factory=list)
