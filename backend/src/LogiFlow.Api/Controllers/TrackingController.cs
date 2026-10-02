@@ -28,6 +28,14 @@ public class TrackingController : ControllerBase
         return tracking is null ? NotFound() : Ok(tracking);
     }
 
+    /// <summary>Customer-facing tracking for one of their orders (status + driver contact + their stop).</summary>
+    [HttpGet("order/{orderId:guid}")]
+    [ProducesResponseType(typeof(CustomerOrderTrackingView), StatusCodes.Status200OK)]
+    public async Task<ActionResult<CustomerOrderTrackingView>> GetByOrder(Guid orderId, CancellationToken cancellationToken)
+    {
+        return Ok(await _shipments.GetOrderTrackingAsync(orderId, cancellationToken));
+    }
+
     /// <summary>Track by the friendly shipment code (e.g. for a customer who has the code).</summary>
     [HttpGet("code/{shipmentCode}")]
     [ProducesResponseType(typeof(TrackingView), StatusCodes.Status200OK)]

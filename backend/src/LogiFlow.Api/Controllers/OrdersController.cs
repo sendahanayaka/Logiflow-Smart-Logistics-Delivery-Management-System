@@ -82,6 +82,16 @@ public class OrdersController : ControllerBase
         return Ok(orders);
     }
 
+    /// <summary>Ops/warehouse list of all orders (for intake selection), optional ?status=Confirmed.</summary>
+    [HttpGet]
+    [Authorize(Roles = "WAREHOUSE_STAFF,ADMIN")]
+    [ProducesResponseType(typeof(IEnumerable<DeliveryOrderResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<DeliveryOrderResponse>>> ListOrders(
+        [FromQuery] string? status, CancellationToken cancellationToken)
+    {
+        return Ok(await _ordersService.ListOrdersAsync(status, cancellationToken));
+    }
+
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(DeliveryOrderResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

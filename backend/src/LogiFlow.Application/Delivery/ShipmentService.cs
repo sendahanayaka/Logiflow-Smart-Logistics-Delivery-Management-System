@@ -83,6 +83,71 @@ public class ShipmentService : IShipmentService
         return shipment is null ? null : ToTrackingView(shipment);
     }
 
+    public async Task<CustomerOrderTrackingView> GetOrderTrackingAsync(
+        Guid orderId, CancellationToken cancellationToken = default)
+    {
+        static CustomerOrderTrackingView Preparing(Guid id, string stage) =>
+            new(id, false, stage, null, null, null, null, null, null, null, null, null, null, null, null);
+
+        // Order -> its route stop (latest run) -> workflow -> shipment.
+        var stop = await _context.RouteStops
+            .AsNoTracking()
+            .Where(routeStop => routeStop.OrderId == orderId)
+            .OrderByDescending(routeStop => routeStop.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (stop is null)
+        {
+            return Preparing(orderId, "Preparing"); // not routed yet (warehouse/agent pending)
+        }
+
+        var shipment = await _context.Shipments
+            .AsNoTracking()
+            .Include(s => s.TrackingEvents)
+            .Include(s => s.ProofOfDeliveries)
+            .FirstOrDefaultAsync(s => s.AgentWorkflowId == stop.AgentWorkflowId, cancellationToken);
+
+        if (shipment is null)
+        {
+            return Preparing(orderId, "AwaitingDispatch"); // routed, awaiting ops approval
+        }
+
+        var driver = await _context.Drivers
+            .AsNoTracking()
+            .Where(d => d.Id == shipment.DriverId)
+            .Select(d => new { d.FullName, d.PhoneNumber })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var vehicleReg = await _context.Vehicles
+            .AsNoTracking()
+            .Where(v => v.Id == shipment.VehicleId)
+            .Select(v => v.RegistrationNumber)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var pod = shipment.ProofOfDeliveries.FirstOrDefault(p => p.RouteStopId == stop.Id);
+        var arrived = shipment.TrackingEvents
+            .Where(e => e.RouteStopId == stop.Id && e.EventType == TrackingEventType.ArrivedStop)
+            .OrderBy(e => e.OccurredAt)
+            .FirstOrDefault();
+
+        return new CustomerOrderTrackingView(
+            orderId,
+            true,
+            "Dispatched",
+            shipment.ShipmentCode,
+            shipment.Status.ToString(),
+            driver?.FullName,
+            driver?.PhoneNumber,
+            vehicleReg,
+            stop.Sequence,
+            stop.Eta,
+            stop.Status.ToString(),
+            stop.OnTime,
+            arrived?.OccurredAt,
+            pod?.DeliveredAt,
+            pod?.ReceivedByName);
+    }
+
     public async Task<TrackingView?> GetTrackingByCodeAsync(string shipmentCode, CancellationToken cancellationToken = default)
     {
         var code = (shipmentCode ?? string.Empty).Trim();

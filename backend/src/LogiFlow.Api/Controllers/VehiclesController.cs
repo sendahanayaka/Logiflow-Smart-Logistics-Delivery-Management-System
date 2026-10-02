@@ -7,7 +7,9 @@ namespace LogiFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(AuthenticationSchemes = "Bearer,InternalApiKey", Roles = "ADMIN")]
+// Reads allow warehouse staff (to pick a van for a batch) + the agent (internal key);
+// writes are ADMIN-only (per-method below).
+[Authorize(AuthenticationSchemes = "Bearer,InternalApiKey")]
 public class VehiclesController : ControllerBase
 {
     private readonly IFleetService _fleetService;
@@ -18,6 +20,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "ADMIN,WAREHOUSE_STAFF")]
     public async Task<ActionResult<IEnumerable<VehicleResponse>>> GetAll(CancellationToken cancellationToken)
     {
         var vehicles = await _fleetService.GetAllVehiclesAsync(cancellationToken);
@@ -25,6 +28,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize(Roles = "ADMIN,WAREHOUSE_STAFF")]
     public async Task<ActionResult<VehicleResponse>> GetById(Guid id, CancellationToken cancellationToken)
     {
         var vehicle = await _fleetService.GetVehicleByIdAsync(id, cancellationToken);
@@ -37,6 +41,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "ADMIN")]
     public async Task<ActionResult<VehicleResponse>> Create([FromBody] CreateVehicleRequest request, CancellationToken cancellationToken)
     {
         try
@@ -55,6 +60,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = "ADMIN")]
     public async Task<ActionResult<VehicleResponse>> Update(Guid id, [FromBody] UpdateVehicleRequest request, CancellationToken cancellationToken)
     {
         try
@@ -78,6 +84,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         var deleted = await _fleetService.DeleteVehicleAsync(id, cancellationToken);

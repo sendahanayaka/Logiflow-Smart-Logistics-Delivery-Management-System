@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using LogiFlow.Application.Common;
 using LogiFlow.Application.Common.Interfaces;
+using LogiFlow.Application.Delivery;
 using LogiFlow.Application.Orders.DTOs;
 using LogiFlow.Domain.Entities;
 using LogiFlow.Domain.Enums;
@@ -98,6 +100,27 @@ public class OrdersService : IOrdersService
             .Where(r => orderIds.Contains(r.OrderId))
             .ToDictionaryAsync(r => r.OrderId, cancellationToken);
             
+        return orders.Select(o => MapOrder(o, routeStops.TryGetValue(o.Id, out var stop) ? stop.DistanceFromPrevKm : null));
+    }
+
+    public async Task<IEnumerable<DeliveryOrderResponse>> ListOrdersAsync(
+        string? status = null, CancellationToken cancellationToken = default)
+    {
+        LogiFlow.Domain.Enums.OrderStatus? parsed =
+            Enum.TryParse<LogiFlow.Domain.Enums.OrderStatus>(status, ignoreCase: true, out var s) ? s : null;
+
+        var orders = await _context.DeliveryOrders
+            .AsNoTracking()
+            .Where(o => parsed == null || o.Status == parsed)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        var orderIds = orders.Select(o => o.Id).ToList();
+        var routeStops = await _context.RouteStops
+            .AsNoTracking()
+            .Where(r => orderIds.Contains(r.OrderId))
+            .ToDictionaryAsync(r => r.OrderId, cancellationToken);
+
         return orders.Select(o => MapOrder(o, routeStops.TryGetValue(o.Id, out var stop) ? stop.DistanceFromPrevKm : null));
     }
 
@@ -256,15 +279,26 @@ public class OrdersService : IOrdersService
     private static string? NormalizeOptional(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
+    // Level-A quote: estimate the point-to-point delivery distance from the pickup
+    // city to the delivery city so the fee can be shown and paid at order time
+    // (before any routing). The multi-stop route distance is used for ops ETAs, not
+    // billing — each customer is billed for their own leg, computed up front.
+    private static decimal EstimateQuoteDistanceKm(DeliveryOrder order)
+    {
+        var from = GeoLookup.Resolve(order.PickupCity);
+        var to = GeoLookup.Resolve(order.DeliveryCity);
+        var straightLineKm = EtaEngine.HaversineKm(from.Lat, from.Lng, to.Lat, to.Lng);
+        var roadKm = straightLineKm * 1.3; // straight-line → road-distance factor
+        return Math.Round((decimal)Math.Max(roadKm, 2.0), 2); // floor for same-city
+    }
+
+    // distanceKm (the routed leg) is accepted for compatibility but billing uses the
+    // order-time point-to-point quote so the fee is visible at checkout and fixed.
     private DeliveryOrderResponse MapOrder(DeliveryOrder order, decimal? distanceKm = null)
     {
         var intelligence = _intelligenceService.Analyze(order);
-        DeliveryFeeBreakdown? pricing = null;
-
-        if (distanceKm.HasValue)
-        {
-            pricing = _pricingService.CalculateFee(order, intelligence.HandlingRequirement, distanceKm.Value);
-        }
+        var pricing = _pricingService.CalculateFee(
+            order, intelligence.HandlingRequirement, EstimateQuoteDistanceKm(order));
 
         return new DeliveryOrderResponse(
             order.Id,

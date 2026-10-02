@@ -10,6 +10,8 @@ public interface IOrdersService
 {
     Task<DeliveryOrderResponse> CreateOrderAsync(CreateDeliveryOrderCommand command, CancellationToken cancellationToken = default);
     Task<IEnumerable<DeliveryOrderResponse>> GetMyOrdersAsync(CancellationToken cancellationToken = default);
+    /// <summary>All orders (ops/warehouse view), optionally filtered by status; newest first.</summary>
+    Task<IEnumerable<DeliveryOrderResponse>> ListOrdersAsync(string? status = null, CancellationToken cancellationToken = default);
     Task<DeliveryOrderResponse> GetOrderByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<DeliveryOrderResponse> CancelOrderAsync(Guid id, CancellationToken cancellationToken = default);
     Task<DeliveryOrderResponse> ConfirmOrderAsync(Guid id, string paymentMethod, CancellationToken cancellationToken = default);

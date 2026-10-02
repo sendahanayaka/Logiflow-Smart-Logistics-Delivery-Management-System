@@ -17,6 +17,13 @@ public interface IShipmentService
     /// <summary>Customer / ops live-tracking timeline for a shipment (null if not found).</summary>
     Task<TrackingView?> GetTrackingAsync(Guid shipmentId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Customer-facing tracking for one of their orders: shipment status + assigned
+    /// driver's contact + this order's own stop. Returns a "preparing" view when the
+    /// order isn't routed/dispatched yet.
+    /// </summary>
+    Task<CustomerOrderTrackingView> GetOrderTrackingAsync(Guid orderId, CancellationToken cancellationToken = default);
+
     /// <summary>Live-tracking timeline looked up by the friendly shipment code (null if not found).</summary>
     Task<TrackingView?> GetTrackingByCodeAsync(string shipmentCode, CancellationToken cancellationToken = default);
 

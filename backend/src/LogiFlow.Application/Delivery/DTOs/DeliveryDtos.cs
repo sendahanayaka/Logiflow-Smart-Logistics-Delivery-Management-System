@@ -91,6 +91,27 @@ public sealed record RecordPodCommand(
     string? Notes,
     DateTime? DeliveredAt);
 
+/// <summary>
+/// Customer-facing tracking for one order: the shipment status + the assigned driver's
+/// contact + just THIS order's stop (never other customers on the same van).
+/// </summary>
+public sealed record CustomerOrderTrackingView(
+    Guid OrderId,
+    bool HasShipment,
+    string Stage,                 // Preparing | AwaitingDispatch | Dispatched | ...
+    string? ShipmentCode,
+    string? ShipmentStatus,
+    string? DriverName,
+    string? DriverContact,
+    string? VehicleRegistration,
+    int? StopSequence,
+    DateTime? Eta,
+    string? StopStatus,
+    bool? OnTime,
+    DateTime? ArrivedAt,
+    DateTime? DeliveredAt,
+    string? ReceivedByName);
+
 /// <summary>Lightweight shipment row for the admin shipments list.</summary>
 public sealed record ShipmentSummary(
     Guid Id,
