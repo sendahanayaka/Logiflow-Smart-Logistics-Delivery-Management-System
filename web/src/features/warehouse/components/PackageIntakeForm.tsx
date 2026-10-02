@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 
-import { useReceivePackageMutation, type StorageZone } from '../warehouseApi'
+import { useReceivePackageMutation, useGetIntakeOrdersQuery, type StorageZone } from '../warehouseApi'
 import { ApiMessage, userFacingApiError } from './ApiMessage'
 
 interface PackageIntakeFormProps {
@@ -10,6 +10,7 @@ interface PackageIntakeFormProps {
 
 export function PackageIntakeForm({ warehouseId, zones }: PackageIntakeFormProps) {
   const [receivePackage, { isLoading }] = useReceivePackageMutation()
+  const { data: orders = [] } = useGetIntakeOrdersQuery()
   const [form, setForm] = useState({
     orderId: '', storageZoneId: '', trackingCode: '', weightKg: '', volumeM3: '', isFragile: false, specialHandling: '',
   })
@@ -49,7 +50,16 @@ export function PackageIntakeForm({ warehouseId, zones }: PackageIntakeFormProps
 
   return (
     <form className="surface stacked-form" onSubmit={submit} noValidate>
-      <label>Order ID<input value={form.orderId} onChange={(event) => setForm({ ...form, orderId: event.target.value })} required /></label>
+      <label>Order
+        <select value={form.orderId} onChange={(event) => setForm({ ...form, orderId: event.target.value })} required>
+          <option value="">Select an order</option>
+          {orders.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.deliveryCity} — {o.recipientName || o.packageDescription} ({o.status})
+            </option>
+          ))}
+        </select>
+      </label>
       <label>Storage zone
         <select value={form.storageZoneId} onChange={(event) => setForm({ ...form, storageZoneId: event.target.value })} required>
           <option value="">Select a zone</option>

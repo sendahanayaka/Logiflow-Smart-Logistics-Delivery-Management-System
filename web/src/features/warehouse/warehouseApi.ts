@@ -327,8 +327,20 @@ export const warehouseApi = baseApi.injectEndpoints({
       }),
       providesTags: (_result, _error, { warehouseId }) => [{ type: 'Throughput', id: warehouseId }],
     }),
+    // Orders available for intake selection (ops/warehouse view).
+    getIntakeOrders: build.query<IntakeOrderOption[], void>({
+      query: () => '/orders',
+    }),
   }),
 })
+
+export interface IntakeOrderOption {
+  id: Id
+  deliveryCity: string
+  recipientName: string | null
+  packageDescription: string
+  status: string
+}
 
 export const {
   useGetWarehousesQuery,
@@ -345,4 +357,5 @@ export const {
   useRunDispatchAgentValidationMutation,
   useValidateDispatchCandidateMutation,
   useGetWarehouseThroughputQuery,
+  useGetIntakeOrdersQuery,
 } = warehouseApi

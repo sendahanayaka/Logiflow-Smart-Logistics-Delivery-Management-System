@@ -12,6 +12,7 @@ import {
 } from '../warehouseApi'
 import { ApiMessage, userFacingApiError } from './ApiMessage'
 import { CapacityIndicator } from './CapacityIndicator'
+import { useGetVehiclesQuery } from '../../fleet/api/fleetApi'
 
 interface DispatchBatchBuilderProps {
   warehouseId: string
@@ -24,6 +25,7 @@ export function DispatchBatchBuilder({ warehouseId, packages, zones, onBatchCrea
   const [createBatch, { isLoading }] = useCreateDispatchBatchMutation()
   const [replaceBatchItems, replaceState] = useReplaceDispatchBatchItemsMutation()
   const [validateCandidate, validationState] = useValidateDispatchCandidateMutation()
+  const { data: vehicles = [] } = useGetVehiclesQuery()
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [vehicle, setVehicle] = useState({ vehicleId: '', maxWeightKg: '', maxVolumeM3: '' })
   const [response, setResponse] = useState<DispatchBatchCreationResponse>()
@@ -143,10 +145,32 @@ export function DispatchBatchBuilder({ warehouseId, packages, zones, onBatchCrea
       )}
       <form className="stacked-form" onSubmit={validateOrUpdate} noValidate>
         <fieldset>
-          <legend>Temporary S2 vehicle allocation inputs</legend>
-          <p><small>Replace these development-only values with the S2 vehicle selector when that contract is available.</small></p>
+          <legend>Vehicle for this batch</legend>
+          <p><small>Pick the van; its capacity pre-fills below (you can adjust the limits used for validation).</small></p>
           <div className="form-grid">
-            <label>Vehicle ID<input value={vehicle.vehicleId} onChange={(event) => { clearCandidateValidation(); setVehicle({ ...vehicle, vehicleId: event.target.value }) }} disabled={!!activeBatch} required /></label>
+            <label>Vehicle
+              <select
+                value={vehicle.vehicleId}
+                onChange={(event) => {
+                  clearCandidateValidation()
+                  const picked = vehicles.find((v) => v.id === event.target.value)
+                  setVehicle({
+                    vehicleId: event.target.value,
+                    maxWeightKg: picked ? String(picked.capacity) : vehicle.maxWeightKg,
+                    maxVolumeM3: vehicle.maxVolumeM3 || '12',
+                  })
+                }}
+                disabled={!!activeBatch}
+                required
+              >
+                <option value="">Select a vehicle</option>
+                {vehicles.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.registrationNumber} — {v.vehicleType} ({v.capacity}kg)
+                  </option>
+                ))}
+              </select>
+            </label>
             <label>Max weight (kg)<input type="number" min="0.01" step="any" value={vehicle.maxWeightKg} onChange={(event) => { clearCandidateValidation(); setVehicle({ ...vehicle, maxWeightKg: event.target.value }) }} disabled={!!activeBatch} required /></label>
             <label>Max volume (m³)<input type="number" min="0.01" step="any" value={vehicle.maxVolumeM3} onChange={(event) => { clearCandidateValidation(); setVehicle({ ...vehicle, maxVolumeM3: event.target.value }) }} disabled={!!activeBatch} required /></label>
           </div>

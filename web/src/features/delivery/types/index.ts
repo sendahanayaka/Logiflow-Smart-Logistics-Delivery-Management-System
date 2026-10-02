@@ -90,6 +90,24 @@ export interface TrackingView {
   stops: TimelineEntry[];
 }
 
+export interface CustomerOrderTracking {
+  orderId: string;
+  hasShipment: boolean;
+  stage: string; // Preparing | AwaitingDispatch | Dispatched
+  shipmentCode: string | null;
+  shipmentStatus: string | null;
+  driverName: string | null;
+  driverContact: string | null;
+  vehicleRegistration: string | null;
+  stopSequence: number | null;
+  eta: string | null;
+  stopStatus: string | null;
+  onTime: boolean | null;
+  arrivedAt: string | null;
+  deliveredAt: string | null;
+  receivedByName: string | null;
+}
+
 export interface DriverRunView {
   shipmentId: string;
   shipmentCode: string;

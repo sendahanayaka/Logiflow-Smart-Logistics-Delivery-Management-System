@@ -4,6 +4,7 @@ import { getOrderById, cancelOrder } from '../ordersApi';
 import { DeliveryOrderResponse } from '../types';
 import { OrderStatusBadge } from '../components/OrderStatusBadge';
 import { OrderStatusTimeline } from '../components/OrderStatusTimeline';
+import { OrderTrackingSection } from '../../delivery/components/OrderTrackingSection';
 import '../Orders.css';
 
 export const OrderDetailsPage: React.FC = () => {
@@ -94,6 +95,11 @@ export const OrderDetailsPage: React.FC = () => {
                     <div style={{ borderBottom: '1px solid #e2e8f0' }}>
                         <OrderStatusTimeline status={order.status} />
                     </div>
+
+                    {/* Live delivery tracking (shipment status + driver contact + ETA) */}
+                    {order.status.toUpperCase() !== 'CANCELLED' && (
+                        <OrderTrackingSection orderId={order.id} />
+                    )}
 
                     {/* Order Information 1-Card System */}
                     <div style={{ background: '#FFFFFF', padding: '2.5rem 2.5rem 1.5rem', borderBottom: order.intelligence ? '1px solid #e2e8f0' : 'none' }}>

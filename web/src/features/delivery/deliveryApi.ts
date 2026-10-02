@@ -11,6 +11,7 @@ import type {
   DriverRunView,
   RecordStopEventRequest,
   RecordPodRequest,
+  CustomerOrderTracking,
 } from './types';
 
 export const deliveryApi = baseApi.injectEndpoints({
@@ -71,6 +72,11 @@ export const deliveryApi = baseApi.injectEndpoints({
       query: (id) => `/tracking/${id}`,
       providesTags: (_r, _e, id) => [{ type: 'Tracking', id }],
     }),
+    // Customer-facing: track one of my orders (status + driver contact + my stop).
+    getOrderTracking: builder.query<CustomerOrderTracking, string>({
+      query: (orderId) => `/tracking/order/${orderId}`,
+      providesTags: (_r, _e, orderId) => [{ type: 'Tracking', id: `order-${orderId}` }],
+    }),
     getTrackingByCode: builder.query<TrackingView, string>({
       query: (code) => `/tracking/code/${encodeURIComponent(code)}`,
       providesTags: (_r, _e, code) => [{ type: 'Tracking', id: code }],
@@ -105,6 +111,7 @@ export const {
   useGetMyRunsQuery,
   useGetDriverRunQuery,
   useGetTrackingQuery,
+  useGetOrderTrackingQuery,
   useLazyGetTrackingByCodeQuery,
   useRecordStopEventMutation,
   useRecordPodMutation,
