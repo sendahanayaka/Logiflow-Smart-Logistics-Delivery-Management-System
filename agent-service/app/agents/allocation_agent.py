@@ -69,6 +69,7 @@ def _build_input(state: WorkflowState) -> AllocationInput:
         total_weight_kg=total_w,
         total_volume_m3=total_v,
         vehicle_type=data.get("vehicle_type"),
+        vehicle_id=data.get("vehicle_id"),
         delivery_window_start=data.get(
             "delivery_window_start",
             "",
@@ -212,6 +213,17 @@ def _run(inp: AllocationInput) -> AllocationOutput:
         inp.delivery_window_start,
         inp.delivery_window_end,
     )
+
+    # If the batch is already committed to a vehicle, allocate only for that vehicle
+    # so the choice matches the persisted batch (S3 validation checks this).
+    if inp.vehicle_id:
+        # fleet_availability exposes the id under "vehicle_id" (raw API uses "id").
+        constrained = [
+            v for v in vehicles
+            if str(v.get("vehicle_id") or v.get("id")) == str(inp.vehicle_id)
+        ]
+        if constrained:
+            vehicles = constrained
 
     # ---------------------------------------------------------
     # 2. Get available drivers

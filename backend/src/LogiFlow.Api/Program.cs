@@ -58,6 +58,7 @@ builder.Services.AddScoped<IDispatchBatchService, DispatchBatchService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<LogiFlow.Application.Users.IUserService, LogiFlow.Application.Users.UserService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IOrdersService, OrdersService>();
@@ -71,7 +72,14 @@ builder.Services.AddScoped<IApprovalService, ApprovalService>();
 builder.Services.AddScoped<IShipmentService, ShipmentService>();
 
 var agentBaseUrl = builder.Configuration["AgentService:BaseUrl"] ?? "http://localhost:8000";
+// Shared internal key for both directions. Defaults to the dev value (matches the
+// agent's config.py + the InternalApiKey auth handler) so local runs need no setup;
+// override with AgentService:ApiKey in staging/prod.
 var agentApiKey = builder.Configuration["AgentService:ApiKey"];
+if (string.IsNullOrWhiteSpace(agentApiKey))
+{
+    agentApiKey = "dev-internal-agent-key-change-me";
+}
 builder.Services.AddHttpClient<IAgentServiceClient, AgentServiceClient>(client =>
 {
     client.BaseAddress = new Uri(agentBaseUrl);
@@ -111,7 +119,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"] ?? "LogiFlow",
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
         };
-    });
+    })
+    // Internal agent service authenticates with the shared X-Internal-Api-Key.
+    .AddScheme<LogiFlow.Infrastructure.Auth.InternalApiKeyAuthenticationOptions,
+        LogiFlow.Infrastructure.Auth.InternalApiKeyAuthenticationHandler>(
+        LogiFlow.Infrastructure.Auth.InternalApiKeyAuthenticationHandler.SchemeName, _ => { });
 builder.Services.AddAuthorization();
 
 // CORS configuration

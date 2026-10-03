@@ -4,11 +4,13 @@ using LogiFlow.Api.DTOs.Warehouse;
 using LogiFlow.Application.Warehouse;
 using LogiFlow.Application.Warehouse.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LogiFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/dispatch")]
+[Authorize(AuthenticationSchemes = "Bearer,InternalApiKey", Roles = "WAREHOUSE_STAFF,ADMIN")]
 public sealed class DispatchController : ControllerBase
 {
     private readonly IDispatchBatchService _dispatchBatchService;

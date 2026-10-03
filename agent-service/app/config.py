@@ -53,4 +53,9 @@ FALLBACK_AVG_SPEED_KMH: float = _env_positive_float("FALLBACK_AVG_SPEED_KMH", 40
 
 # Shared secret so ONLY the backend can call this internal service. When unset
 # (local dev) the guard is disabled; set it in staging/demo.
-AGENT_SERVICE_API_KEY: str | None = os.getenv("AGENT_SERVICE_API_KEY") or None
+# Shared secret the agent presents to the backend's role-locked endpoints.
+# Defaults to the dev key (matches the backend's appsettings.Development.json) so
+# local runs need zero setup; override with the AGENT_SERVICE_API_KEY env var in prod.
+AGENT_SERVICE_API_KEY: str | None = (
+    os.getenv("AGENT_SERVICE_API_KEY") or "dev-internal-agent-key-change-me"
+)

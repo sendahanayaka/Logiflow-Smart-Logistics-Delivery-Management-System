@@ -6,6 +6,8 @@ import { LoginPage } from '../features/auth/pages/LoginPage';
 import { RegisterPage } from '../features/auth/pages/RegisterPage';
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute';
 import { AdminPortalPage } from '../features/portals/pages/AdminPortalPage';
+import { UserListPage } from '../features/users/pages/UserListPage';
+import { TrackingPage } from '../features/delivery/pages/TrackingPage';
 import { CustomerOrderListPage, OrderListPage } from '../features/orders/pages/OrderListPage';
 import { OrderCreatePage } from '../features/orders/pages/OrderCreatePage';
 import { OrderDetailsPage } from '../features/orders/pages/OrderDetailsPage';
@@ -58,6 +60,16 @@ export const routes = [
         children: [{ index: true, element: <AdminPortalPage /> }],
       },
       {
+        path: 'users',
+        element: <ProtectedRoute allowedRoles={['ADMIN']} />,
+        children: [{ index: true, element: <UserListPage /> }],
+      },
+      {
+        path: 'track',
+        element: <ProtectedRoute />,
+        children: [{ index: true, element: <TrackingPage /> }],
+      },
+      {
         path: 'orders',
         element: <ProtectedRoute allowedRoles={['CUSTOMER']} />,
         children: [
@@ -73,7 +85,8 @@ export const routes = [
         path: 'warehouse',
         element: <ProtectedRoute allowedRoles={['WAREHOUSE_STAFF']} />,
         children: [
-          { index: true, element: <WarehouseListPage /> },
+          { index: true, element: <WarehousePortalPage /> },
+          { path: 'manage', element: <WarehouseListPage /> },
           { path: 'portal', element: <WarehousePortalPage /> },
           { path: ':warehouseId', element: <WarehouseDetailsPage /> },
           { path: ':warehouseId/inventory', element: <InventoryPage /> },
@@ -145,7 +158,8 @@ export const routes = [
       },
       {
         path: 'ai-planning',
-        element: <AIPlanningPage />,
+        element: <ProtectedRoute allowedRoles={['ADMIN']} />,
+        children: [{ index: true, element: <AIPlanningPage /> }],
       },
       // Backward Compatibility Preserved Aliases
       {

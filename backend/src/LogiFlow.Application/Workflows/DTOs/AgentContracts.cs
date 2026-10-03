@@ -14,7 +14,8 @@ public sealed record AgentRunPayload(
     string? CustomerNotes,
     IReadOnlyList<string> OrderIds,
     IReadOnlyList<AgentStop> Stops,
-    Guid BatchId);
+    Guid BatchId,
+    string? VehicleId = null);
 
 public sealed record AgentStop(
     string StopId,
@@ -33,9 +34,20 @@ public sealed record AgentRunResponse(
     IReadOnlyList<AgentAuditEntry>? Audit,
     IReadOnlyList<AgentError>? Errors);
 
-// Only the routing block is strongly typed; the upstream S1/S2/S3 blocks are kept
-// verbatim in the stored JSON and not modelled here.
-public sealed record AgentProposal(AgentRoutingOutput? Routing);
+// Routing + the S2 allocation pick are strongly typed; the other upstream blocks
+// (triage/validation) are kept verbatim in the stored JSON and not modelled here.
+public sealed record AgentProposal(AgentRoutingOutput? Routing, AgentAllocationOutput? Allocation = null);
+
+/// <summary>The S2 allocation agent's capacity-fit driver + vehicle pick.</summary>
+public sealed record AgentAllocationOutput(
+    AgentAllocationCandidate? Proposed,
+    bool CompliancePassed);
+
+public sealed record AgentAllocationCandidate(
+    string? DriverId,
+    string? VehicleId,
+    double CapacityUtilizationPercent,
+    IReadOnlyList<string>? Reasons);
 
 public sealed record AgentRoutingOutput(
     string WorkflowId,

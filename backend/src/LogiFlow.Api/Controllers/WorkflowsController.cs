@@ -12,7 +12,7 @@ namespace LogiFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/workflows")]
-[Authorize(Roles = "ADMIN")] // ops manager (S1 seeds Operations Manager as the ADMIN role)
+[Authorize] // ops-manager (ADMIN) for most actions; from-batch also allows WAREHOUSE_STAFF (per-method)
 public class WorkflowsController : ControllerBase
 {
     private readonly IAgentWorkflowService _workflows;
@@ -33,6 +33,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "ADMIN")]
     [ProducesResponseType(typeof(WorkflowResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status502BadGateway)]
@@ -77,7 +78,43 @@ public class WorkflowsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Trigger routing for an already-grouped dispatch batch (the link from warehouse
+    /// dispatch to the ops approval queue). Warehouse staff may fire this; the plan then
+    /// appears in the ADMIN monitor/approvals.
+    /// </summary>
+    [HttpPost("from-batch/{batchId:guid}")]
+    [Authorize(Roles = "ADMIN,WAREHOUSE_STAFF")]
+    [ProducesResponseType(typeof(WorkflowResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status502BadGateway)]
+    public async Task<ActionResult<WorkflowResponse>> TriggerFromBatch(
+        Guid batchId,
+        [FromQuery] string? objective,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var workflow = await _workflows.RunWorkflowForBatchAsync(batchId, objective, cancellationToken);
+            return CreatedAtAction(nameof(GetById), new { id = workflow.Id }, workflow);
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+        catch (AgentServiceException exception)
+        {
+            return StatusCode(StatusCodes.Status502BadGateway, new { message = exception.Message });
+        }
+    }
+
     [HttpGet("{id:guid}")]
+    [Authorize(Roles = "ADMIN")]
     [ProducesResponseType(typeof(WorkflowResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<WorkflowResponse>> GetById(Guid id, CancellationToken cancellationToken)
@@ -87,6 +124,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "ADMIN")]
     [ProducesResponseType(typeof(IReadOnlyList<WorkflowSummary>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<WorkflowSummary>>> List(
         [FromQuery] WorkflowStatus? status,
@@ -96,6 +134,7 @@ public class WorkflowsController : ControllerBase
     }
 
     [HttpPost("{id:guid}/approval")]
+    [Authorize(Roles = "ADMIN")]
     [ProducesResponseType(typeof(ApprovalResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

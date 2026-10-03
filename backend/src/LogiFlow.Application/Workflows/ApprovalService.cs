@@ -69,29 +69,40 @@ public class ApprovalService : IApprovalService
         ApproveWorkflowCommand command,
         CancellationToken cancellationToken)
     {
-        if (command.DriverId is null || command.VehicleId is null
-            || command.DriverId == Guid.Empty || command.VehicleId == Guid.Empty)
+        // Default to the S2 allocation agent's pick; the approver may override either.
+        var driverId = command.DriverId is { } d && d != Guid.Empty ? d : workflow.AllocatedDriverId;
+        var vehicleId = command.VehicleId is { } v && v != Guid.Empty ? v : workflow.AllocatedVehicleId;
+
+        if (driverId is null || driverId == Guid.Empty || vehicleId is null || vehicleId == Guid.Empty)
         {
-            throw new ArgumentException("Approval requires a driver and a vehicle.", nameof(command));
+            throw new ArgumentException(
+                "Approval requires a driver and a vehicle (none supplied and the agent proposed none).",
+                nameof(command));
         }
 
-        var agentResponse = await _agent.ApproveAsync(
-            workflow.WorkflowKey,
-            new AgentApprovalRequest("APPROVE", command.DecidedBy, command.Reason, command.Revisions),
-            cancellationToken);
-
-        var status = MapStatus(agentResponse.Status);
-        if (status != WorkflowStatus.Completed)
+        // Resume the agent past its approval interrupt — best-effort. The plan is
+        // already persisted and a human has approved it, so even if the agent lost
+        // its in-memory state (e.g. it was restarted) we still dispatch from the
+        // persisted plan rather than blocking the ops manager.
+        try
         {
-            // The agent did not complete (e.g. safe-failure on resume): reflect that,
-            // do not dispatch a shipment.
-            workflow.Status = status;
-            workflow.Error ??= $"Agent returned '{agentResponse.Status}' on approval.";
-            _logger.LogWarning(
-                "Workflow {WorkflowKey}: approve did not complete (agent status {Status}).",
-                workflow.WorkflowKey, agentResponse.Status);
-            return new ApprovalResult(workflow.Id, workflow.Status.ToString(), null, null,
-                "Agent did not complete the run; no shipment created.");
+            var agentResponse = await _agent.ApproveAsync(
+                workflow.WorkflowKey,
+                new AgentApprovalRequest("APPROVE", command.DecidedBy, command.Reason, command.Revisions),
+                cancellationToken);
+
+            if (MapStatus(agentResponse.Status) != WorkflowStatus.Completed)
+            {
+                _logger.LogWarning(
+                    "Workflow {WorkflowKey}: agent resume returned '{Status}'; dispatching from the persisted plan.",
+                    workflow.WorkflowKey, agentResponse.Status);
+            }
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception,
+                "Workflow {WorkflowKey}: agent resume failed; dispatching from the persisted plan.",
+                workflow.WorkflowKey);
         }
 
         var stops = workflow.RouteStops.OrderBy(stop => stop.Sequence).ToList();
@@ -105,8 +116,8 @@ public class ApprovalService : IApprovalService
             Id = Guid.NewGuid(),
             AgentWorkflowId = workflow.Id,
             ShipmentCode = $"SHP-{Guid.NewGuid():N}"[..16],
-            DriverId = command.DriverId.Value,
-            VehicleId = command.VehicleId.Value,
+            DriverId = driverId.Value,
+            VehicleId = vehicleId.Value,
             Status = ShipmentStatus.Dispatched,
             TotalDistanceKm = stops.Sum(stop => stop.DistanceFromPrevKm),
             TotalDurationMin = (decimal)totalDuration,

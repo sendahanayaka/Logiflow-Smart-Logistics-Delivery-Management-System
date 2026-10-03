@@ -6,7 +6,10 @@ public sealed record RunWorkflowCommand(
     string? Objective,
     DateTime? DeliveryWindowStart,
     string? CustomerNotes,
-    IReadOnlyList<RunWorkflowStop> Stops);
+    IReadOnlyList<RunWorkflowStop> Stops,
+    // The vehicle the batch is already committed to (warehouse pick). The allocation
+    // agent honours it so its choice matches the batch → S3 validation passes.
+    string? RequiredVehicleId = null);
 
 public sealed record RunWorkflowStop(
     string StopKey,
@@ -27,7 +30,10 @@ public sealed record WorkflowResponse(
     decimal TotalDistanceKm,
     int StopCount,
     DateTime CreatedAt,
-    IReadOnlyList<RouteStopResponse> Stops);
+    IReadOnlyList<RouteStopResponse> Stops,
+    Guid? AllocatedDriverId = null,
+    Guid? AllocatedVehicleId = null,
+    string? AllocationSummary = null);
 
 public sealed record RouteStopResponse(
     Guid Id,

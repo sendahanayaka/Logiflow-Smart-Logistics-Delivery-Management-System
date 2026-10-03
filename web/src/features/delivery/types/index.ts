@@ -44,6 +44,9 @@ export interface WorkflowResponse {
   stopCount: number;
   createdAt: string;
   stops: RouteStop[];
+  allocatedDriverId: string | null;
+  allocatedVehicleId: string | null;
+  allocationSummary: string | null;
 }
 
 export interface ApprovalResult {
@@ -78,6 +81,9 @@ export interface TimelineEntry {
   onTime: boolean | null;
   latitude: number;
   longitude: number;
+  distanceFromPrevKm?: number;
+  recipientName?: string | null;
+  recipientContact?: string | null;
 }
 
 export interface TrackingView {
@@ -85,6 +91,24 @@ export interface TrackingView {
   shipmentCode: string;
   status: string;
   stops: TimelineEntry[];
+}
+
+export interface CustomerOrderTracking {
+  orderId: string;
+  hasShipment: boolean;
+  stage: string; // Preparing | AwaitingDispatch | Dispatched
+  shipmentCode: string | null;
+  shipmentStatus: string | null;
+  driverName: string | null;
+  driverContact: string | null;
+  vehicleRegistration: string | null;
+  stopSequence: number | null;
+  eta: string | null;
+  stopStatus: string | null;
+  onTime: boolean | null;
+  arrivedAt: string | null;
+  deliveredAt: string | null;
+  receivedByName: string | null;
 }
 
 export interface DriverRunView {

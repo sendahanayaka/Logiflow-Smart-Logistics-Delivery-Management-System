@@ -6,11 +6,13 @@ using LogiFlow.Application.Warehouse;
 using LogiFlow.Application.Warehouse.DTOs;
 using LogiFlow.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LogiFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/warehouse")]
+[Authorize(AuthenticationSchemes = "Bearer,InternalApiKey", Roles = "WAREHOUSE_STAFF,ADMIN")]
 public class WarehouseController : ControllerBase
 {
     private readonly IWarehouseService _warehouseService;

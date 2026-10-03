@@ -4,6 +4,7 @@ import { getOrderById, cancelOrder } from '../ordersApi';
 import { DeliveryOrderResponse } from '../types';
 import { OrderStatusBadge } from '../components/OrderStatusBadge';
 import { OrderStatusTimeline } from '../components/OrderStatusTimeline';
+import { OrderTrackingSection } from '../../delivery/components/OrderTrackingSection';
 import '../Orders.css';
 
 export const OrderDetailsPage: React.FC = () => {
@@ -90,10 +91,16 @@ export const OrderDetailsPage: React.FC = () => {
                         </p>
                     </div>
 
-                    {/* Timeline Component */}
-                    <div style={{ borderBottom: '1px solid #e2e8f0' }}>
-                        <OrderStatusTimeline status={order.status} />
-                    </div>
+                    {/* Live stage timeline + delivery tracking (driver, ETA). The
+                        timeline is driven by the live shipment status inside the section;
+                        a cancelled order shows the static cancelled timeline instead. */}
+                    {order.status.toUpperCase() === 'CANCELLED' ? (
+                        <div style={{ borderBottom: '1px solid #e2e8f0' }}>
+                            <OrderStatusTimeline status="Cancelled" />
+                        </div>
+                    ) : (
+                        <OrderTrackingSection orderId={order.id} />
+                    )}
 
                     {/* Order Information 1-Card System */}
                     <div style={{ background: '#FFFFFF', padding: '2.5rem 2.5rem 1.5rem', borderBottom: order.intelligence ? '1px solid #e2e8f0' : 'none' }}>

@@ -28,6 +28,16 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("AllocatedDriverId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AllocatedVehicleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AllocationSummary")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<string>("AuditJson")
                         .HasColumnType("jsonb");
 
@@ -1038,6 +1048,7 @@ namespace LogiFlow.Infrastructure.Persistence.Migrations
 
                     b.Navigation("Package");
                 });
+
             modelBuilder.Entity("LogiFlow.Domain.Entities.DutySchedule", b =>
                 {
                     b.HasOne("LogiFlow.Domain.Entities.Driver", "Driver")

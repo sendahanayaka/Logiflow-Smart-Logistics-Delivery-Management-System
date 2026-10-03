@@ -26,7 +26,7 @@ export const Navbar: React.FC = () => {
 
                 <nav className="navbar-nav">
                     <ul className="nav-links">
-                        {isAuthenticated && user?.role === 'Customer' ? (
+                        {isAuthenticated && user?.role === 'CUSTOMER' ? (
                             <>
                                 <li><Link to="/orders">Dashboard</Link></li>
                                 <li><Link to="/orders">My Orders</Link></li>
@@ -41,13 +41,17 @@ export const Navbar: React.FC = () => {
                                 <li><a href="#contact">Contact</a></li>
                             </>
                         )}
-                        <li><Link to="/ai-planning" style={{ color: 'var(--color-navy, #08006C)', fontWeight: 'bold' }}>AI Planning</Link></li>
+                        {/* Agent planning is an ops-manager tool; customers never see the agentic flow. */}
+                        {isAuthenticated && user?.role === 'ADMIN' && (
+                            <li><Link to="/ai-planning" style={{ color: 'var(--color-navy, #08006C)', fontWeight: 'bold' }}>AI Planning</Link></li>
+                        )}
                     </ul>
                 </nav>
 
                 <div className="navbar-actions">
                     {isAuthenticated && user ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
+                            <Link to="/track" className="btn-login">Track</Link>
                             <span style={{ fontWeight: '500', color: 'var(--color-navy, #08006C)' }}>
                                 Welcome, {user.name}
                             </span>

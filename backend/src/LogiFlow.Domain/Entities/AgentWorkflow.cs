@@ -25,6 +25,15 @@ public class AgentWorkflow
 
     public string? Objective { get; set; }
 
+    // The driver + vehicle the S2 allocation agent proposed (capacity-fit for this
+    // batch). Carried through to the approval screen and, on approval, into the
+    // Shipment — so the agentic allocation is the default rather than a manual re-pick.
+    public Guid? AllocatedDriverId { get; set; }
+    public Guid? AllocatedVehicleId { get; set; }
+
+    /// <summary>Short reason the allocation agent gave for its driver/vehicle pick.</summary>
+    public string? AllocationSummary { get; set; }
+
     /// <summary>Human-readable narration the agent's LLM wrote for the approval screen.</summary>
     public string? Summary { get; set; }
 

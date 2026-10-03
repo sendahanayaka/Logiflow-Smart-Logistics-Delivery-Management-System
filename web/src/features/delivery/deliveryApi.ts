@@ -11,6 +11,7 @@ import type {
   DriverRunView,
   RecordStopEventRequest,
   RecordPodRequest,
+  CustomerOrderTracking,
 } from './types';
 
 export const deliveryApi = baseApi.injectEndpoints({
@@ -39,6 +40,14 @@ export const deliveryApi = baseApi.injectEndpoints({
         { type: 'Shipment', id: 'LIST' },
       ],
     }),
+    // Warehouse dispatch → ops approval queue: trigger routing for a grouped batch.
+    triggerWorkflowFromBatch: builder.mutation<WorkflowResponse, { batchId: string; objective?: string }>({
+      query: ({ batchId, objective }) => ({
+        url: `/workflows/from-batch/${batchId}${objective ? `?objective=${encodeURIComponent(objective)}` : ''}`,
+        method: 'POST',
+      }),
+      invalidatesTags: [{ type: 'Workflow', id: 'LIST' }],
+    }),
 
     // --- shipments / tracking ---
     getShipments: builder.query<ShipmentSummary[], void>({
@@ -62,6 +71,15 @@ export const deliveryApi = baseApi.injectEndpoints({
     getTracking: builder.query<TrackingView, string>({
       query: (id) => `/tracking/${id}`,
       providesTags: (_r, _e, id) => [{ type: 'Tracking', id }],
+    }),
+    // Customer-facing: track one of my orders (status + driver contact + my stop).
+    getOrderTracking: builder.query<CustomerOrderTracking, string>({
+      query: (orderId) => `/tracking/order/${orderId}`,
+      providesTags: (_r, _e, orderId) => [{ type: 'Tracking', id: `order-${orderId}` }],
+    }),
+    getTrackingByCode: builder.query<TrackingView, string>({
+      query: (code) => `/tracking/code/${encodeURIComponent(code)}`,
+      providesTags: (_r, _e, code) => [{ type: 'Tracking', id: code }],
     }),
     recordStopEvent: builder.mutation<TrackingView, { id: string; body: RecordStopEventRequest }>({
       query: ({ id, body }) => ({ url: `/shipments/${id}/events`, method: 'POST', body }),
@@ -88,10 +106,13 @@ export const {
   useGetWorkflowQuery,
   useTriggerWorkflowMutation,
   useApproveWorkflowMutation,
+  useTriggerWorkflowFromBatchMutation,
   useGetShipmentsQuery,
   useGetMyRunsQuery,
   useGetDriverRunQuery,
   useGetTrackingQuery,
+  useGetOrderTrackingQuery,
+  useLazyGetTrackingByCodeQuery,
   useRecordStopEventMutation,
   useRecordPodMutation,
 } = deliveryApi;

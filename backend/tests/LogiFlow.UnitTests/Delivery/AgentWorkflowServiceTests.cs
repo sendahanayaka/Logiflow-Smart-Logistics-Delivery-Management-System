@@ -151,6 +151,32 @@ public sealed class AgentWorkflowServiceTests : IAsyncLifetime
         Assert.Null(await _service.GetWorkflowAsync(Guid.NewGuid()));
     }
 
+    [Fact]
+    public async Task RunWorkflowAsync_PersistsAgentAllocation()
+    {
+        var driverId = Guid.NewGuid();
+        var vehicleId = Guid.NewGuid();
+        _agent.OnRun = payload =>
+        {
+            var baseResponse = FakeAgentServiceClient.DefaultResponse(payload);
+            var allocation = new AgentAllocationOutput(
+                new AgentAllocationCandidate(driverId.ToString(), vehicleId.ToString(), 82.5,
+                    new[] { "best capacity fit" }),
+                CompliancePassed: true);
+            return baseResponse with { Proposal = new AgentProposal(baseResponse.Proposal!.Routing, allocation) };
+        };
+
+        var result = await _service.RunWorkflowAsync(TwoStopCommand());
+
+        Assert.Equal(driverId, result.AllocatedDriverId);
+        Assert.Equal(vehicleId, result.AllocatedVehicleId);
+        Assert.Equal("best capacity fit", result.AllocationSummary);
+
+        var stored = await _context.AgentWorkflows.SingleAsync(w => w.Id == result.Id);
+        Assert.Equal(driverId, stored.AllocatedDriverId);
+        Assert.Equal(vehicleId, stored.AllocatedVehicleId);
+    }
+
     // --- helpers --------------------------------------------------------------
 
     private static RunWorkflowCommand TwoStopCommand()
@@ -195,7 +221,7 @@ public sealed class AgentWorkflowServiceTests : IAsyncLifetime
             Task.FromResult(new AgentApprovalResponse(workflowKey, "COMPLETED", "dispatched", null));
 
         // Mimics the real agent: echoes the stops in order with deterministic ETAs.
-        private static AgentRunResponse DefaultResponse(AgentRunPayload payload)
+        internal static AgentRunResponse DefaultResponse(AgentRunPayload payload)
         {
             var sequenced = payload.Stops
                 .Select((stop, index) => new AgentSequencedStop(

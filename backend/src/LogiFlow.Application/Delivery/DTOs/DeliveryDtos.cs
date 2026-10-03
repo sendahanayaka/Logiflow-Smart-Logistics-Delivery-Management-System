@@ -53,7 +53,12 @@ public sealed record TimelineEntry(
     string? Note,
     bool? OnTime = null,
     double Latitude = 0,
-    double Longitude = 0);
+    double Longitude = 0,
+    // Driver-run extras (null/0 on the customer timeline): who to hand over to +
+    // the leg distance to this stop.
+    decimal DistanceFromPrevKm = 0,
+    string? RecipientName = null,
+    string? RecipientContact = null);
 
 // --- Phase 5 views + commands ------------------------------------------------
 
@@ -90,6 +95,27 @@ public sealed record RecordPodCommand(
     string? PhotoUrl,
     string? Notes,
     DateTime? DeliveredAt);
+
+/// <summary>
+/// Customer-facing tracking for one order: the shipment status + the assigned driver's
+/// contact + just THIS order's stop (never other customers on the same van).
+/// </summary>
+public sealed record CustomerOrderTrackingView(
+    Guid OrderId,
+    bool HasShipment,
+    string Stage,                 // Preparing | AwaitingDispatch | Dispatched | ...
+    string? ShipmentCode,
+    string? ShipmentStatus,
+    string? DriverName,
+    string? DriverContact,
+    string? VehicleRegistration,
+    int? StopSequence,
+    DateTime? Eta,
+    string? StopStatus,
+    bool? OnTime,
+    DateTime? ArrivedAt,
+    DateTime? DeliveredAt,
+    string? ReceivedByName);
 
 /// <summary>Lightweight shipment row for the admin shipments list.</summary>
 public sealed record ShipmentSummary(
