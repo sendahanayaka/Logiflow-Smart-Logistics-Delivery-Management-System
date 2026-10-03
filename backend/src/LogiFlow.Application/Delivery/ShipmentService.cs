@@ -168,9 +168,33 @@ public class ShipmentService : IShipmentService
             return null;
         }
 
+        var timeline = BuildTimeline(shipment);
+
+        // Enrich each driver stop with the leg distance + who to hand the parcel to.
+        var routeStopsByKey = shipment.AgentWorkflow.RouteStops
+            .ToDictionary(stop => stop.StopKey, StringComparer.OrdinalIgnoreCase);
+        var orderIds = routeStopsByKey.Values.Select(stop => stop.OrderId).Distinct().ToList();
+        var recipients = await _context.DeliveryOrders
+            .AsNoTracking()
+            .Where(order => orderIds.Contains(order.Id))
+            .Select(order => new { order.Id, order.RecipientName, order.RecipientContact })
+            .ToDictionaryAsync(order => order.Id, cancellationToken);
+
+        var enriched = timeline.Select(entry =>
+        {
+            routeStopsByKey.TryGetValue(entry.StopKey, out var routeStop);
+            var recipient = routeStop is not null && recipients.TryGetValue(routeStop.OrderId, out var r) ? r : null;
+            return entry with
+            {
+                DistanceFromPrevKm = routeStop?.DistanceFromPrevKm ?? 0m,
+                RecipientName = recipient?.RecipientName,
+                RecipientContact = recipient?.RecipientContact,
+            };
+        }).ToList();
+
         return new DriverRunView(
             shipment.Id, shipment.ShipmentCode, shipment.Status.ToString(),
-            shipment.DriverId, shipment.VehicleId, BuildTimeline(shipment));
+            shipment.DriverId, shipment.VehicleId, enriched);
     }
 
     public async Task<TrackingView> RecordStopEventAsync(

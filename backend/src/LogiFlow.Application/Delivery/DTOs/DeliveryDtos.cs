@@ -53,7 +53,12 @@ public sealed record TimelineEntry(
     string? Note,
     bool? OnTime = null,
     double Latitude = 0,
-    double Longitude = 0);
+    double Longitude = 0,
+    // Driver-run extras (null/0 on the customer timeline): who to hand over to +
+    // the leg distance to this stop.
+    decimal DistanceFromPrevKm = 0,
+    string? RecipientName = null,
+    string? RecipientContact = null);
 
 // --- Phase 5 views + commands ------------------------------------------------
 
