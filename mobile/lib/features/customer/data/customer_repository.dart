@@ -2,27 +2,45 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/dio_provider.dart';
+import 'models/create_order_request.dart';
+import 'models/customer_tracking.dart';
+import 'models/order.dart';
 
-/// Customer data access (orders + tracking). TODO: map responses to typed models.
+/// Customer data access (orders + tracking), returning typed models.
 class CustomerRepository {
   CustomerRepository(this._dio);
   final Dio _dio;
 
-  Future<List<dynamic>> myOrders() async => (await _dio.get('/orders/my-orders')).data as List;
-  Future<Map<String, dynamic>> createOrder(Map<String, dynamic> body) async =>
-      (await _dio.post('/orders', data: body)).data as Map<String, dynamic>;
-  Future<Map<String, dynamic>> orderById(String id) async =>
-      (await _dio.get('/orders/$id')).data as Map<String, dynamic>;
-  Future<Map<String, dynamic>> checkout(String id, String paymentMethod) async =>
-      (await _dio.patch('/orders/$id/checkout', data: {'paymentMethod': paymentMethod})).data as Map<String, dynamic>;
-  Future<Map<String, dynamic>> cancel(String id) async =>
-      (await _dio.patch('/orders/$id/cancel')).data as Map<String, dynamic>;
+  Future<List<Order>> myOrders() async {
+    final res = await _dio.get('/orders/my-orders');
+    return (res.data as List).map((e) => Order.fromJson(e as Map<String, dynamic>)).toList();
+  }
 
-  // Live tracking
-  Future<Map<String, dynamic>> orderTracking(String orderId) async =>
-      (await _dio.get('/tracking/order/$orderId')).data as Map<String, dynamic>;
-  Future<Map<String, dynamic>> trackByCode(String code) async =>
-      (await _dio.get('/tracking/code/$code')).data as Map<String, dynamic>;
+  Future<Order> createOrder(CreateOrderRequest request) async {
+    final res = await _dio.post('/orders', data: request.toJson());
+    return Order.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<Order> orderById(String id) async {
+    final res = await _dio.get('/orders/$id');
+    return Order.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<Order> checkout(String id, String paymentMethod) async {
+    final res = await _dio.patch('/orders/$id/checkout', data: {'paymentMethod': paymentMethod});
+    return Order.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  Future<Order> cancel(String id) async {
+    final res = await _dio.patch('/orders/$id/cancel');
+    return Order.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  /// Live tracking for one of the customer's own orders.
+  Future<CustomerTracking> orderTracking(String orderId) async {
+    final res = await _dio.get('/tracking/order/$orderId');
+    return CustomerTracking.fromJson(res.data as Map<String, dynamic>);
+  }
 }
 
 final customerRepositoryProvider =

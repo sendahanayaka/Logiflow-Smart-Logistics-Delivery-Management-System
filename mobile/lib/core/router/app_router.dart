@@ -8,6 +8,9 @@ import '../../features/auth/presentation/login_page.dart';
 import '../../features/auth/presentation/register_page.dart';
 import '../../features/admin/presentation/admin_dashboard_page.dart';
 import '../../features/customer/presentation/customer_home_page.dart';
+import '../../features/customer/presentation/order_details_page.dart';
+import '../../features/customer/presentation/checkout_page.dart';
+import '../../features/customer/presentation/checkout_success_page.dart';
 import '../../features/warehouse/presentation/warehouse_home_page.dart';
 import '../../features/driver/presentation/driver_runs_page.dart';
 
@@ -57,6 +60,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/register', builder: (_, __) => const RegisterPage()),
       GoRoute(path: '/admin', builder: (_, __) => const AdminDashboardPage()),
       GoRoute(path: '/customer', builder: (_, __) => const CustomerHomePage()),
+      GoRoute(
+        path: '/customer/order/:id',
+        builder: (_, state) => OrderDetailsPage(orderId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/customer/order/:id/checkout',
+        builder: (_, state) => CheckoutPage(orderId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/customer/order/:id/success',
+        builder: (_, state) => CheckoutSuccessPage(orderId: state.pathParameters['id']!),
+      ),
       GoRoute(path: '/warehouse', builder: (_, __) => const WarehouseHomePage()),
       GoRoute(path: '/driver', builder: (_, __) => const DriverRunsPage()),
     ],
