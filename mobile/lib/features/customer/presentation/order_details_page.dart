@@ -233,8 +233,7 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
     if (order.isConfirmed) {
       return Column(children: [
         FilledButton.icon(
-          onPressed: () => ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('Live tracking arrives in Phase 5.'))),
+          onPressed: () => context.push('/customer/order/${order.id}/track'),
           icon: const Icon(Icons.local_shipping),
           label: const Text('Track delivery'),
         ),

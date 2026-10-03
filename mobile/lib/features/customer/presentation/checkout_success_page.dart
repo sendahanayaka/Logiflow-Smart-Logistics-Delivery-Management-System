@@ -25,11 +25,16 @@ class CheckoutSuccessPage extends StatelessWidget {
                 style: TextStyle(color: Colors.black54),
               ),
               const SizedBox(height: 28),
-              FilledButton(
+              FilledButton.icon(
+                onPressed: () => context.pushReplacement('/customer/order/$orderId/track'),
+                icon: const Icon(Icons.local_shipping),
+                label: const Text('Track delivery'),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
                 onPressed: () => context.pushReplacement('/customer/order/$orderId'),
                 child: const Text('View order'),
               ),
-              const SizedBox(height: 8),
               TextButton(
                 onPressed: () => context.go('/customer'),
                 child: const Text('Back to my orders'),

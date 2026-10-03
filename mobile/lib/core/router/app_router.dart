@@ -11,6 +11,7 @@ import '../../features/customer/presentation/customer_home_page.dart';
 import '../../features/customer/presentation/order_details_page.dart';
 import '../../features/customer/presentation/checkout_page.dart';
 import '../../features/customer/presentation/checkout_success_page.dart';
+import '../../features/customer/presentation/tracking_page.dart';
 import '../../features/warehouse/presentation/warehouse_home_page.dart';
 import '../../features/driver/presentation/driver_runs_page.dart';
 
@@ -71,6 +72,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/customer/order/:id/success',
         builder: (_, state) => CheckoutSuccessPage(orderId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/customer/order/:id/track',
+        builder: (_, state) => TrackingPage(orderId: state.pathParameters['id']!),
       ),
       GoRoute(path: '/warehouse', builder: (_, __) => const WarehouseHomePage()),
       GoRoute(path: '/driver', builder: (_, __) => const DriverRunsPage()),
