@@ -80,23 +80,29 @@ public class ApprovalService : IApprovalService
                 nameof(command));
         }
 
-        var agentResponse = await _agent.ApproveAsync(
-            workflow.WorkflowKey,
-            new AgentApprovalRequest("APPROVE", command.DecidedBy, command.Reason, command.Revisions),
-            cancellationToken);
-
-        var status = MapStatus(agentResponse.Status);
-        if (status != WorkflowStatus.Completed)
+        // Resume the agent past its approval interrupt — best-effort. The plan is
+        // already persisted and a human has approved it, so even if the agent lost
+        // its in-memory state (e.g. it was restarted) we still dispatch from the
+        // persisted plan rather than blocking the ops manager.
+        try
         {
-            // The agent did not complete (e.g. safe-failure on resume): reflect that,
-            // do not dispatch a shipment.
-            workflow.Status = status;
-            workflow.Error ??= $"Agent returned '{agentResponse.Status}' on approval.";
-            _logger.LogWarning(
-                "Workflow {WorkflowKey}: approve did not complete (agent status {Status}).",
-                workflow.WorkflowKey, agentResponse.Status);
-            return new ApprovalResult(workflow.Id, workflow.Status.ToString(), null, null,
-                "Agent did not complete the run; no shipment created.");
+            var agentResponse = await _agent.ApproveAsync(
+                workflow.WorkflowKey,
+                new AgentApprovalRequest("APPROVE", command.DecidedBy, command.Reason, command.Revisions),
+                cancellationToken);
+
+            if (MapStatus(agentResponse.Status) != WorkflowStatus.Completed)
+            {
+                _logger.LogWarning(
+                    "Workflow {WorkflowKey}: agent resume returned '{Status}'; dispatching from the persisted plan.",
+                    workflow.WorkflowKey, agentResponse.Status);
+            }
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception,
+                "Workflow {WorkflowKey}: agent resume failed; dispatching from the persisted plan.",
+                workflow.WorkflowKey);
         }
 
         var stops = workflow.RouteStops.OrderBy(stop => stop.Sequence).ToList();

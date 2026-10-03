@@ -174,11 +174,27 @@ public class ShipmentService : IShipmentService
         var routeStopsByKey = shipment.AgentWorkflow.RouteStops
             .ToDictionary(stop => stop.StopKey, StringComparer.OrdinalIgnoreCase);
         var orderIds = routeStopsByKey.Values.Select(stop => stop.OrderId).Distinct().ToList();
-        var recipients = await _context.DeliveryOrders
+        var orders = await _context.DeliveryOrders
             .AsNoTracking()
             .Where(order => orderIds.Contains(order.Id))
-            .Select(order => new { order.Id, order.RecipientName, order.RecipientContact })
-            .ToDictionaryAsync(order => order.Id, cancellationToken);
+            .Select(order => new { order.Id, order.CustomerId, order.RecipientName, order.RecipientContact })
+            .ToListAsync(cancellationToken);
+        var customerIds = orders.Select(order => order.CustomerId).Distinct().ToList();
+        var customerNames = await _context.Users
+            .AsNoTracking()
+            .Where(user => customerIds.Contains(user.Id))
+            .ToDictionaryAsync(user => user.Id, user => user.Name, cancellationToken);
+
+        // Who to hand the parcel to: the recipient, else the customer who ordered.
+        var recipients = orders.ToDictionary(
+            order => order.Id,
+            order => new
+            {
+                Name = string.IsNullOrWhiteSpace(order.RecipientName)
+                    ? (customerNames.TryGetValue(order.CustomerId, out var n) ? n : null)
+                    : order.RecipientName,
+                Contact = order.RecipientContact,
+            });
 
         var enriched = timeline.Select(entry =>
         {
@@ -187,8 +203,8 @@ public class ShipmentService : IShipmentService
             return entry with
             {
                 DistanceFromPrevKm = routeStop?.DistanceFromPrevKm ?? 0m,
-                RecipientName = recipient?.RecipientName,
-                RecipientContact = recipient?.RecipientContact,
+                RecipientName = recipient?.Name,
+                RecipientContact = recipient?.Contact,
             };
         }).ToList();
 
