@@ -3,24 +3,25 @@ import '../Orders.css';
 
 interface Props {
     status: string;
+    /** Index of the live stage (0..5) across the non-cancelled steps. */
+    activeStep?: number;
 }
 
-export const OrderStatusTimeline: React.FC<Props> = ({ status }) => {
+const FLOW = ['Order Created', 'Delivery Planning', 'Driver Assigned', 'Picked Up', 'In Transit', 'Delivered'];
+
+export const OrderStatusTimeline: React.FC<Props> = ({ status, activeStep }) => {
     const isCancelled = status.toUpperCase() === 'CANCELLED';
 
+    const active = activeStep ?? 1; // default to "Delivery Planning" when unknown
     const steps = isCancelled
         ? [
             { label: 'Order Created', state: 'completed' },
             { label: 'Order Cancelled', state: 'cancelled' }
         ]
-        : [
-            { label: 'Order Created', state: 'completed' },
-            { label: 'Delivery Planning', state: 'current' },
-            { label: 'Driver Assigned', state: 'inactive' },
-            { label: 'Picked Up', state: 'inactive' },
-            { label: 'In Transit', state: 'inactive' },
-            { label: 'Delivered', state: 'inactive' }
-        ];
+        : FLOW.map((label, i) => ({
+            label,
+            state: i < active ? 'completed' : i === active ? 'current' : 'inactive',
+        }));
 
     return (
         <div style={{ padding: '2.5rem 2rem', backgroundColor: '#FFFFFF', width: '100%', boxSizing: 'border-box' }}>

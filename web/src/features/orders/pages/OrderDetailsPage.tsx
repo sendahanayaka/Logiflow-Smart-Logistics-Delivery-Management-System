@@ -91,13 +91,14 @@ export const OrderDetailsPage: React.FC = () => {
                         </p>
                     </div>
 
-                    {/* Timeline Component */}
-                    <div style={{ borderBottom: '1px solid #e2e8f0' }}>
-                        <OrderStatusTimeline status={order.status} />
-                    </div>
-
-                    {/* Live delivery tracking (shipment status + driver contact + ETA) */}
-                    {order.status.toUpperCase() !== 'CANCELLED' && (
+                    {/* Live stage timeline + delivery tracking (driver, ETA). The
+                        timeline is driven by the live shipment status inside the section;
+                        a cancelled order shows the static cancelled timeline instead. */}
+                    {order.status.toUpperCase() === 'CANCELLED' ? (
+                        <div style={{ borderBottom: '1px solid #e2e8f0' }}>
+                            <OrderStatusTimeline status="Cancelled" />
+                        </div>
+                    ) : (
                         <OrderTrackingSection orderId={order.id} />
                     )}
 

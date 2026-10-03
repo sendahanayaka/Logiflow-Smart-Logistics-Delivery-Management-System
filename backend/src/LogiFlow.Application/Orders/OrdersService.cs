@@ -94,13 +94,7 @@ public class OrdersService : IOrdersService
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync(cancellationToken);
 
-        var orderIds = orders.Select(o => o.Id).ToList();
-        var routeStops = await _context.RouteStops
-            .AsNoTracking()
-            .Where(r => orderIds.Contains(r.OrderId))
-            .ToDictionaryAsync(r => r.OrderId, cancellationToken);
-            
-        return orders.Select(o => MapOrder(o, routeStops.TryGetValue(o.Id, out var stop) ? stop.DistanceFromPrevKm : null));
+        return orders.Select(o => MapOrder(o));
     }
 
     public async Task<IEnumerable<DeliveryOrderResponse>> ListOrdersAsync(
@@ -115,13 +109,7 @@ public class OrdersService : IOrdersService
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync(cancellationToken);
 
-        var orderIds = orders.Select(o => o.Id).ToList();
-        var routeStops = await _context.RouteStops
-            .AsNoTracking()
-            .Where(r => orderIds.Contains(r.OrderId))
-            .ToDictionaryAsync(r => r.OrderId, cancellationToken);
-
-        return orders.Select(o => MapOrder(o, routeStops.TryGetValue(o.Id, out var stop) ? stop.DistanceFromPrevKm : null));
+        return orders.Select(o => MapOrder(o));
     }
 
     public async Task<DeliveryOrderResponse> GetOrderByIdAsync(
@@ -139,11 +127,7 @@ public class OrdersService : IOrdersService
             throw new KeyNotFoundException($"Order '{id}' was not found.");
         }
 
-        var routeStop = await _context.RouteStops
-            .AsNoTracking()
-            .FirstOrDefaultAsync(r => r.OrderId == id, cancellationToken);
-
-        return MapOrder(order, routeStop?.DistanceFromPrevKm);
+        return MapOrder(order);
     }
 
     public async Task<DeliveryOrderResponse> CancelOrderAsync(
@@ -170,11 +154,7 @@ public class OrdersService : IOrdersService
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        var routeStop = await _context.RouteStops
-            .AsNoTracking()
-            .FirstOrDefaultAsync(r => r.OrderId == id, cancellationToken);
-
-        return MapOrder(order, routeStop?.DistanceFromPrevKm);
+        return MapOrder(order);
     }
 
     public async Task<DeliveryOrderResponse> ConfirmOrderAsync(
@@ -211,11 +191,7 @@ public class OrdersService : IOrdersService
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        var routeStop = await _context.RouteStops
-            .AsNoTracking()
-            .FirstOrDefaultAsync(r => r.OrderId == id, cancellationToken);
-
-        return MapOrder(order, routeStop?.DistanceFromPrevKm);
+        return MapOrder(order);
     }
 
     private static void ValidateOrder(CreateDeliveryOrderCommand command)
@@ -292,9 +268,9 @@ public class OrdersService : IOrdersService
         return Math.Round((decimal)Math.Max(roadKm, 2.0), 2); // floor for same-city
     }
 
-    // distanceKm (the routed leg) is accepted for compatibility but billing uses the
-    // order-time point-to-point quote so the fee is visible at checkout and fixed.
-    private DeliveryOrderResponse MapOrder(DeliveryOrder order, decimal? distanceKm = null)
+    // Billing uses the order-time point-to-point quote so the fee is visible at
+    // checkout and fixed (the multi-stop route distance is ops-only, not billing).
+    private DeliveryOrderResponse MapOrder(DeliveryOrder order)
     {
         var intelligence = _intelligenceService.Analyze(order);
         var pricing = _pricingService.CalculateFee(

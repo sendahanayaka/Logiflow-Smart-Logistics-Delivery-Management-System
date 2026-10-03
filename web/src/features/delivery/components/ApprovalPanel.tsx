@@ -40,7 +40,19 @@ export const ApprovalPanel: React.FC<{ workflowId: string; readOnly?: boolean }>
             const res = await approve({ id: workflowId, body }).unwrap();
             setFeedback({ ok: true, msg: res.message });
         } catch (e: any) {
-            setFeedback({ ok: false, msg: e?.data?.message || e?.error || 'Action failed.' });
+            const data = e?.data;
+            // Surface the real reason: a plain {message}, FluentValidation {errors},
+            // a ProblemDetails {title}, a transport error, else the HTTP status.
+            const validationErrors = data?.errors
+                ? Object.values(data.errors).flat().join(' ')
+                : undefined;
+            const msg: string =
+                data?.message ||
+                validationErrors ||
+                data?.title ||
+                e?.error ||
+                `Request failed (HTTP ${e?.status ?? 'unknown'}).`;
+            setFeedback({ ok: false, msg });
         }
     };
 
