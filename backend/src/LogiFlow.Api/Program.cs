@@ -1,16 +1,22 @@
 using FluentValidation;
 using LogiFlow.Api.Controllers;
 using LogiFlow.Api.Middleware;
+using LogiFlow.Application.Agents;
 using LogiFlow.Application.Auth;
 using LogiFlow.Application.Common.Interfaces;
+using LogiFlow.Application.Delivery;
 using LogiFlow.Application.Fleet;
 using LogiFlow.Application.Warehouse;
+using LogiFlow.Application.Workflows;
+using LogiFlow.Infrastructure.Agents;
 using LogiFlow.Infrastructure.Auth;
 using LogiFlow.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using LogiFlow.Application.Orders;
+using LogiFlow.Application.Common.Interfaces;
 
 // Enable Npgsql legacy timestamp behavior for flexible DateTime handling with PostgreSQL
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -47,14 +53,58 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 builder.Services.AddScoped<IFleetService, FleetService>();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
+builder.Services.AddSingleton<BatchingEngine>();
+builder.Services.AddScoped<IDispatchBatchService, DispatchBatchService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<LogiFlow.Application.Users.IUserService, LogiFlow.Application.Users.UserService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IOrdersService, OrdersService>();
+builder.Services.AddScoped<IOrderIntelligenceService, OrderIntelligenceService>();
+builder.Services.AddScoped<IDeliveryPricingService, DeliveryPricingService>();
+
+// [S4] Delivery execution: workflow + approval + shipment services, and the typed
+// HttpClient to the internal Python agent.
+builder.Services.AddScoped<IAgentWorkflowService, AgentWorkflowService>();
+builder.Services.AddScoped<IApprovalService, ApprovalService>();
+builder.Services.AddScoped<IShipmentService, ShipmentService>();
+
+var agentBaseUrl = builder.Configuration["AgentService:BaseUrl"] ?? "http://localhost:8000";
+// Shared internal key for both directions. Defaults to the dev value (matches the
+// agent's config.py + the InternalApiKey auth handler) so local runs need no setup;
+// override with AgentService:ApiKey in staging/prod.
+var agentApiKey = builder.Configuration["AgentService:ApiKey"];
+if (string.IsNullOrWhiteSpace(agentApiKey))
+{
+    agentApiKey = "dev-internal-agent-key-change-me";
+}
+builder.Services.AddHttpClient<IAgentServiceClient, AgentServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(agentBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+    if (!string.IsNullOrWhiteSpace(agentApiKey))
+    {
+        client.DefaultRequestHeaders.Add("X-Internal-Api-Key", agentApiKey);
+    }
+});
+
+builder.Services.AddHttpClient<IAgentValidationClient, S3AgentValidationClient>(client =>
+{
+    client.BaseAddress = new Uri(agentBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(12);
+    if (!string.IsNullOrWhiteSpace(agentApiKey))
+    {
+        client.DefaultRequestHeaders.Add("X-Internal-Api-Key", agentApiKey);
+    }
+});
 
 // Configure JWT Authentication
-var jwtSecret = builder.Configuration["Jwt:Key"] 
-    ?? Environment.GetEnvironmentVariable("JWT_SECRET") 
-    ?? "LogiFlowSuperSecretKeyForDevelopment1234567890!";
+var jwtKeyFromConfig = builder.Configuration["Jwt:Key"];
+var jwtSecret = !string.IsNullOrWhiteSpace(jwtKeyFromConfig)
+    ? jwtKeyFromConfig
+    : (Environment.GetEnvironmentVariable("JWT_SECRET") ?? "LogiFlowSuperSecretKeyForDevelopment1234567890!");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -69,7 +119,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"] ?? "LogiFlow",
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
         };
-    });
+    })
+    // Internal agent service authenticates with the shared X-Internal-Api-Key.
+    .AddScheme<LogiFlow.Infrastructure.Auth.InternalApiKeyAuthenticationOptions,
+        LogiFlow.Infrastructure.Auth.InternalApiKeyAuthenticationHandler>(
+        LogiFlow.Infrastructure.Auth.InternalApiKeyAuthenticationHandler.SchemeName, _ => { });
 builder.Services.AddAuthorization();
 
 // CORS configuration

@@ -21,8 +21,21 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
     public DbSet<StorageZone> StorageZones => Set<StorageZone>();
     public DbSet<Package> Packages => Set<Package>();
+    public DbSet<DispatchBatch> DispatchBatches => Set<DispatchBatch>();
+    public DbSet<DispatchBatchItem> DispatchBatchItems => Set<DispatchBatchItem>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
+    public DbSet<DeliveryOrder> DeliveryOrders => Set<DeliveryOrder>();
+
+    // [S4] Delivery execution & tracking
+    public DbSet<AgentWorkflow> AgentWorkflows => Set<AgentWorkflow>();
+    public DbSet<RouteStop> RouteStops => Set<RouteStop>();
+    public DbSet<Shipment> Shipments => Set<Shipment>();
+    public DbSet<ApprovalDecision> ApprovalDecisions => Set<ApprovalDecision>();
+    public DbSet<TrackingEvent> TrackingEvents => Set<TrackingEvent>();
+    public DbSet<ProofOfDelivery> ProofOfDeliveries => Set<ProofOfDelivery>();
+
+    public void ClearChangeTracker() => ChangeTracker.Clear();
 
     public Task<IDbContextTransaction> BeginTransactionAsync(
         IsolationLevel isolationLevel,

@@ -55,6 +55,17 @@ def _continue_or_fail(next_step: str) -> Callable[[WorkflowState], str]:
     return router
 
 
+def _after_validation(state: WorkflowState) -> str:
+    """Route only a deterministic S3 PASS to S4; FAIL/REVISE stop safely."""
+    validation = state.get("validation") or {}
+    if (
+        state.get("status") == WorkflowStatus.FAILED.value
+        or validation.get("result") != "PASS"
+    ):
+        return "safe_failure"
+    return "route"
+
+
 def human_approval_node(state: WorkflowState) -> dict:
     """Runs only after a human decision has been injected into state['approval']."""
     decision = state.get("approval") or {}
@@ -84,19 +95,69 @@ def _after_approval(state: WorkflowState) -> str:
 
 
 def execute_node(state: WorkflowState) -> dict:
-    return {
-        "status": WorkflowStatus.COMPLETED.value,
-        "outcome": "Approved run dispatched; live tracking active.",
-        "audit": [AuditEntry(
-            step="execute", agent="system",
-            summary="Dispatched approved plan to the driver.",
-        ).model_dump()],
-    }
+    allocation = state.get("allocation") or {}
+    proposed = allocation.get("proposed") or {}
+
+    driver_id = proposed.get("driver_id")
+    vehicle_id = proposed.get("vehicle_id")
+
+    if not driver_id or not vehicle_id:
+        return {
+            "status": WorkflowStatus.COMPLETED.value,
+            "outcome": "Approved run dispatched; live tracking active.",
+            "audit": [AuditEntry(
+                step="execute", agent="system",
+                summary="Dispatched approved plan to driver.",
+            ).model_dump()],
+        }
+
+    from app.tools.fleet_tools import _post, stale_resource_check
+
+    # Mandatory Stale Resource Protection
+    is_valid, reason = stale_resource_check(driver_id, vehicle_id)
+    if not is_valid:
+        return {
+            "status": WorkflowStatus.FAILED.value,
+            "outcome": f"Allocation is no longer valid because fleet availability changed. ({reason})",
+            "errors": [AgentError(step="execute", message=f"Allocation is no longer valid because fleet availability changed. ({reason})").model_dump()],
+            "audit": [AuditEntry(
+                step="execute", agent="system",
+                summary=f"Stale resource check failed: {reason}", ok=False,
+            ).model_dump()],
+        }
+
+    # Execute assignment atomically in ASP.NET Core API
+    try:
+        assignment_result = _post("/api/Assignments", {
+            "driverId": driver_id,
+            "vehicleId": vehicle_id,
+            "notes": f"Dispatched via LogiFlow Workflow {state.get('workflow_id', '')}",
+        })
+        return {
+            "status": WorkflowStatus.COMPLETED.value,
+            "outcome": f"Approved run dispatched; assignment {assignment_result.get('id', '')} created in fleet database.",
+            "audit": [AuditEntry(
+                step="execute", agent="system",
+                summary=f"Assignment created in fleet database for driver {driver_id} and vehicle {vehicle_id}.",
+                ok=True,
+            ).model_dump()],
+        }
+    except Exception as exc:
+        return {
+            "status": WorkflowStatus.FAILED.value,
+            "outcome": f"Assignment execution failed: {exc}",
+            "errors": [AgentError(step="execute", message=str(exc)).model_dump()],
+            "audit": [AuditEntry(
+                step="execute", agent="system",
+                summary=f"Assignment execution failed: {exc}", ok=False,
+            ).model_dump()],
+        }
 
 
 def safe_failure_node(state: WorkflowState) -> dict:
     return {
-        "outcome": "Planning could not complete — order flagged for manual handling.",
+        "outcome": state.get("outcome")
+        or "Planning could not complete — order flagged for manual handling.",
         "audit": [AuditEntry(
             step="safe_failure", agent="system",
             summary="Flagged for manual handling; nothing lost.", ok=False,
@@ -124,7 +185,7 @@ def build_graph(checkpointer=None):
                             {"allocate": "allocate", "safe_failure": "safe_failure"})
     g.add_conditional_edges("allocate", _continue_or_fail("validate"),
                             {"validate": "validate", "safe_failure": "safe_failure"})
-    g.add_conditional_edges("validate", _continue_or_fail("route"),
+    g.add_conditional_edges("validate", _after_validation,
                             {"route": "route", "safe_failure": "safe_failure"})
     g.add_conditional_edges("route", _continue_or_fail("human_approval"),
                             {"human_approval": "human_approval", "safe_failure": "safe_failure"})

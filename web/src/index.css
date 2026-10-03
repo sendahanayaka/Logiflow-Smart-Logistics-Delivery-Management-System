@@ -225,7 +225,7 @@ h1, h2, h3, h4, h5, h6 {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
+  z-index: -1; /* decorative background must sit BEHIND page content, not over it */
   background-color: var(--color-canvas);
   background-image: radial-gradient(rgba(8, 0, 108, 0.08) 1.25px, transparent 1.25px);
   background-size: 24px 24px;

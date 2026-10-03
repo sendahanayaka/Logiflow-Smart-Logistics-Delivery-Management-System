@@ -1,11 +1,13 @@
 using LogiFlow.Application.Fleet;
 using LogiFlow.Application.Fleet.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LogiFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(AuthenticationSchemes = "Bearer,InternalApiKey", Roles = "ADMIN")]
 public class AssignmentsController : ControllerBase
 {
     private readonly IFleetService _fleetService;

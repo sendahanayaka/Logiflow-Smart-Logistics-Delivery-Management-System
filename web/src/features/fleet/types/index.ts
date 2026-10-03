@@ -189,5 +189,3 @@ export interface VehicleMaintenanceStatusResponse {
   nextMaintenanceDate?: string | null;
   latestMaintenanceDate?: string | null;
 }
-
-

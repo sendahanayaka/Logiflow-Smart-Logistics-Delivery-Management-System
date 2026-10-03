@@ -309,5 +309,3 @@ export const {
   useGetVehicleMaintenanceStatusQuery,
   useLazyGetVehicleMaintenanceStatusQuery,
 } = fleetApi;
-
-

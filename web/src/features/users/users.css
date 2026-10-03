@@ -1,0 +1,23 @@
+/* [S1-area] User management */
+.um-form { background: #fff; border: 1px solid var(--color-border, #e3e6f0); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+.um-form h3 { color: var(--color-navy, #08006c); margin: 0 0 0.8rem; }
+.um-form__row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+.um-form__row input, .um-select { padding: 0.5rem 0.6rem; border: 1px solid var(--color-border, #e3e6f0); border-radius: 6px; font-size: 0.9rem; }
+.um-form__row input { flex: 1 1 160px; }
+.um-btn { background: var(--color-primary, #ff5000); color: #fff; border: none; border-radius: 6px; padding: 0.55rem 1.1rem; font-weight: 600; cursor: pointer; }
+.um-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.um-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--color-border, #e3e6f0); border-radius: 10px; overflow: hidden; }
+.um-table th, .um-table td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--color-border, #e3e6f0); font-size: 0.9rem; }
+.um-table th { color: var(--color-muted, #5e6982); font-size: 0.78rem; text-transform: uppercase; }
+.um-table tr:last-child td { border-bottom: none; }
+
+.um-status { font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 999px; text-transform: uppercase; }
+.um-status--active { background: var(--color-success-bg, #e6f7f0); color: var(--color-success, #0a8754); }
+.um-status--inactive { background: #fee2e2; color: #b91c1c; }
+.um-toggle { background: none; border: 1px solid var(--color-border, #e3e6f0); border-radius: 6px; padding: 0.35rem 0.7rem; cursor: pointer; font-size: 0.82rem; color: var(--color-navy, #08006c); }
+.um-toggle:hover { border-color: var(--color-primary, #ff5000); }
+
+.um-ok { color: var(--color-success, #0a8754); font-weight: 600; margin-bottom: 0.6rem; }
+.um-error { color: #b91c1c; font-weight: 600; margin-bottom: 0.6rem; }
+.um-muted { color: var(--color-muted, #5e6982); }

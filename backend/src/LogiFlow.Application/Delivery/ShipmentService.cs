@@ -1,2 +1,393 @@
 // [S4]  shipment service
-// TODO: implement. Owner fills this in.
+using LogiFlow.Application.Common.Interfaces;
+using LogiFlow.Application.Delivery.DTOs;
+using LogiFlow.Domain.Entities;
+using LogiFlow.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+namespace LogiFlow.Application.Delivery;
+
+public class ShipmentService : IShipmentService
+{
+    private readonly IAppDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+    private readonly ILogger<ShipmentService> _logger;
+
+    public ShipmentService(IAppDbContext context, ICurrentUserService currentUser, ILogger<ShipmentService> logger)
+    {
+        _context = context;
+        _currentUser = currentUser;
+        _logger = logger;
+    }
+
+    public Task<IReadOnlyList<ShipmentSummary>> ListShipmentsAsync(CancellationToken cancellationToken = default) =>
+        ProjectSummariesAsync(_context.Shipments.AsNoTracking(), cancellationToken);
+
+    public async Task<IReadOnlyList<ShipmentSummary>> GetMyRunsAsync(CancellationToken cancellationToken = default)
+    {
+        var userId = _currentUser.UserId;
+        if (userId is null)
+        {
+            return Array.Empty<ShipmentSummary>();
+        }
+
+        // Resolve the signed-in driver's fleet profile (Driver.UserId links to the account),
+        // then list only the shipments assigned to that driver.
+        var driverId = await _context.Drivers
+            .AsNoTracking()
+            .Where(driver => driver.UserId == userId)
+            .Select(driver => (Guid?)driver.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (driverId is null)
+        {
+            return Array.Empty<ShipmentSummary>();
+        }
+
+        return await ProjectSummariesAsync(
+            _context.Shipments.AsNoTracking().Where(shipment => shipment.DriverId == driverId),
+            cancellationToken);
+    }
+
+    private static async Task<IReadOnlyList<ShipmentSummary>> ProjectSummariesAsync(
+        IQueryable<Shipment> query, CancellationToken cancellationToken)
+    {
+        var rows = await query
+            .OrderByDescending(shipment => shipment.CreatedAt)
+            .Select(shipment => new
+            {
+                shipment.Id,
+                shipment.ShipmentCode,
+                shipment.Status,
+                shipment.DriverId,
+                shipment.VehicleId,
+                shipment.TotalDistanceKm,
+                StopCount = shipment.AgentWorkflow.RouteStops.Count,
+                DeliveredCount = shipment.AgentWorkflow.RouteStops.Count(stop => stop.Status == RouteStopStatus.Delivered),
+                shipment.DispatchedAt,
+                shipment.CreatedAt
+            })
+            .ToListAsync(cancellationToken);
+
+        return rows
+            .Select(row => new ShipmentSummary(
+                row.Id, row.ShipmentCode, row.Status.ToString(), row.DriverId, row.VehicleId,
+                row.TotalDistanceKm, row.StopCount, row.DeliveredCount, row.DispatchedAt, row.CreatedAt))
+            .ToList();
+    }
+
+    public async Task<TrackingView?> GetTrackingAsync(Guid shipmentId, CancellationToken cancellationToken = default)
+    {
+        var shipment = await LoadAsync(shipmentId, track: false, cancellationToken);
+        return shipment is null ? null : ToTrackingView(shipment);
+    }
+
+    public async Task<CustomerOrderTrackingView> GetOrderTrackingAsync(
+        Guid orderId, CancellationToken cancellationToken = default)
+    {
+        static CustomerOrderTrackingView Preparing(Guid id, string stage) =>
+            new(id, false, stage, null, null, null, null, null, null, null, null, null, null, null, null);
+
+        // Order -> its route stop (latest run) -> workflow -> shipment.
+        var stop = await _context.RouteStops
+            .AsNoTracking()
+            .Where(routeStop => routeStop.OrderId == orderId)
+            .OrderByDescending(routeStop => routeStop.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (stop is null)
+        {
+            return Preparing(orderId, "Preparing"); // not routed yet (warehouse/agent pending)
+        }
+
+        var shipment = await _context.Shipments
+            .AsNoTracking()
+            .Include(s => s.TrackingEvents)
+            .Include(s => s.ProofOfDeliveries)
+            .FirstOrDefaultAsync(s => s.AgentWorkflowId == stop.AgentWorkflowId, cancellationToken);
+
+        if (shipment is null)
+        {
+            return Preparing(orderId, "AwaitingDispatch"); // routed, awaiting ops approval
+        }
+
+        var driver = await _context.Drivers
+            .AsNoTracking()
+            .Where(d => d.Id == shipment.DriverId)
+            .Select(d => new { d.FullName, d.PhoneNumber })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var vehicleReg = await _context.Vehicles
+            .AsNoTracking()
+            .Where(v => v.Id == shipment.VehicleId)
+            .Select(v => v.RegistrationNumber)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var pod = shipment.ProofOfDeliveries.FirstOrDefault(p => p.RouteStopId == stop.Id);
+        var arrived = shipment.TrackingEvents
+            .Where(e => e.RouteStopId == stop.Id && e.EventType == TrackingEventType.ArrivedStop)
+            .OrderBy(e => e.OccurredAt)
+            .FirstOrDefault();
+
+        return new CustomerOrderTrackingView(
+            orderId,
+            true,
+            "Dispatched",
+            shipment.ShipmentCode,
+            shipment.Status.ToString(),
+            driver?.FullName,
+            driver?.PhoneNumber,
+            vehicleReg,
+            stop.Sequence,
+            stop.Eta,
+            stop.Status.ToString(),
+            stop.OnTime,
+            arrived?.OccurredAt,
+            pod?.DeliveredAt,
+            pod?.ReceivedByName);
+    }
+
+    public async Task<TrackingView?> GetTrackingByCodeAsync(string shipmentCode, CancellationToken cancellationToken = default)
+    {
+        var code = (shipmentCode ?? string.Empty).Trim();
+        var shipment = await _context.Shipments
+            .AsNoTracking()
+            .Include(s => s.TrackingEvents)
+            .Include(s => s.ProofOfDeliveries)
+            .Include(s => s.AgentWorkflow).ThenInclude(w => w.RouteStops)
+            .FirstOrDefaultAsync(s => s.ShipmentCode == code, cancellationToken);
+        return shipment is null ? null : ToTrackingView(shipment);
+    }
+
+    public async Task<DriverRunView?> GetDriverRunAsync(Guid shipmentId, CancellationToken cancellationToken = default)
+    {
+        var shipment = await LoadAsync(shipmentId, track: false, cancellationToken);
+        if (shipment is null)
+        {
+            return null;
+        }
+
+        var timeline = BuildTimeline(shipment);
+
+        // Enrich each driver stop with the leg distance + who to hand the parcel to.
+        var routeStopsByKey = shipment.AgentWorkflow.RouteStops
+            .ToDictionary(stop => stop.StopKey, StringComparer.OrdinalIgnoreCase);
+        var orderIds = routeStopsByKey.Values.Select(stop => stop.OrderId).Distinct().ToList();
+        var orders = await _context.DeliveryOrders
+            .AsNoTracking()
+            .Where(order => orderIds.Contains(order.Id))
+            .Select(order => new { order.Id, order.CustomerId, order.RecipientName, order.RecipientContact })
+            .ToListAsync(cancellationToken);
+        var customerIds = orders.Select(order => order.CustomerId).Distinct().ToList();
+        var customerNames = await _context.Users
+            .AsNoTracking()
+            .Where(user => customerIds.Contains(user.Id))
+            .ToDictionaryAsync(user => user.Id, user => user.Name, cancellationToken);
+
+        // Who to hand the parcel to: the recipient, else the customer who ordered.
+        var recipients = orders.ToDictionary(
+            order => order.Id,
+            order => new
+            {
+                Name = string.IsNullOrWhiteSpace(order.RecipientName)
+                    ? (customerNames.TryGetValue(order.CustomerId, out var n) ? n : null)
+                    : order.RecipientName,
+                Contact = order.RecipientContact,
+            });
+
+        var enriched = timeline.Select(entry =>
+        {
+            routeStopsByKey.TryGetValue(entry.StopKey, out var routeStop);
+            var recipient = routeStop is not null && recipients.TryGetValue(routeStop.OrderId, out var r) ? r : null;
+            return entry with
+            {
+                DistanceFromPrevKm = routeStop?.DistanceFromPrevKm ?? 0m,
+                RecipientName = recipient?.Name,
+                RecipientContact = recipient?.Contact,
+            };
+        }).ToList();
+
+        return new DriverRunView(
+            shipment.Id, shipment.ShipmentCode, shipment.Status.ToString(),
+            shipment.DriverId, shipment.VehicleId, enriched);
+    }
+
+    public async Task<TrackingView> RecordStopEventAsync(
+        Guid shipmentId, RecordStopEventCommand command, CancellationToken cancellationToken = default)
+    {
+        var shipment = await LoadAsync(shipmentId, track: true, cancellationToken)
+            ?? throw new KeyNotFoundException($"Shipment '{shipmentId}' was not found.");
+
+        var stops = shipment.AgentWorkflow.RouteStops.OrderBy(stop => stop.Sequence).ToList();
+        var stop = stops.FirstOrDefault(s => string.Equals(s.StopKey, command.StopKey, StringComparison.OrdinalIgnoreCase))
+            ?? throw new KeyNotFoundException($"Stop '{command.StopKey}' was not found on this shipment.");
+
+        var occurredAt = AsUtc(command.OccurredAt ?? DateTime.UtcNow);
+        var kind = command.Kind?.Trim().ToUpperInvariant();
+        var (eventType, newStatus) = kind switch
+        {
+            "ARRIVED" => (TrackingEventType.ArrivedStop, RouteStopStatus.Arrived),
+            "DEPARTED" => (TrackingEventType.DepartedStop, RouteStopStatus.EnRoute),
+            _ => throw new ArgumentException("Kind must be ARRIVED or DEPARTED.", nameof(command))
+        };
+
+        stop.Status = newStatus;
+        stop.UpdatedAt = DateTime.UtcNow;
+        AddEvent(shipment.Id, stop.Id, eventType, occurredAt, command.Note, command.Latitude, command.Longitude);
+
+        // The recompute: an actual arrival that differs from the plan shifts every
+        // downstream (not-yet-delivered) ETA by the same delay.
+        if (eventType == TrackingEventType.ArrivedStop)
+        {
+            stop.OnTime = EtaEngine.WithinWindow(occurredAt, stop.WindowStart, stop.WindowEnd);
+            var delay = occurredAt - AsUtc(stop.Eta);
+            if (Math.Abs(delay.TotalMinutes) >= 1)
+            {
+                foreach (var downstream in stops.Where(s =>
+                    s.Sequence > stop.Sequence && s.Status != RouteStopStatus.Delivered))
+                {
+                    downstream.Eta = AsUtc(downstream.Eta).Add(delay);
+                    downstream.OnTime = EtaEngine.WithinWindow(downstream.Eta, downstream.WindowStart, downstream.WindowEnd);
+                    downstream.UpdatedAt = DateTime.UtcNow;
+                }
+
+                // Run-level event (no stop id) so it doesn't mask the stop's arrival time.
+                AddEvent(shipment.Id, null, TrackingEventType.EtaRecalculated, DateTime.UtcNow,
+                    $"Downstream ETAs shifted by {delay.TotalMinutes:0} min after arrival at {stop.StopKey}.",
+                    null, null);
+                _logger.LogInformation(
+                    "Shipment {Code}: recomputed downstream ETAs (+{Minutes} min).",
+                    shipment.ShipmentCode, delay.TotalMinutes);
+            }
+        }
+
+        if (shipment.Status == ShipmentStatus.Dispatched)
+        {
+            shipment.Status = ShipmentStatus.InTransit;
+        }
+        shipment.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync(cancellationToken);
+        return ToTrackingView(shipment);
+    }
+
+    public async Task<TrackingView> RecordProofOfDeliveryAsync(
+        Guid shipmentId, RecordPodCommand command, CancellationToken cancellationToken = default)
+    {
+        var shipment = await LoadAsync(shipmentId, track: true, cancellationToken)
+            ?? throw new KeyNotFoundException($"Shipment '{shipmentId}' was not found.");
+
+        var stops = shipment.AgentWorkflow.RouteStops.OrderBy(stop => stop.Sequence).ToList();
+        var stop = stops.FirstOrDefault(s => string.Equals(s.StopKey, command.StopKey, StringComparison.OrdinalIgnoreCase))
+            ?? throw new KeyNotFoundException($"Stop '{command.StopKey}' was not found on this shipment.");
+
+        if (shipment.ProofOfDeliveries.Any(pod => pod.RouteStopId == stop.Id))
+        {
+            throw new InvalidOperationException($"Stop '{command.StopKey}' already has a proof of delivery.");
+        }
+
+        var deliveredAt = AsUtc(command.DeliveredAt ?? DateTime.UtcNow);
+
+        _context.ProofOfDeliveries.Add(new ProofOfDelivery
+        {
+            Id = Guid.NewGuid(),
+            ShipmentId = shipment.Id,
+            RouteStopId = stop.Id,
+            ReceivedByName = command.ReceivedByName,
+            SignatureImageUrl = command.SignatureImageUrl,
+            PhotoUrl = command.PhotoUrl,
+            Notes = command.Notes,
+            DeliveredAt = deliveredAt,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        stop.Status = RouteStopStatus.Delivered;
+        stop.OnTime = EtaEngine.WithinWindow(deliveredAt, stop.WindowStart, stop.WindowEnd);
+        stop.UpdatedAt = DateTime.UtcNow;
+        AddEvent(shipment.Id, stop.Id, TrackingEventType.Delivered, deliveredAt,
+            command.ReceivedByName is null ? "Delivered." : $"Delivered to {command.ReceivedByName}.", null, null);
+
+        if (stops.All(s => s.Status == RouteStopStatus.Delivered))
+        {
+            shipment.Status = ShipmentStatus.Delivered;
+            shipment.CompletedAt = DateTime.UtcNow;
+        }
+        else if (shipment.Status == ShipmentStatus.Dispatched)
+        {
+            shipment.Status = ShipmentStatus.InTransit;
+        }
+        shipment.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync(cancellationToken);
+        return ToTrackingView(shipment);
+    }
+
+    // --- helpers --------------------------------------------------------------
+
+    private async Task<Shipment?> LoadAsync(Guid shipmentId, bool track, CancellationToken cancellationToken)
+    {
+        IQueryable<Shipment> query = _context.Shipments
+            .Include(s => s.TrackingEvents)
+            .Include(s => s.ProofOfDeliveries)
+            .Include(s => s.AgentWorkflow).ThenInclude(w => w.RouteStops);
+
+        if (!track)
+        {
+            query = query.AsNoTracking();
+        }
+
+        return await query.FirstOrDefaultAsync(s => s.Id == shipmentId, cancellationToken);
+    }
+
+    // Add via the DbSet (forces Added — the shipment is a tracked parent, so a
+    // nav-collection add would be mis-flagged Modified; see backend conventions).
+    private void AddEvent(
+        Guid shipmentId, Guid? routeStopId, TrackingEventType type,
+        DateTime occurredAt, string? note, double? lat, double? lng)
+    {
+        _context.TrackingEvents.Add(new TrackingEvent
+        {
+            Id = Guid.NewGuid(),
+            ShipmentId = shipmentId,
+            RouteStopId = routeStopId,
+            EventType = type,
+            OccurredAt = occurredAt,
+            Note = note,
+            Latitude = lat,
+            Longitude = lng,
+            CreatedAt = DateTime.UtcNow
+        });
+    }
+
+    private static TrackingView ToTrackingView(Shipment shipment) =>
+        new(shipment.Id, shipment.ShipmentCode, shipment.Status.ToString(), BuildTimeline(shipment));
+
+    private static IReadOnlyList<TimelineEntry> BuildTimeline(Shipment shipment)
+    {
+        var routeStops = shipment.AgentWorkflow.RouteStops.OrderBy(stop => stop.Sequence).ToList();
+        var sequenceById = routeStops.ToDictionary(stop => stop.Id, stop => stop.Sequence);
+
+        var plannedStops = routeStops
+            .Select(stop => new TimelineStop(
+                stop.Sequence, stop.StopKey, stop.Address, stop.Eta, stop.Status.ToString(),
+                stop.OnTime, stop.Latitude, stop.Longitude))
+            .ToList();
+
+        var events = shipment.TrackingEvents
+            .Select(evt => new TimelineEvent(
+                evt.RouteStopId is not null && sequenceById.TryGetValue(evt.RouteStopId.Value, out var seq)
+                    ? seq : (int?)null,
+                evt.EventType.ToString(), evt.OccurredAt, evt.Note))
+            .ToList();
+
+        return TimelineBuilder.Build(plannedStops, events);
+    }
+
+    private static DateTime AsUtc(DateTime value) => value.Kind switch
+    {
+        DateTimeKind.Utc => value,
+        DateTimeKind.Local => value.ToUniversalTime(),
+        _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
+    };
+}
