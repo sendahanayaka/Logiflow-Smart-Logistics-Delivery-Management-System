@@ -81,6 +81,9 @@ export interface TimelineEntry {
   onTime: boolean | null;
   latitude: number;
   longitude: number;
+  distanceFromPrevKm?: number;
+  recipientName?: string | null;
+  recipientContact?: string | null;
 }
 
 export interface TrackingView {

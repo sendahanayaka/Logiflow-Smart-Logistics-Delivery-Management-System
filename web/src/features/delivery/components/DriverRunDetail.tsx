@@ -5,6 +5,8 @@ import { useGetDriverRunQuery, useRecordStopEventMutation } from '../deliveryApi
 import { shipmentBadgeClass, stopBadgeClass } from '../statusBadge';
 import { activeStopSequence, deliveredCount } from '../driverRun';
 import { PodForm } from './PodForm';
+import { TrackingMap } from './TrackingMap';
+import '../delivery.css'; // map-sketch styles
 
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : '—');
 
@@ -59,6 +61,10 @@ export const DriverRunDetail: React.FC<{ shipmentId: string }> = ({ shipmentId }
         <span className="run-detail__progress">{delivered}/{stops.length} delivered</span>
       </header>
 
+      <div className="run-detail__map">
+        <TrackingMap stops={stops} />
+      </div>
+
       {error && <div className="run-detail__error">{error}</div>}
 
       {activeSeq === null && (
@@ -76,8 +82,19 @@ export const DriverRunDetail: React.FC<{ shipmentId: string }> = ({ shipmentId }
                   <strong>{s.address}</strong>
                   <span className={`stop-badge ${stopBadgeClass(s.status)}`}>{s.status}</span>
                 </div>
+                {(s.recipientName || s.recipientContact) && (
+                  <div className="stop__recipient">
+                    Deliver to <strong>{s.recipientName || 'Recipient'}</strong>
+                    {s.recipientContact && (
+                      <> · <a href={`tel:${s.recipientContact}`}>📞 {s.recipientContact}</a></>
+                    )}
+                  </div>
+                )}
                 <div className="stop__meta">
                   <span>ETA {fmt(s.plannedEta)}</span>
+                  {typeof s.distanceFromPrevKm === 'number' && s.distanceFromPrevKm > 0 && (
+                    <span> · {s.distanceFromPrevKm.toFixed(1)} km</span>
+                  )}
                   {s.actualAt && <span> · arrived {fmt(s.actualAt)}</span>}
                   {s.onTime !== null && (
                     <span className={s.onTime ? 'stop__ontime' : 'stop__late'}>
