@@ -2,40 +2,47 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/dio_provider.dart';
+import 'models/warehouse_models.dart';
 
-/// Warehouse + dispatch data access. TODO: map responses to typed models.
+/// Warehouse package-intake data access. Auth is provided by the shared Dio
+/// interceptor; this repository never creates a separate HTTP client.
 class WarehouseRepository {
   WarehouseRepository(this._dio);
   final Dio _dio;
 
-  // Warehouses & zones
-  Future<List<dynamic>> warehouses() async => (await _dio.get('/warehouse')).data as List;
-  Future<Map<String, dynamic>> createWarehouse(Map<String, dynamic> body) async =>
-      (await _dio.post('/warehouse', data: body)).data as Map<String, dynamic>;
-  Future<List<dynamic>> zones(String warehouseId) async =>
-      (await _dio.get('/warehouse/$warehouseId/zones')).data as List;
-  Future<Map<String, dynamic>> createZone(String warehouseId, Map<String, dynamic> body) async =>
-      (await _dio.post('/warehouse/$warehouseId/zones', data: body)).data as Map<String, dynamic>;
+  Future<List<Warehouse>> getWarehouses() async {
+    final response = await _dio.get<List<dynamic>>('/warehouse');
+    return _list(response.data)
+        .map((item) => Warehouse.fromJson(_map(item)))
+        .toList();
+  }
 
-  // Packages
-  Future<Map<String, dynamic>> intake(Map<String, dynamic> body) async =>
-      (await _dio.post('/warehouse/intake', data: body)).data as Map<String, dynamic>;
-  Future<dynamic> packages(String warehouseId, {String? status}) async =>
-      (await _dio.get('/warehouse/$warehouseId/packages',
-              queryParameters: status == null ? null : {'status': status}))
-          .data;
-  Future<Map<String, dynamic>> makeAvailable(String packageId) async =>
-      (await _dio.patch('/warehouse/packages/$packageId/availability')).data as Map<String, dynamic>;
+  Future<List<StorageZone>> getStorageZones(String warehouseId) async {
+    final response =
+        await _dio.get<List<dynamic>>('/warehouse/$warehouseId/zones');
+    return _list(response.data)
+        .map((item) => StorageZone.fromJson(_map(item)))
+        .toList();
+  }
 
-  // Orders available for intake (shared list endpoint)
-  Future<List<dynamic>> intakeOrders() async => (await _dio.get('/orders')).data as List;
+  Future<List<IntakeOrder>> getIntakeOrders() async {
+    final response = await _dio.get<List<dynamic>>('/orders');
+    return _list(response.data)
+        .map((item) => IntakeOrder.fromJson(_map(item)))
+        .toList();
+  }
 
-  // Dispatch batches + hand-off to the agent
-  Future<Map<String, dynamic>> createBatch(Map<String, dynamic> body) async =>
-      (await _dio.post('/dispatch/batches', data: body)).data as Map<String, dynamic>;
-  Future<Map<String, dynamic>> planRouteFromBatch(String batchId) async =>
-      (await _dio.post('/workflows/from-batch/$batchId')).data as Map<String, dynamic>;
+  Future<WarehousePackage> receivePackage(ReceivePackageRequest request) async {
+    final response = await _dio.post<Map<String, dynamic>>('/warehouse/intake',
+        data: request.toJson());
+    return WarehousePackage.fromJson(_map(response.data));
+  }
 }
 
-final warehouseRepositoryProvider =
-    Provider<WarehouseRepository>((ref) => WarehouseRepository(ref.read(dioProvider)));
+List<dynamic> _list(Object? value) => value is List ? value : const [];
+
+Map<String, dynamic> _map(Object? value) =>
+    Map<String, dynamic>.from(value as Map);
+
+final warehouseRepositoryProvider = Provider<WarehouseRepository>(
+    (ref) => WarehouseRepository(ref.read(dioProvider)));
