@@ -164,7 +164,14 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         const Text('PAYMENT METHOD',
             style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54, letterSpacing: 0.5)),
         const SizedBox(height: 8),
-        ..._methods.map(_methodTile),
+        RadioGroup<String>(
+          groupValue: _method,
+          onChanged: (v) {
+            if (_confirming) return;
+            setState(() => _method = v ?? '');
+          },
+          child: Column(children: _methods.map(_methodTile).toList()),
+        ),
         const SizedBox(height: 8),
         _methodForm(),
         if (_error != null) ...[
@@ -205,7 +212,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54, letterSpacing: 0.5)),
           const SizedBox(height: 12),
           if (p == null && _retries < 3)
-            Row(children: const [
+            const Row(children: [
               SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
               SizedBox(width: 10),
               Text('Calculating delivery fee…', style: TextStyle(fontStyle: FontStyle.italic, color: Colors.black54)),
@@ -249,8 +256,6 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       ),
       child: RadioListTile<String>(
         value: m.id,
-        groupValue: _method,
-        onChanged: _confirming ? null : (v) => setState(() => _method = v ?? ''),
         title: Row(children: [Icon(m.icon, size: 20), const SizedBox(width: 8), Text(m.id)]),
         subtitle: Text(m.desc),
         activeColor: AppTheme.navy,

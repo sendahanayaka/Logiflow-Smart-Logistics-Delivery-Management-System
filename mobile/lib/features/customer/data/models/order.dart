@@ -1,5 +1,5 @@
-/// Customer order models — mirror the backend DTOs
-/// (DeliveryOrderResponse, DeliveryFeeBreakdown, OrderIntelligenceResponse).
+// Customer order models — mirror the backend DTOs
+// (DeliveryOrderResponse, DeliveryFeeBreakdown, OrderIntelligenceResponse).
 
 double _toDouble(dynamic v) => v == null ? 0 : (v as num).toDouble();
 

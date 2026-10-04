@@ -68,7 +68,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 TextField(controller: _password, decoration: const InputDecoration(labelText: 'Password'), obscureText: true),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<UserRole>(
-                  value: _role,
+                  initialValue: _role,
                   decoration: const InputDecoration(labelText: 'Role'),
                   items: const [
                     DropdownMenuItem(value: UserRole.customer, child: Text('Customer')),
