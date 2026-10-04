@@ -1,0 +1,5303 @@
+﻿
+>       An exception 
+occurred while 
+iterating over the 
+results of a query 
+for context type 'Log
+iFlow.Infrastructure.
+Persistence.AppDbCont
+ext'.
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42501: 
+permission denied 
+for table Users
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42501
+            
+MessageText: 
+permission denied 
+for table Users
+            File: 
+aclchk.c
+            Line: 
+2845
+            Routine: 
+aclcheck_error
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42501: 
+permission denied 
+for table Users
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42501
+            
+MessageText: 
+permission denied 
+for table Users
+            File: 
+aclchk.c
+            Line: 
+2845
+            Routine: 
+aclcheck_error
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ObjectResultExe
+cutor[1]
+        Executing 
+ObjectResult, 
+writing value of 
+type '<>f__AnonymousT
+ype1`1[[System.String
+, System.Private.Core
+Lib, 
+Version=8.0.0.0, 
+Culture=neutral, Publ
+icKeyToken=7cec85d7be
+a7798e]]'.
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[105]
+        Executed 
+action LogiFlow.Api.C
+ontrollers.AuthContro
+ller.Login 
+(LogiFlow.Api) in 
+645.2604ms
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[1]
+        Executed 
+endpoint 'LogiFlow.Ap
+i.Controllers.AuthCon
+troller.Login 
+(LogiFlow.Api)'
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[2]
+        Request 
+finished HTTP/1.1 
+POST http://localhost
+:5000/api/auth/login 
+- 500 - application/j
+son;+charset=utf-8 
+787.5784ms
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[1]
+        Request 
+starting HTTP/1.1 
+POST http://localhost
+:5000/api/auth/login 
+- application/json 56
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[0]
+        Executing 
+endpoint 'LogiFlow.Ap
+i.Controllers.AuthCon
+troller.Login 
+(LogiFlow.Api)'
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[102]
+        Route 
+matched with {action 
+= "Login", 
+controller = 
+"Auth"}. Executing 
+controller action 
+with signature System
+.Threading.Tasks.Task
+`1[Microsoft.AspNetCo
+re.Mvc.IActionResult]
+ Login(LogiFlow.Appli
+cation.Auth.DTOs.Logi
+nRequest) on 
+controller LogiFlow.A
+pi.Controllers.AuthCo
+ntroller 
+(LogiFlow.Api).
+>       Microsoft.Ide
+ntityModel.Tokens.Sec
+urityTokenSignatureKe
+yNotFoundException: 
+IDX10517: Signature 
+validation failed. 
+The token's kid is 
+missing. Keys tried: 
+'Microsoft.IdentityMo
+del.Tokens.SymmetricS
+ecurityKey, KeyId: 
+'', InternalId: 'sdDo
+O1JzGqwsfqmwk70GITiOz
+jgmiF5zHYJ4cQTYeX8'. 
+, KeyId: 
+        '. Number of 
+keys in TokenValidati
+onParameters: '1'. 
+  Number of keys in 
+Configuration: '0'. 
+> Exceptions caught:
+   '[PII of type 
+'System.String' is 
+hidden. For more 
+details, see https://
+aka.ms/IdentityModel/
+PII.]'.
+  token: '[PII of 
+type 'Microsoft.Ident
+ityModel.JsonWebToken
+s.JsonWebToken' is 
+hidden. For more 
+details, see https://
+aka.ms/IdentityModel/
+PII.]'. See https://a
+ka.ms/IDX10503 for 
+details.
+           at Microso
+ft.IdentityModel.Json
+WebTokens.JsonWebToke
+nHandler.ValidateSign
+ature(JsonWebToken 
+jwtToken, TokenValida
+tionParameters valida
+tionParameters, 
+BaseConfiguration 
+configuration)
+           at Microso
+ft.IdentityModel.Json
+WebTokens.JsonWebToke
+nHandler.ValidateSign
+atureAndIssuerSecurit
+yKey(JsonWebToken 
+jsonWebToken, TokenVa
+lidationParameters va
+lidationParameters, 
+BaseConfiguration 
+configuration)
+           at Microso
+ft.IdentityModel.Json
+WebTokens.JsonWebToke
+nHandler.ValidateJWSA
+sync(JsonWebToken 
+jsonWebToken, TokenVa
+lidationParameters va
+lidationParameters, 
+BaseConfiguration 
+configuration)
+  info: Microsoft.Asp
+NetCore.Authenticatio
+n.JwtBearer.JwtBearer
+Handler[1]
+        Failed to 
+validate the token.
+>       Microsoft.Ide
+ntityModel.Tokens.Sec
+urityTokenSignatureKe
+yNotFoundException: 
+IDX10517: Signature 
+validation failed. 
+The token's kid is 
+missing. Keys tried: 
+'Microsoft.IdentityMo
+del.Tokens.SymmetricS
+ecurityKey, KeyId: 
+'', InternalId: 'sdDo
+O1JzGqwsfqmwk70GITiOz
+jgmiF5zHYJ4cQTYeX8'. 
+, KeyId: 
+        '. Number of 
+keys in TokenValidati
+onParameters: '1'. 
+  Number of keys in 
+Configuration: '0'. 
+> Exceptions caught:
+   '[PII of type 
+'System.String' is 
+hidden. For more 
+details, see https://
+aka.ms/IdentityModel/
+PII.]'.
+  token: '[PII of 
+type 'Microsoft.Ident
+ityModel.JsonWebToken
+s.JsonWebToken' is 
+hidden. For more 
+details, see https://
+aka.ms/IdentityModel/
+PII.]'. See https://a
+ka.ms/IDX10503 for 
+details.
+           at Microso
+ft.IdentityModel.Json
+WebTokens.JsonWebToke
+nHandler.ValidateSign
+ature(JsonWebToken 
+jwtToken, TokenValida
+tionParameters valida
+tionParameters, 
+BaseConfiguration 
+configuration)
+           at Microso
+ft.IdentityModel.Json
+WebTokens.JsonWebToke
+nHandler.ValidateSign
+atureAndIssuerSecurit
+yKey(JsonWebToken 
+jsonWebToken, TokenVa
+lidationParameters va
+lidationParameters, 
+BaseConfiguration 
+configuration)
+           at Microso
+ft.IdentityModel.Json
+WebTokens.JsonWebToke
+nHandler.ValidateJWSA
+sync(JsonWebToken 
+jsonWebToken, TokenVa
+lidationParameters va
+lidationParameters, 
+BaseConfiguration 
+configuration)
+  info: Microsoft.Asp
+NetCore.Authenticatio
+n.JwtBearer.JwtBearer
+Handler[1]
+        Failed to 
+validate the token.
+>       Microsoft.Ide
+ntityModel.Tokens.Sec
+urityTokenSignatureKe
+yNotFoundException: 
+IDX10517: Signature 
+validation failed. 
+The token's kid is 
+missing. Keys tried: 
+'Microsoft.IdentityMo
+del.Tokens.SymmetricS
+ecurityKey, KeyId: 
+'', InternalId: 'sdDo
+O1JzGqwsfqmwk70GITiOz
+jgmiF5zHYJ4cQTYeX8'. 
+, KeyId: 
+        '. Number of 
+keys in TokenValidati
+onParameters: '1'. 
+  Number of keys in 
+Configuration: '0'. 
+> Exceptions caught:
+   '[PII of type 
+'System.String' is 
+hidden. For more 
+details, see https://
+aka.ms/IdentityModel/
+PII.]'.
+  token: '[PII of 
+type 'Microsoft.Ident
+ityModel.JsonWebToken
+s.JsonWebToken' is 
+hidden. For more 
+details, see https://
+aka.ms/IdentityModel/
+PII.]'. See https://a
+ka.ms/IDX10503 for 
+details.
+           at Microso
+ft.IdentityModel.Json
+WebTokens.JsonWebToke
+nHandler.ValidateSign
+ature(JsonWebToken 
+jwtToken, TokenValida
+tionParameters valida
+tionParameters, 
+BaseConfiguration 
+configuration)
+           at Microso
+ft.IdentityModel.Json
+WebTokens.JsonWebToke
+nHandler.ValidateSign
+atureAndIssuerSecurit
+yKey(JsonWebToken 
+jsonWebToken, TokenVa
+lidationParameters va
+lidationParameters, 
+BaseConfiguration 
+configuration)
+           at Microso
+ft.IdentityModel.Json
+WebTokens.JsonWebToke
+nHandler.ValidateJWSA
+sync(JsonWebToken 
+jsonWebToken, TokenVa
+lidationParameters va
+lidationParameters, 
+BaseConfiguration 
+configuration)
+  info: Microsoft.Asp
+NetCore.Authenticatio
+n.JwtBearer.JwtBearer
+Handler[7]
+        Bearer was 
+not authenticated. 
+Failure message: 
+IDX10517: Signature 
+validation failed. 
+The token's kid is 
+missing. Keys tried: 
+'Microsoft.IdentityMo
+del.Tokens.SymmetricS
+ecurityKey, KeyId: 
+'', InternalId: 'sdDo
+O1JzGqwsfqmwk70GITiOz
+jgmiF5zHYJ4cQTYeX8'. 
+, KeyId: 
+        '. Number of 
+keys in TokenValidati
+onParameters: '1'. 
+  Number of keys in 
+Configuration: '0'. 
+> Exceptions caught:
+   '[PII of type 
+'System.String' is 
+hidden. For more 
+details, see https://
+aka.ms/IdentityModel/
+PII.]'.
+  token: '[PII of 
+type 'Microsoft.Ident
+ityModel.JsonWebToken
+s.JsonWebToken' is 
+hidden. For more 
+details, see https://
+aka.ms/IdentityModel/
+PII.]'. See https://a
+ka.ms/IDX10503 for 
+details.
+  info: Microsoft.Asp
+NetCore.Authenticatio
+n.JwtBearer.JwtBearer
+Handler[7]
+        Bearer was 
+not authenticated. 
+Failure message: 
+IDX10517: Signature 
+validation failed. 
+The token's kid is 
+missing. Keys tried: 
+'Microsoft.IdentityMo
+del.Tokens.SymmetricS
+ecurityKey, KeyId: 
+'', InternalId: 'sdDo
+O1JzGqwsfqmwk70GITiOz
+jgmiF5zHYJ4cQTYeX8'. 
+, KeyId: 
+        '. Number of 
+keys in TokenValidati
+onParameters: '1'. 
+  Number of keys in 
+Configuration: '0'. 
+> Exceptions caught:
+   '[PII of type 
+'System.String' is 
+hidden. For more 
+details, see https://
+aka.ms/IdentityModel/
+PII.]'.
+  token: '[PII of 
+type 'Microsoft.Ident
+ityModel.JsonWebToken
+s.JsonWebToken' is 
+hidden. For more 
+details, see https://
+aka.ms/IdentityModel/
+PII.]'. See https://a
+ka.ms/IDX10503 for 
+details.
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[0]
+        Executing 
+endpoint 'LogiFlow.Ap
+i.Controllers.Vehicle
+sController.GetAll 
+(LogiFlow.Api)'
+  info: Microsoft.Asp
+NetCore.Authenticatio
+n.JwtBearer.JwtBearer
+Handler[7]
+        Bearer was 
+not authenticated. 
+Failure message: 
+IDX10517: Signature 
+validation failed. 
+The token's kid is 
+missing. Keys tried: 
+'Microsoft.IdentityMo
+del.Tokens.SymmetricS
+ecurityKey, KeyId: 
+'', InternalId: 'sdDo
+O1JzGqwsfqmwk70GITiOz
+jgmiF5zHYJ4cQTYeX8'. 
+, KeyId: 
+        '. Number of 
+keys in TokenValidati
+onParameters: '1'. 
+  Number of keys in 
+Configuration: '0'. 
+> Exceptions caught:
+   '[PII of type 
+'System.String' is 
+hidden. For more 
+details, see https://
+aka.ms/IdentityModel/
+PII.]'.
+  token: '[PII of 
+type 'Microsoft.Ident
+ityModel.JsonWebToken
+s.JsonWebToken' is 
+hidden. For more 
+details, see https://
+aka.ms/IdentityModel/
+PII.]'. See https://a
+ka.ms/IDX10503 for 
+details.
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[0]
+        Executing 
+endpoint 'LogiFlow.Ap
+i.Controllers.Drivers
+Controller.GetAll 
+(LogiFlow.Api)'
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[2]
+        Request 
+finished HTTP/1.1 
+GET http://localhost:
+5000/api/agent-api/he
+alth - 404 0 - 
+474.4084ms
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[16]
+        Request 
+reached the end of 
+the middleware 
+pipeline without 
+being handled by 
+application code. 
+Request path: GET htt
+p://localhost:5000/ap
+i/agent-api/health, 
+Response status 
+code: 404
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[102]
+        Route 
+matched with {action 
+= "GetAll", 
+controller = 
+"Vehicles"}. 
+Executing controller 
+action with 
+signature System.Thre
+ading.Tasks.Task`1[Mi
+crosoft.AspNetCore.Mv
+c.ActionResult`1[Syst
+em.Collections.Generi
+c.IEnumerable`1[LogiF
+low.Application.Fleet
+.DTOs.VehicleResponse
+]]] GetAll(System.Thr
+eading.CancellationTo
+ken) on controller Lo
+giFlow.Api.Controller
+s.VehiclesController 
+(LogiFlow.Api).
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[102]
+        Route 
+matched with {action 
+= "GetAll", 
+controller = 
+"Drivers"}. 
+Executing controller 
+action with 
+signature System.Thre
+ading.Tasks.Task`1[Mi
+crosoft.AspNetCore.Mv
+c.ActionResult`1[Syst
+em.Collections.Generi
+c.IEnumerable`1[LogiF
+low.Application.Fleet
+.DTOs.DriverResponse]
+]] GetAll(System.Thre
+ading.CancellationTok
+en) on controller Log
+iFlow.Api.Controllers
+.DriversController 
+(LogiFlow.Api).
+  info: Microsoft.Ent
+ityFrameworkCore.Data
+base.Command[20101]
+        Executed 
+DbCommand (12ms) 
+[Parameters=[], 
+CommandType='Text', 
+CommandTimeout='30']
+        SELECT 
+d."Id", 
+d."CreatedAt", 
+d."FullName", d."Lice
+nseExpiryDate", 
+d."LicenseNumber", 
+d."PhoneNumber", 
+d."Status", 
+d."UpdatedAt", 
+d."UserId"
+        FROM 
+"Drivers" AS d
+  info: Microsoft.Ent
+ityFrameworkCore.Data
+base.Command[20101]
+        Executed 
+DbCommand (12ms) 
+[Parameters=[], 
+CommandType='Text', 
+CommandTimeout='30']
+        SELECT 
+v."Id", 
+v."Capacity", 
+v."CreatedAt", 
+v."Make", v."Model", 
+v."RegistrationNumber
+", v."Status", 
+v."UpdatedAt", 
+v."VehicleType"
+        FROM 
+"Vehicles" AS v
+>       An exception 
+occurred while 
+iterating over the 
+results of a query 
+for context type 'Log
+iFlow.Infrastructure.
+Persistence.AppDbCont
+ext'.
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[105]
+        Executed 
+action LogiFlow.Api.C
+ontrollers.OrdersCont
+roller.GetMyOrders 
+(LogiFlow.Api) in 
+120.7205ms
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[1]
+        Executed 
+endpoint 'LogiFlow.Ap
+i.Controllers.OrdersC
+ontroller.GetMyOrders
+ (LogiFlow.Api)'
+> fail: LogiFlow.Api.
+Middleware.ExceptionM
+iddleware[0]
+>       An unhandled 
+exception occurred 
+processing request 
+/api/orders/my-orders
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+           at Microso
+ft.EntityFrameworkCor
+e.EntityFrameworkQuer
+yableExtensions.ToLis
+tAsync[TSource](IQuer
+yable`1 source, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.EntityFrameworkQuer
+yableExtensions.ToLis
+tAsync[TSource](IQuer
+yable`1 source, 
+CancellationToken 
+cancellationToken)
+           at LogiFlo
+w.Application.Orders.
+OrdersService.GetMyOr
+dersAsync(Cancellatio
+nToken 
+cancellationToken) 
+in E:\SLIIT\Y3S1\Fram
+ework\Assignment\logi
+flow-system\Logiflow-
+Smart-Logistics-Deliv
+ery-Management-System
+\backend\src\LogiFlow
+.Application\Orders\O
+rdersService.cs:line 
+89
+           at LogiFlo
+w.Api.Controllers.Ord
+ersController.GetMyOr
+ders(CancellationToke
+n cancellationToken) 
+in E:\SLIIT\Y3S1\Fram
+ework\Assignment\logi
+flow-system\Logiflow-
+Smart-Logistics-Deliv
+ery-Management-System
+\backend\src\LogiFlow
+.Api\Controllers\Orde
+rsController.cs:line 
+81
+           at lambda_
+method120(Closure, 
+Object)
+           at Microso
+ft.AspNetCore.Mvc.Inf
+rastructure.ActionMet
+hodExecutor.Awaitable
+ObjectResultExecutor.
+Execute(ActionContext
+ actionContext, IActi
+onResultTypeMapper 
+mapper, 
+ObjectMethodExecutor 
+executor, Object 
+controller, Object[] 
+arguments)
+>          at LogiFlo
+w.Api.Middleware.Exce
+ptionMiddleware.Invok
+eAsync(HttpContext 
+context) in E:\SLIIT\
+Y3S1\Framework\Assign
+ment\logiflow-system\
+Logiflow-Smart-Logist
+ics-Delivery-Manageme
+nt-System\backend\src
+\LogiFlow.Api\Middlew
+are\ExceptionMiddlewa
+re.cs:line 36
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[2]
+        Request 
+finished HTTP/1.1 
+GET http://localhost:
+5000/api/orders/my-or
+ders - 500 - 
+application/json 
+363.0445ms
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[1]
+        Request 
+starting HTTP/1.1 
+GET http://localhost:
+5000/api/orders/my-or
+ders - 
+application/json -
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[0]
+        Executing 
+endpoint 'LogiFlow.Ap
+i.Controllers.OrdersC
+ontroller.GetMyOrders
+ (LogiFlow.Api)'
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[102]
+        Route 
+matched with {action 
+= "GetMyOrders", 
+controller = 
+"Orders"}. Executing 
+controller action 
+with signature System
+.Threading.Tasks.Task
+`1[Microsoft.AspNetCo
+re.Mvc.ActionResult`1
+[System.Collections.G
+eneric.IEnumerable`1[
+LogiFlow.Application.
+Orders.DTOs.DeliveryO
+rderResponse]]] GetMy
+Orders(System.Threadi
+ng.CancellationToken)
+ on controller LogiFl
+ow.Api.Controllers.Or
+dersController 
+(LogiFlow.Api).
+  fail: Microsoft.Ent
+ityFrameworkCore.Data
+base.Command[20102]
+        Failed 
+executing DbCommand 
+(2ms) [Parameters=[@_
+_customerId_0='?' 
+(DbType = Guid)], 
+CommandType='Text', 
+CommandTimeout='30']
+        SELECT 
+d."Id", 
+d."CreatedAt", 
+d."CustomerId", 
+d."DeliveryAddress", 
+d."DeliveryCity", 
+d."HeightCm", 
+d."LengthCm", d."Pack
+ageDescription", 
+d."PaymentMethod", 
+d."PickupAddress", 
+d."PickupCity", d."Pr
+eferredPickupDate", d
+."PreferredPickupTime
+", d."Priority", d."R
+ecipientContact", 
+d."RecipientName", 
+d."SpecialHandling", 
+d."Status", 
+d."UpdatedAt", 
+d."WeightKg", 
+d."WidthCm"
+        FROM 
+"DeliveryOrders" AS d
+        WHERE 
+d."CustomerId" = 
+@__customerId_0
+>       An exception 
+occurred while 
+iterating over the 
+results of a query 
+for context type 'Log
+iFlow.Infrastructure.
+Persistence.AppDbCont
+ext'.
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[105]
+        Executed 
+action LogiFlow.Api.C
+ontrollers.OrdersCont
+roller.GetMyOrders 
+(LogiFlow.Api) in 
+20.3898ms
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[1]
+        Executed 
+endpoint 'LogiFlow.Ap
+i.Controllers.OrdersC
+ontroller.GetMyOrders
+ (LogiFlow.Api)'
+> fail: LogiFlow.Api.
+Middleware.ExceptionM
+iddleware[0]
+>       An unhandled 
+exception occurred 
+processing request 
+/api/orders/my-orders
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+           at Microso
+ft.EntityFrameworkCor
+e.EntityFrameworkQuer
+yableExtensions.ToLis
+tAsync[TSource](IQuer
+yable`1 source, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.EntityFrameworkQuer
+yableExtensions.ToLis
+tAsync[TSource](IQuer
+yable`1 source, 
+CancellationToken 
+cancellationToken)
+           at LogiFlo
+w.Application.Orders.
+OrdersService.GetMyOr
+dersAsync(Cancellatio
+nToken 
+cancellationToken) 
+in E:\SLIIT\Y3S1\Fram
+ework\Assignment\logi
+flow-system\Logiflow-
+Smart-Logistics-Deliv
+ery-Management-System
+\backend\src\LogiFlow
+.Application\Orders\O
+rdersService.cs:line 
+89
+           at LogiFlo
+w.Api.Controllers.Ord
+ersController.GetMyOr
+ders(CancellationToke
+n cancellationToken) 
+in E:\SLIIT\Y3S1\Fram
+ework\Assignment\logi
+flow-system\Logiflow-
+Smart-Logistics-Deliv
+ery-Management-System
+\backend\src\LogiFlow
+.Api\Controllers\Orde
+rsController.cs:line 
+81
+           at lambda_
+method120(Closure, 
+Object)
+           at Microso
+ft.AspNetCore.Mvc.Inf
+rastructure.ActionMet
+hodExecutor.Awaitable
+ObjectResultExecutor.
+Execute(ActionContext
+ actionContext, IActi
+onResultTypeMapper 
+mapper, 
+ObjectMethodExecutor 
+executor, Object 
+controller, Object[] 
+arguments)
+>          at LogiFlo
+w.Api.Middleware.Exce
+ptionMiddleware.Invok
+eAsync(HttpContext 
+context) in E:\SLIIT\
+Y3S1\Framework\Assign
+ment\logiflow-system\
+Logiflow-Smart-Logist
+ics-Delivery-Manageme
+nt-System\backend\src
+\LogiFlow.Api\Middlew
+are\ExceptionMiddlewa
+re.cs:line 36
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[2]
+        Request 
+finished HTTP/1.1 
+GET http://localhost:
+5000/api/orders/my-or
+ders - 500 - 
+application/json 
+41.3013ms
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[1]
+        Request 
+starting HTTP/1.1 
+GET http://localhost:
+5000/api/orders/my-or
+ders - 
+application/json -
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[0]
+        Executing 
+endpoint 'LogiFlow.Ap
+i.Controllers.OrdersC
+ontroller.GetMyOrders
+ (LogiFlow.Api)'
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[102]
+        Route 
+matched with {action 
+= "GetMyOrders", 
+controller = 
+"Orders"}. Executing 
+controller action 
+with signature System
+.Threading.Tasks.Task
+`1[Microsoft.AspNetCo
+re.Mvc.ActionResult`1
+[System.Collections.G
+eneric.IEnumerable`1[
+LogiFlow.Application.
+Orders.DTOs.DeliveryO
+rderResponse]]] GetMy
+Orders(System.Threadi
+ng.CancellationToken)
+ on controller LogiFl
+ow.Api.Controllers.Or
+dersController 
+(LogiFlow.Api).
+  fail: Microsoft.Ent
+ityFrameworkCore.Data
+base.Command[20102]
+        Failed 
+executing DbCommand 
+(1ms) [Parameters=[@_
+_customerId_0='?' 
+(DbType = Guid)], 
+CommandType='Text', 
+CommandTimeout='30']
+        SELECT 
+d."Id", 
+d."CreatedAt", 
+d."CustomerId", 
+d."DeliveryAddress", 
+d."DeliveryCity", 
+d."HeightCm", 
+d."LengthCm", d."Pack
+ageDescription", 
+d."PaymentMethod", 
+d."PickupAddress", 
+d."PickupCity", d."Pr
+eferredPickupDate", d
+."PreferredPickupTime
+", d."Priority", d."R
+ecipientContact", 
+d."RecipientName", 
+d."SpecialHandling", 
+d."Status", 
+d."UpdatedAt", 
+d."WeightKg", 
+d."WidthCm"
+        FROM 
+"DeliveryOrders" AS d
+        WHERE 
+d."CustomerId" = 
+@__customerId_0
+>       An exception 
+occurred while 
+iterating over the 
+results of a query 
+for context type 'Log
+iFlow.Infrastructure.
+Persistence.AppDbCont
+ext'.
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[105]
+        Executed 
+action LogiFlow.Api.C
+ontrollers.OrdersCont
+roller.GetMyOrders 
+(LogiFlow.Api) in 
+21.3813ms
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[1]
+        Executed 
+endpoint 'LogiFlow.Ap
+i.Controllers.OrdersC
+ontroller.GetMyOrders
+ (LogiFlow.Api)'
+> fail: LogiFlow.Api.
+Middleware.ExceptionM
+iddleware[0]
+>       An unhandled 
+exception occurred 
+processing request 
+/api/orders/my-orders
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+           at Microso
+ft.EntityFrameworkCor
+e.EntityFrameworkQuer
+yableExtensions.ToLis
+tAsync[TSource](IQuer
+yable`1 source, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.EntityFrameworkQuer
+yableExtensions.ToLis
+tAsync[TSource](IQuer
+yable`1 source, 
+CancellationToken 
+cancellationToken)
+           at LogiFlo
+w.Application.Orders.
+OrdersService.GetMyOr
+dersAsync(Cancellatio
+nToken 
+cancellationToken) 
+in E:\SLIIT\Y3S1\Fram
+ework\Assignment\logi
+flow-system\Logiflow-
+Smart-Logistics-Deliv
+ery-Management-System
+\backend\src\LogiFlow
+.Application\Orders\O
+rdersService.cs:line 
+89
+           at LogiFlo
+w.Api.Controllers.Ord
+ersController.GetMyOr
+ders(CancellationToke
+n cancellationToken) 
+in E:\SLIIT\Y3S1\Fram
+ework\Assignment\logi
+flow-system\Logiflow-
+Smart-Logistics-Deliv
+ery-Management-System
+\backend\src\LogiFlow
+.Api\Controllers\Orde
+rsController.cs:line 
+81
+           at lambda_
+method120(Closure, 
+Object)
+           at Microso
+ft.AspNetCore.Mvc.Inf
+rastructure.ActionMet
+hodExecutor.Awaitable
+ObjectResultExecutor.
+Execute(ActionContext
+ actionContext, IActi
+onResultTypeMapper 
+mapper, 
+ObjectMethodExecutor 
+executor, Object 
+controller, Object[] 
+arguments)
+>          at LogiFlo
+w.Api.Middleware.Exce
+ptionMiddleware.Invok
+eAsync(HttpContext 
+context) in E:\SLIIT\
+Y3S1\Framework\Assign
+ment\logiflow-system\
+Logiflow-Smart-Logist
+ics-Delivery-Manageme
+nt-System\backend\src
+\LogiFlow.Api\Middlew
+are\ExceptionMiddlewa
+re.cs:line 36
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[2]
+        Request 
+finished HTTP/1.1 
+GET http://localhost:
+5000/api/orders/my-or
+ders - 500 - 
+application/json 
+41.8848ms
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[1]
+        Request 
+starting HTTP/1.1 
+GET http://localhost:
+5000/api/orders/my-or
+ders - 
+application/json -
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[0]
+        Executing 
+endpoint 'LogiFlow.Ap
+i.Controllers.OrdersC
+ontroller.GetMyOrders
+ (LogiFlow.Api)'
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[102]
+        Route 
+matched with {action 
+= "GetMyOrders", 
+controller = 
+"Orders"}. Executing 
+controller action 
+with signature System
+.Threading.Tasks.Task
+`1[Microsoft.AspNetCo
+re.Mvc.ActionResult`1
+[System.Collections.G
+eneric.IEnumerable`1[
+LogiFlow.Application.
+Orders.DTOs.DeliveryO
+rderResponse]]] GetMy
+Orders(System.Threadi
+ng.CancellationToken)
+ on controller LogiFl
+ow.Api.Controllers.Or
+dersController 
+(LogiFlow.Api).
+  fail: Microsoft.Ent
+ityFrameworkCore.Data
+base.Command[20102]
+        Failed 
+executing DbCommand 
+(1ms) [Parameters=[@_
+_customerId_0='?' 
+(DbType = Guid)], 
+CommandType='Text', 
+CommandTimeout='30']
+        SELECT 
+d."Id", 
+d."CreatedAt", 
+d."CustomerId", 
+d."DeliveryAddress", 
+d."DeliveryCity", 
+d."HeightCm", 
+d."LengthCm", d."Pack
+ageDescription", 
+d."PaymentMethod", 
+d."PickupAddress", 
+d."PickupCity", d."Pr
+eferredPickupDate", d
+."PreferredPickupTime
+", d."Priority", d."R
+ecipientContact", 
+d."RecipientName", 
+d."SpecialHandling", 
+d."Status", 
+d."UpdatedAt", 
+d."WeightKg", 
+d."WidthCm"
+        FROM 
+"DeliveryOrders" AS d
+        WHERE 
+d."CustomerId" = 
+@__customerId_0
+>       An exception 
+occurred while 
+iterating over the 
+results of a query 
+for context type 'Log
+iFlow.Infrastructure.
+Persistence.AppDbCont
+ext'.
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[105]
+        Executed 
+action LogiFlow.Api.C
+ontrollers.OrdersCont
+roller.GetMyOrders 
+(LogiFlow.Api) in 
+17.1121ms
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[1]
+        Executed 
+endpoint 'LogiFlow.Ap
+i.Controllers.OrdersC
+ontroller.GetMyOrders
+ (LogiFlow.Api)'
+> fail: LogiFlow.Api.
+Middleware.ExceptionM
+iddleware[0]
+>       An unhandled 
+exception occurred 
+processing request 
+/api/orders/my-orders
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+           at Microso
+ft.EntityFrameworkCor
+e.EntityFrameworkQuer
+yableExtensions.ToLis
+tAsync[TSource](IQuer
+yable`1 source, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.EntityFrameworkQuer
+yableExtensions.ToLis
+tAsync[TSource](IQuer
+yable`1 source, 
+CancellationToken 
+cancellationToken)
+           at LogiFlo
+w.Application.Orders.
+OrdersService.GetMyOr
+dersAsync(Cancellatio
+nToken 
+cancellationToken) 
+in E:\SLIIT\Y3S1\Fram
+ework\Assignment\logi
+flow-system\Logiflow-
+Smart-Logistics-Deliv
+ery-Management-System
+\backend\src\LogiFlow
+.Application\Orders\O
+rdersService.cs:line 
+89
+           at LogiFlo
+w.Api.Controllers.Ord
+ersController.GetMyOr
+ders(CancellationToke
+n cancellationToken) 
+in E:\SLIIT\Y3S1\Fram
+ework\Assignment\logi
+flow-system\Logiflow-
+Smart-Logistics-Deliv
+ery-Management-System
+\backend\src\LogiFlow
+.Api\Controllers\Orde
+rsController.cs:line 
+81
+           at lambda_
+method120(Closure, 
+Object)
+           at Microso
+ft.AspNetCore.Mvc.Inf
+rastructure.ActionMet
+hodExecutor.Awaitable
+ObjectResultExecutor.
+Execute(ActionContext
+ actionContext, IActi
+onResultTypeMapper 
+mapper, 
+ObjectMethodExecutor 
+executor, Object 
+controller, Object[] 
+arguments)
+>          at LogiFlo
+w.Api.Middleware.Exce
+ptionMiddleware.Invok
+eAsync(HttpContext 
+context) in E:\SLIIT\
+Y3S1\Framework\Assign
+ment\logiflow-system\
+Logiflow-Smart-Logist
+ics-Delivery-Manageme
+nt-System\backend\src
+\LogiFlow.Api\Middlew
+are\ExceptionMiddlewa
+re.cs:line 36
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[2]
+        Request 
+finished HTTP/1.1 
+GET http://localhost:
+5000/api/orders/my-or
+ders - 500 - 
+application/json 
+34.5557ms
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[1]
+        Request 
+starting HTTP/1.1 
+GET http://localhost:
+5000/api/orders/my-or
+ders - 
+application/json -
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[1]
+        Request 
+starting HTTP/1.1 
+GET http://localhost:
+5000/api/agent-api/he
+alth - - -
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[0]
+        Executing 
+endpoint 'LogiFlow.Ap
+i.Controllers.OrdersC
+ontroller.GetMyOrders
+ (LogiFlow.Api)'
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[1]
+        Request 
+starting HTTP/1.1 
+GET http://localhost:
+5000/api/Vehicles - 
+- -
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[102]
+        Route 
+matched with {action 
+= "GetMyOrders", 
+controller = 
+"Orders"}. Executing 
+controller action 
+with signature System
+.Threading.Tasks.Task
+`1[Microsoft.AspNetCo
+re.Mvc.ActionResult`1
+[System.Collections.G
+eneric.IEnumerable`1[
+LogiFlow.Application.
+Orders.DTOs.DeliveryO
+rderResponse]]] GetMy
+Orders(System.Threadi
+ng.CancellationToken)
+ on controller LogiFl
+ow.Api.Controllers.Or
+dersController 
+(LogiFlow.Api).
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[2]
+>       An exception 
+occurred while 
+iterating over the 
+results of a query 
+for context type 'Log
+iFlow.Infrastructure.
+Persistence.AppDbCont
+ext'.
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[105]
+        Executed 
+action LogiFlow.Api.C
+ontrollers.OrdersCont
+roller.GetMyOrders 
+(LogiFlow.Api) in 
+191.251ms
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[1]
+        Executed 
+endpoint 'LogiFlow.Ap
+i.Controllers.OrdersC
+ontroller.GetMyOrders
+ (LogiFlow.Api)'
+> fail: LogiFlow.Api.
+Middleware.ExceptionM
+iddleware[0]
+>       An unhandled 
+exception occurred 
+processing request 
+/api/orders/my-orders
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+           at Microso
+ft.EntityFrameworkCor
+e.EntityFrameworkQuer
+yableExtensions.ToLis
+tAsync[TSource](IQuer
+yable`1 source, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.EntityFrameworkQuer
+yableExtensions.ToLis
+tAsync[TSource](IQuer
+yable`1 source, 
+CancellationToken 
+cancellationToken)
+           at LogiFlo
+w.Application.Orders.
+OrdersService.GetMyOr
+dersAsync(Cancellatio
+nToken 
+cancellationToken) 
+in E:\SLIIT\Y3S1\Fram
+ework\Assignment\logi
+flow-system\Logiflow-
+Smart-Logistics-Deliv
+ery-Management-System
+\backend\src\LogiFlow
+.Application\Orders\O
+rdersService.cs:line 
+89
+           at LogiFlo
+w.Api.Controllers.Ord
+ersController.GetMyOr
+ders(CancellationToke
+n cancellationToken) 
+in E:\SLIIT\Y3S1\Fram
+ework\Assignment\logi
+flow-system\Logiflow-
+Smart-Logistics-Deliv
+ery-Management-System
+\backend\src\LogiFlow
+.Api\Controllers\Orde
+rsController.cs:line 
+81
+           at lambda_
+method120(Closure, 
+Object)
+           at Microso
+ft.AspNetCore.Mvc.Inf
+rastructure.ActionMet
+hodExecutor.Awaitable
+ObjectResultExecutor.
+Execute(ActionContext
+ actionContext, IActi
+onResultTypeMapper 
+mapper, 
+ObjectMethodExecutor 
+executor, Object 
+controller, Object[] 
+arguments)
+>          at LogiFlo
+w.Api.Middleware.Exce
+ptionMiddleware.Invok
+eAsync(HttpContext 
+context) in E:\SLIIT\
+Y3S1\Framework\Assign
+ment\logiflow-system\
+Logiflow-Smart-Logist
+ics-Delivery-Manageme
+nt-System\backend\src
+\LogiFlow.Api\Middlew
+are\ExceptionMiddlewa
+re.cs:line 36
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[2]
+        Request 
+finished HTTP/1.1 
+GET http://localhost:
+5000/api/orders/my-or
+ders - 500 - 
+application/json 
+223.2112ms
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[1]
+        Request 
+starting HTTP/1.1 
+GET http://localhost:
+5000/api/orders/my-or
+ders - 
+application/json -
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[0]
+        Executing 
+endpoint 'LogiFlow.Ap
+i.Controllers.OrdersC
+ontroller.GetMyOrders
+ (LogiFlow.Api)'
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[102]
+        Route 
+matched with {action 
+= "GetMyOrders", 
+controller = 
+"Orders"}. Executing 
+controller action 
+with signature System
+.Threading.Tasks.Task
+`1[Microsoft.AspNetCo
+re.Mvc.ActionResult`1
+[System.Collections.G
+eneric.IEnumerable`1[
+LogiFlow.Application.
+Orders.DTOs.DeliveryO
+rderResponse]]] GetMy
+Orders(System.Threadi
+ng.CancellationToken)
+ on controller LogiFl
+ow.Api.Controllers.Or
+dersController 
+(LogiFlow.Api).
+  fail: Microsoft.Ent
+ityFrameworkCore.Data
+base.Command[20102]
+        Failed 
+executing DbCommand 
+(2ms) [Parameters=[@_
+_customerId_0='?' 
+(DbType = Guid)], 
+CommandType='Text', 
+CommandTimeout='30']
+        SELECT 
+d."Id", 
+d."CreatedAt", 
+d."CustomerId", 
+d."DeliveryAddress", 
+d."DeliveryCity", 
+d."HeightCm", 
+d."LengthCm", d."Pack
+ageDescription", 
+d."PaymentMethod", 
+d."PickupAddress", 
+d."PickupCity", d."Pr
+eferredPickupDate", d
+."PreferredPickupTime
+", d."Priority", d."R
+ecipientContact", 
+d."RecipientName", 
+d."SpecialHandling", 
+d."Status", 
+d."UpdatedAt", 
+d."WeightKg", 
+d."WidthCm"
+        FROM 
+"DeliveryOrders" AS d
+        WHERE 
+d."CustomerId" = 
+@__customerId_0
+>       An exception 
+occurred while 
+iterating over the 
+results of a query 
+for context type 'Log
+iFlow.Infrastructure.
+Persistence.AppDbCont
+ext'.
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[105]
+        Executed 
+action LogiFlow.Api.C
+ontrollers.OrdersCont
+roller.GetMyOrders 
+(LogiFlow.Api) in 
+17.9161ms
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[1]
+        Executed 
+endpoint 'LogiFlow.Ap
+i.Controllers.OrdersC
+ontroller.GetMyOrders
+ (LogiFlow.Api)'
+> fail: LogiFlow.Api.
+Middleware.ExceptionM
+iddleware[0]
+>       An unhandled 
+exception occurred 
+processing request 
+/api/orders/my-orders
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+           at Microso
+ft.EntityFrameworkCor
+e.EntityFrameworkQuer
+yableExtensions.ToLis
+tAsync[TSource](IQuer
+yable`1 source, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.EntityFrameworkQuer
+yableExtensions.ToLis
+tAsync[TSource](IQuer
+yable`1 source, 
+CancellationToken 
+cancellationToken)
+           at LogiFlo
+w.Application.Orders.
+OrdersService.GetMyOr
+dersAsync(Cancellatio
+nToken 
+cancellationToken) 
+in E:\SLIIT\Y3S1\Fram
+ework\Assignment\logi
+flow-system\Logiflow-
+Smart-Logistics-Deliv
+ery-Management-System
+\backend\src\LogiFlow
+.Application\Orders\O
+rdersService.cs:line 
+89
+           at LogiFlo
+w.Api.Controllers.Ord
+ersController.GetMyOr
+ders(CancellationToke
+n cancellationToken) 
+in E:\SLIIT\Y3S1\Fram
+ework\Assignment\logi
+flow-system\Logiflow-
+Smart-Logistics-Deliv
+ery-Management-System
+\backend\src\LogiFlow
+.Api\Controllers\Orde
+rsController.cs:line 
+81
+           at lambda_
+method120(Closure, 
+Object)
+           at Microso
+ft.AspNetCore.Mvc.Inf
+rastructure.ActionMet
+hodExecutor.Awaitable
+ObjectResultExecutor.
+Execute(ActionContext
+ actionContext, IActi
+onResultTypeMapper 
+mapper, 
+ObjectMethodExecutor 
+executor, Object 
+controller, Object[] 
+arguments)
+>          at LogiFlo
+w.Api.Middleware.Exce
+ptionMiddleware.Invok
+eAsync(HttpContext 
+context) in E:\SLIIT\
+Y3S1\Framework\Assign
+ment\logiflow-system\
+Logiflow-Smart-Logist
+ics-Delivery-Manageme
+nt-System\backend\src
+\LogiFlow.Api\Middlew
+are\ExceptionMiddlewa
+re.cs:line 36
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[2]
+        Request 
+finished HTTP/1.1 
+GET http://localhost:
+5000/api/orders/my-or
+ders - 500 - 
+application/json 
+33.1603ms
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[1]
+        Request 
+starting HTTP/1.1 
+GET http://localhost:
+5000/api/orders/my-or
+ders - 
+application/json -
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[0]
+        Executing 
+endpoint 'LogiFlow.Ap
+i.Controllers.OrdersC
+ontroller.GetMyOrders
+ (LogiFlow.Api)'
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[102]
+        Route 
+matched with {action 
+= "GetMyOrders", 
+controller = 
+"Orders"}. Executing 
+controller action 
+with signature System
+.Threading.Tasks.Task
+`1[Microsoft.AspNetCo
+re.Mvc.ActionResult`1
+[System.Collections.G
+eneric.IEnumerable`1[
+LogiFlow.Application.
+Orders.DTOs.DeliveryO
+rderResponse]]] GetMy
+Orders(System.Threadi
+ng.CancellationToken)
+ on controller LogiFl
+ow.Api.Controllers.Or
+dersController 
+(LogiFlow.Api).
+  fail: Microsoft.Ent
+ityFrameworkCore.Data
+base.Command[20102]
+        Failed 
+executing DbCommand 
+(4ms) [Parameters=[@_
+_customerId_0='?' 
+(DbType = Guid)], 
+CommandType='Text', 
+CommandTimeout='30']
+        SELECT 
+d."Id", 
+d."CreatedAt", 
+d."CustomerId", 
+d."DeliveryAddress", 
+d."DeliveryCity", 
+d."HeightCm", 
+d."LengthCm", d."Pack
+ageDescription", 
+d."PaymentMethod", 
+d."PickupAddress", 
+d."PickupCity", d."Pr
+eferredPickupDate", d
+."PreferredPickupTime
+", d."Priority", d."R
+ecipientContact", 
+d."RecipientName", 
+d."SpecialHandling", 
+d."Status", 
+d."UpdatedAt", 
+d."WeightKg", 
+d."WidthCm"
+        FROM 
+"DeliveryOrders" AS d
+        WHERE 
+d."CustomerId" = 
+@__customerId_0
+>       An exception 
+occurred while 
+iterating over the 
+results of a query 
+for context type 'Log
+iFlow.Infrastructure.
+Persistence.AppDbCont
+ext'.
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[105]
+        Executed 
+action LogiFlow.Api.C
+ontrollers.OrdersCont
+roller.GetMyOrders 
+(LogiFlow.Api) in 
+32.1186ms
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[1]
+        Executed 
+endpoint 'LogiFlow.Ap
+i.Controllers.OrdersC
+ontroller.GetMyOrders
+ (LogiFlow.Api)'
+> fail: LogiFlow.Api.
+Middleware.ExceptionM
+iddleware[0]
+>       An unhandled 
+exception occurred 
+processing request 
+/api/orders/my-orders
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+           at Microso
+ft.EntityFrameworkCor
+e.EntityFrameworkQuer
+yableExtensions.ToLis
+tAsync[TSource](IQuer
+yable`1 source, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.EntityFrameworkQuer
+yableExtensions.ToLis
+tAsync[TSource](IQuer
+yable`1 source, 
+CancellationToken 
+cancellationToken)
+           at LogiFlo
+w.Application.Orders.
+OrdersService.GetMyOr
+dersAsync(Cancellatio
+nToken 
+cancellationToken) 
+in E:\SLIIT\Y3S1\Fram
+ework\Assignment\logi
+flow-system\Logiflow-
+Smart-Logistics-Deliv
+ery-Management-System
+\backend\src\LogiFlow
+.Application\Orders\O
+rdersService.cs:line 
+89
+           at LogiFlo
+w.Api.Controllers.Ord
+ersController.GetMyOr
+ders(CancellationToke
+n cancellationToken) 
+in E:\SLIIT\Y3S1\Fram
+ework\Assignment\logi
+flow-system\Logiflow-
+Smart-Logistics-Deliv
+ery-Management-System
+\backend\src\LogiFlow
+.Api\Controllers\Orde
+rsController.cs:line 
+81
+           at lambda_
+method120(Closure, 
+Object)
+           at Microso
+ft.AspNetCore.Mvc.Inf
+rastructure.ActionMet
+hodExecutor.Awaitable
+ObjectResultExecutor.
+Execute(ActionContext
+ actionContext, IActi
+onResultTypeMapper 
+mapper, 
+ObjectMethodExecutor 
+executor, Object 
+controller, Object[] 
+arguments)
+>          at LogiFlo
+w.Api.Middleware.Exce
+ptionMiddleware.Invok
+eAsync(HttpContext 
+context) in E:\SLIIT\
+Y3S1\Framework\Assign
+ment\logiflow-system\
+Logiflow-Smart-Logist
+ics-Delivery-Manageme
+nt-System\backend\src
+\LogiFlow.Api\Middlew
+are\ExceptionMiddlewa
+re.cs:line 36
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+  info: Microsoft.Ent
+ityFrameworkCore.Data
+base.Command[20101]
+        Executed 
+DbCommand (27ms) 
+[Parameters=[], 
+CommandType='Text', 
+CommandTimeout='30']
+        SELECT 
+v."Id", 
+v."Capacity", 
+v."CreatedAt", 
+v."Make", v."Model", 
+v."RegistrationNumber
+", v."Status", 
+v."UpdatedAt", 
+v."VehicleType"
+        FROM 
+"Vehicles" AS v
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ObjectResultExe
+cutor[1]
+        Executing 
+OkObjectResult, 
+writing value of 
+type 'System.Linq.Enu
+merable+SelectListIte
+rator`2[[LogiFlow.Dom
+ain.Entities.Vehicle,
+ LogiFlow.Domain, 
+Version=1.0.0.0, 
+Culture=neutral, Publ
+icKeyToken=null],[Log
+iFlow.Application.Fle
+et.DTOs.VehicleRespon
+se, LogiFlow.Applicat
+ion, 
+Version=1.0.0.0, 
+Culture=neutral, Publ
+icKeyToken=null]]'.
+  info: Microsoft.Ent
+ityFrameworkCore.Data
+base.Command[20101]
+        Executed 
+DbCommand (10ms) 
+[Parameters=[], 
+CommandType='Text', 
+CommandTimeout='30']
+        SELECT 
+d."Id", 
+d."CreatedAt", 
+d."FullName", d."Lice
+nseExpiryDate", 
+d."LicenseNumber", 
+d."PhoneNumber", 
+d."Status", 
+d."UpdatedAt", 
+d."UserId"
+        FROM 
+"Drivers" AS d
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[105]
+        Executed 
+action LogiFlow.Api.C
+ontrollers.VehiclesCo
+ntroller.GetAll 
+(LogiFlow.Api) in 
+29.6738ms
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[1]
+>       An exception 
+occurred while 
+iterating over the 
+results of a query 
+for context type 'Log
+iFlow.Infrastructure.
+Persistence.AppDbCont
+ext'.
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+  info: Microsoft.Asp
+NetCore.Mvc.Infrastru
+cture.ControllerActio
+nInvoker[105]
+        Executed 
+action LogiFlow.Api.C
+ontrollers.OrdersCont
+roller.GetMyOrders 
+(LogiFlow.Api) in 
+20.8381ms
+  info: Microsoft.Asp
+NetCore.Routing.Endpo
+intMiddleware[1]
+        Executed 
+endpoint 'LogiFlow.Ap
+i.Controllers.OrdersC
+ontroller.GetMyOrders
+ (LogiFlow.Api)'
+> fail: LogiFlow.Api.
+Middleware.ExceptionM
+iddleware[0]
+>       An unhandled 
+exception occurred 
+processing request 
+/api/orders/my-orders
+>       Npgsql.Postgr
+esException 
+(0x80004005): 42703: 
+column 
+d.PaymentMethod does 
+not exist
+        
+        POSITION: 138
+           at Npgsql.
+Internal.NpgsqlConnec
+tor.ReadMessageLong(B
+oolean async, 
+DataRowLoadingMode 
+dataRowLoadingMode, 
+Boolean readingNotifi
+cations, Boolean isRe
+adingPrependedMessage
+)
+           at System.
+Runtime.CompilerServi
+ces.PoolingAsyncValue
+TaskMethodBuilder`1.S
+tateMachineBox`1.Syst
+em.Threading.Tasks.So
+urces.IValueTaskSourc
+e<TResult>.GetResult(
+Int16 token)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlDataReader.Next
+Result(Boolean 
+async, Boolean 
+isConsuming, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+Reader(Boolean 
+async, 
+CommandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+NpgsqlCommand.Execute
+DbDataReaderAsync(Com
+mandBehavior 
+behavior, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Storage.RelationalC
+ommand.ExecuteReaderA
+sync(RelationalComman
+dParameterObject 
+parameterObject, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Ini
+tializeReaderAsync(As
+yncEnumerator 
+enumerator, 
+CancellationToken 
+cancellationToken)
+           at Npgsql.
+EntityFrameworkCore.P
+ostgreSQL.Storage.Int
+ernal.NpgsqlExecution
+Strategy.ExecuteAsync
+[TState,TResult](TSta
+te state, Func`4 
+operation, Func`4 
+verifySucceeded, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.Query.Internal.Sing
+leQueryingEnumerable`
+1.AsyncEnumerator.Mov
+eNextAsync()
+           at Microso
+ft.EntityFrameworkCor
+e.EntityFrameworkQuer
+yableExtensions.ToLis
+tAsync[TSource](IQuer
+yable`1 source, 
+CancellationToken 
+cancellationToken)
+           at Microso
+ft.EntityFrameworkCor
+e.EntityFrameworkQuer
+yableExtensions.ToLis
+tAsync[TSource](IQuer
+yable`1 source, 
+CancellationToken 
+cancellationToken)
+           at LogiFlo
+w.Application.Orders.
+OrdersService.GetMyOr
+dersAsync(Cancellatio
+nToken 
+cancellationToken) 
+in E:\SLIIT\Y3S1\Fram
+ework\Assignment\logi
+flow-system\Logiflow-
+Smart-Logistics-Deliv
+ery-Management-System
+\backend\src\LogiFlow
+.Application\Orders\O
+rdersService.cs:line 
+89
+           at LogiFlo
+w.Api.Controllers.Ord
+ersController.GetMyOr
+ders(CancellationToke
+n cancellationToken) 
+in E:\SLIIT\Y3S1\Fram
+ework\Assignment\logi
+flow-system\Logiflow-
+Smart-Logistics-Deliv
+ery-Management-System
+\backend\src\LogiFlow
+.Api\Controllers\Orde
+rsController.cs:line 
+81
+           at lambda_
+method120(Closure, 
+Object)
+           at Microso
+ft.AspNetCore.Mvc.Inf
+rastructure.ActionMet
+hodExecutor.Awaitable
+ObjectResultExecutor.
+Execute(ActionContext
+ actionContext, IActi
+onResultTypeMapper 
+mapper, 
+ObjectMethodExecutor 
+executor, Object 
+controller, Object[] 
+arguments)
+>          at LogiFlo
+w.Api.Middleware.Exce
+ptionMiddleware.Invok
+eAsync(HttpContext 
+context) in E:\SLIIT\
+Y3S1\Framework\Assign
+ment\logiflow-system\
+Logiflow-Smart-Logist
+ics-Delivery-Manageme
+nt-System\backend\src
+\LogiFlow.Api\Middlew
+are\ExceptionMiddlewa
+re.cs:line 36
+>         Exception 
+data:
+            
+Severity: ERROR
+            
+SqlState: 42703
+            
+MessageText: column 
+d.PaymentMethod does 
+not exist
+            
+Position: 138
+            File: 
+parse_relation.c
+            Line: 
+3721
+            Routine: 
+errorMissingColumn
+  info: Microsoft.Asp
+NetCore.Hosting.Diagn
+ostics[2]
+        Request 
+finished HTTP/1.1 
+GET http://localhost:
+5000/api/orders/my-or
+ders - 500 - 
+application/json 
+40.7465ms
+
+

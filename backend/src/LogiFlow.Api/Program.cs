@@ -83,7 +83,7 @@ if (string.IsNullOrWhiteSpace(agentApiKey))
 builder.Services.AddHttpClient<IAgentServiceClient, AgentServiceClient>(client =>
 {
     client.BaseAddress = new Uri(agentBaseUrl);
-    client.Timeout = TimeSpan.FromSeconds(30);
+    client.Timeout = TimeSpan.FromSeconds(120);
     if (!string.IsNullOrWhiteSpace(agentApiKey))
     {
         client.DefaultRequestHeaders.Add("X-Internal-Api-Key", agentApiKey);
@@ -93,7 +93,7 @@ builder.Services.AddHttpClient<IAgentServiceClient, AgentServiceClient>(client =
 builder.Services.AddHttpClient<IAgentValidationClient, S3AgentValidationClient>(client =>
 {
     client.BaseAddress = new Uri(agentBaseUrl);
-    client.Timeout = TimeSpan.FromSeconds(12);
+    client.Timeout = TimeSpan.FromSeconds(60);
     if (!string.IsNullOrWhiteSpace(agentApiKey))
     {
         client.DefaultRequestHeaders.Add("X-Internal-Api-Key", agentApiKey);
