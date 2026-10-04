@@ -4,6 +4,7 @@ import '../../data/admin_repository.dart';
 import '../../data/models/admin_shipment.dart';
 import '../../data/models/app_user.dart';
 import '../../data/models/fleet.dart';
+import '../../data/models/tracking_view.dart';
 import '../../data/models/workflow.dart';
 
 /// Workflows, optionally filtered by status (null = all). Refresh via
@@ -21,6 +22,12 @@ final workflowDetailProvider =
 
 final shipmentsProvider = FutureProvider.autoDispose<List<AdminShipment>>(
   (ref) => ref.read(adminRepositoryProvider).shipments(),
+);
+
+/// A shipment's full tracking timeline (admin detail view).
+final shipmentTrackingProvider =
+    FutureProvider.autoDispose.family<TrackingView, String>(
+  (ref, shipmentId) => ref.read(adminRepositoryProvider).shipmentTracking(shipmentId),
 );
 
 final driversProvider = FutureProvider.autoDispose<List<Driver>>(

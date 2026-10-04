@@ -5,6 +5,7 @@ import '../../../core/network/dio_provider.dart';
 import 'models/admin_shipment.dart';
 import 'models/app_user.dart';
 import 'models/fleet.dart';
+import 'models/tracking_view.dart';
 import 'models/workflow.dart';
 
 /// Admin/ops data access (workflows, approvals, shipments, fleet, users),
@@ -48,6 +49,12 @@ class AdminRepository {
   Future<List<AdminShipment>> shipments() async {
     final res = await _dio.get('/shipments');
     return (res.data as List).map((e) => AdminShipment.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  /// Full tracking timeline for a shipment (admin/ops view of all stops).
+  Future<TrackingView> shipmentTracking(String shipmentId) async {
+    final res = await _dio.get('/tracking/$shipmentId');
+    return TrackingView.fromJson(res.data as Map<String, dynamic>);
   }
 
   // --- Fleet: drivers -------------------------------------------------------
