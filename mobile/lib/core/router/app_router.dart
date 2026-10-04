@@ -10,6 +10,7 @@ import '../../features/admin/presentation/admin_dashboard_page.dart';
 import '../../features/customer/presentation/customer_home_page.dart';
 import '../../features/warehouse/presentation/warehouse_home_page.dart';
 import '../../features/driver/presentation/driver_runs_page.dart';
+import '../../features/driver/presentation/driver_run_detail_page.dart';
 
 String homePathFor(UserRole role) {
   switch (role) {
@@ -59,6 +60,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/customer', builder: (_, __) => const CustomerHomePage()),
       GoRoute(path: '/warehouse', builder: (_, __) => const WarehouseHomePage()),
       GoRoute(path: '/driver', builder: (_, __) => const DriverRunsPage()),
+      GoRoute(
+        path: '/driver/run/:id',
+        builder: (context, state) => DriverRunDetailPage(
+          shipmentId: state.pathParameters['id']!,
+        ),
+      ),
     ],
   );
 });
