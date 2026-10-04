@@ -17,6 +17,7 @@ import '../../features/warehouse/presentation/warehouse_intake_page.dart';
 import '../../features/warehouse/presentation/warehouse_qr_scanner_page.dart';
 import '../../features/warehouse/data/models/warehouse_models.dart';
 import '../../features/driver/presentation/driver_runs_page.dart';
+import '../../features/driver/presentation/driver_run_detail_page.dart';
 
 String homePathFor(UserRole role) {
   switch (role) {
@@ -102,6 +103,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const WarehouseQrScannerPage(),
       ),
       GoRoute(path: '/driver', builder: (_, __) => const DriverRunsPage()),
+      GoRoute(
+        path: '/driver/run/:id',
+        builder: (context, state) => DriverRunDetailPage(
+          shipmentId: state.pathParameters['id']!,
+        ),
+      ),
     ],
   );
 });
