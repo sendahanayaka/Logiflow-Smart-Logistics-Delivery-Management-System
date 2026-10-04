@@ -13,6 +13,9 @@ import '../../features/customer/presentation/checkout_page.dart';
 import '../../features/customer/presentation/checkout_success_page.dart';
 import '../../features/customer/presentation/tracking_page.dart';
 import '../../features/warehouse/presentation/warehouse_home_page.dart';
+import '../../features/warehouse/presentation/warehouse_intake_page.dart';
+import '../../features/warehouse/presentation/warehouse_qr_scanner_page.dart';
+import '../../features/warehouse/data/models/warehouse_models.dart';
 import '../../features/driver/presentation/driver_runs_page.dart';
 
 String homePathFor(UserRole role) {
@@ -50,6 +53,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return onAuthPage ? null : '/login';
       }
 
+      // Prevent an authenticated non-warehouse role from navigating directly
+      // to the warehouse-only routes.
+      if (loc.startsWith('/warehouse') &&
+          session.user!.role != UserRole.warehouseStaff &&
+          session.user!.role != UserRole.admin) {
+        return homePathFor(session.user!.role);
+      }
+
       // Authenticated: push away from the splash/auth pages to the role home.
       final home = homePathFor(session.user!.role);
       if (loc == '/' || onAuthPage) return home;
@@ -78,6 +89,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, state) => TrackingPage(orderId: state.pathParameters['id']!),
       ),
       GoRoute(path: '/warehouse', builder: (_, __) => const WarehouseHomePage()),
+      GoRoute(
+        path: '/warehouse/:warehouseId/intake',
+        builder: (_, state) {
+          final warehouse = state.extra;
+          if (warehouse is! Warehouse) return const WarehouseHomePage();
+          return WarehouseIntakePage(warehouse: warehouse);
+        },
+      ),
+      GoRoute(
+        path: '/warehouse/:warehouseId/scan',
+        builder: (_, __) => const WarehouseQrScannerPage(),
+      ),
       GoRoute(path: '/driver', builder: (_, __) => const DriverRunsPage()),
     ],
   );
