@@ -58,8 +58,8 @@
 .orders-panel {
     background: #FFFFFF;
     padding: 2rem;
-    border-radius: 4px;
-    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .orders-table {
@@ -133,21 +133,21 @@
 
 /* Order Details Reskin */
 .orders-details-wrapper {
-    max-width: 1280px;
+    max-width: 1000px;
     margin: 0 auto;
 }
 
 .orders-details-header {
     background: #FFFFFF;
     padding: 2rem;
-    border-radius: 4px;
-    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     margin-bottom: 2rem;
     transition: box-shadow 0.3s ease;
 }
 
 .orders-details-header:hover {
-    border-color: #cbd5e1;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
 }
 
 .orders-details-title-row {
@@ -186,8 +186,8 @@
 /* Timeline Card */
 .orders-timeline-card {
     background: #FFFFFF;
-    border-radius: 4px;
-    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     padding: 2.5rem 2rem;
     margin-bottom: 2.5rem;
     overflow-x: auto;
@@ -195,7 +195,7 @@
 }
 
 .orders-timeline-card:hover {
-    border-color: #cbd5e1;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
 }
 
 /* Redesigning timeline styles to look much better */
@@ -332,8 +332,8 @@
 
 .orders-info-card {
     background: #FFFFFF;
-    border-radius: 4px;
-    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     padding: 1.75rem;
     display: flex;
     flex-direction: column;
@@ -343,7 +343,7 @@
 
 .orders-info-card:hover {
     transform: translateY(-2px);
-    border-color: #cbd5e1;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .orders-info-card:nth-child(even) {
@@ -410,7 +410,7 @@
 /* Alerts */
 .orders-alert {
     padding: 1rem 1.5rem;
-    border-radius: 4px;
+    border-radius: 8px;
     margin-bottom: 1.5rem;
     font-weight: 500;
     display: flex;
@@ -463,7 +463,7 @@
 .orders-estimate-card {
     background-color: #FFFFFF;
     border: 1px solid #e2e8f0;
-    border-radius: 4px;
+    border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     padding: 1.75rem 2rem;
     margin-top: 2rem;
@@ -549,121 +549,4 @@
     text-align: right;
     border-top: 1px dashed #e2e8f0;
     padding-top: 1rem;
-}
-
-/* Booking Form Enhancements */
-.booking-form-container {
-    max-width: 1280px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.section-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.section-number {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    background-color: #08006C;
-    color: #FFFFFF;
-    border-radius: 50%;
-    font-size: 0.875rem;
-    font-weight: bold;
-}
-
-.section-title {
-    color: #08006C;
-    margin: 0;
-    font-size: 1.15rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-}
-
-.fee-display-container {
-    background-color: #f8fafc;
-    border-radius: 4px;
-    padding: 1.5rem;
-    border: 1px dashed #cbd5e1;
-}
-
-.fee-placeholder {
-    color: #64748b;
-    margin: 0;
-    font-style: italic;
-    text-align: center;
-}
-
-.fee-highlight {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.fee-label {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #334155;
-}
-
-.fee-amount {
-    font-size: 1.75rem;
-    font-weight: 800;
-    color: #FD5901;
-}
-
-.review-panel {
-    background-color: #f1f5f9;
-    border: 1px solid #cbd5e1;
-}
-
-.review-text {
-    color: #475569;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    margin-bottom: 1.5rem;
-}
-
-.submit-action-container {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.btn-large {
-    font-size: 1.1rem;
-    padding: 1rem 2rem;
-}
-
-.btn-large:focus-visible {
-    outline: 2px solid #08006C;
-    outline-offset: 2px;
-}
-
-.btn-large:disabled {
-    background-color: #cbd5e1;
-    cursor: not-allowed;
-}
-
-.orders-btn-primary:focus-visible,
-.orders-btn-secondary:focus-visible {
-    outline: 2px solid #08006C;
-    outline-offset: 2px;
-}
-
-.orders-page-container {
-    padding: 2.5rem;
-    max-width: 1280px;
-    margin: 0 auto;
-    width: 100%;
-    box-sizing: border-box;
 }
