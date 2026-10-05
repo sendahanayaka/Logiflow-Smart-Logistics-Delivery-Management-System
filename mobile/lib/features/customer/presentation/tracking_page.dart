@@ -62,9 +62,13 @@ class _TrackingPageState extends ConsumerState<TrackingPage> {
 
   int _currentStep(CustomerTracking t) {
     if (t.isDelivered) return 3;
-    final stage = t.stage.toUpperCase();
     final ship = (t.shipmentStatus ?? '').toUpperCase();
-    if (stage == 'DISPATCHED' || ship == 'DISPATCHED' || ship == 'INTRANSIT') return 2;
+    if (ship == 'DELIVERED') return 3;
+    // Picked up / in transit → "On the way".
+    if (ship == 'DISPATCHED' || ship == 'INTRANSIT') return 2;
+    // Driver assigned (Created) but not yet picked up.
+    if (ship == 'CREATED') return 1;
+    final stage = t.stage.toUpperCase();
     if (stage == 'AWAITINGDISPATCH') return 1;
     return 0;
   }
@@ -241,7 +245,8 @@ class _TrackingPageState extends ConsumerState<TrackingPage> {
             const Row(children: [
               Icon(Icons.check_circle, color: Colors.green),
               SizedBox(width: 8),
-              Text('Delivered', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF065F46))),
+              Text('Delivered — thanks for your order! 🎉',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF065F46))),
             ]),
             const SizedBox(height: 8),
             if (t.deliveredAt != null)
