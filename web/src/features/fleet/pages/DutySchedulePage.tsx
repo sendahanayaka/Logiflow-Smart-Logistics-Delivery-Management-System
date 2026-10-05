@@ -94,7 +94,7 @@ export const DutySchedulePage: React.FC = () => {
   }, [drivers, selectedDriverFilter]);
 
   return (
-    <section className="users-page" aria-labelledby="duty-schedule-title">
+    <section className="portal-container" aria-labelledby="duty-schedule-title">
       <FleetHeader
         title="Duty Schedule Management"
         subtitle="Schedule driver duty shifts, manage operational rosters, and check schedule availability."

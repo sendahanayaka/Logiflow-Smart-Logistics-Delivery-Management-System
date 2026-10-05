@@ -13,9 +13,14 @@ const hooks = vi.hoisted(() => ({
   useGetWarehouseThroughputQuery: vi.fn(),
   useGetPackagesQuery: vi.fn(),
   useGetStorageZonesQuery: vi.fn(),
+  useGetIntakeOrdersQuery: vi.fn(),
+  useGetVehiclesQuery: vi.fn(),
 }))
 
 vi.mock('../../src/features/warehouse/warehouseApi', () => hooks)
+vi.mock('../../src/features/fleet/api/fleetApi', () => ({
+  useGetVehiclesQuery: hooks.useGetVehiclesQuery,
+}))
 
 import { ApiMessage, userFacingApiError } from '../../src/features/warehouse/components/ApiMessage'
 import { AgentValidationPanel } from '../../src/features/warehouse/components/AgentValidationPanel'
@@ -47,16 +52,20 @@ beforeEach(() => {
   hooks.useGetWarehouseThroughputQuery.mockReturnValue(idle)
   hooks.useGetPackagesQuery.mockReturnValue(idle)
   hooks.useGetStorageZonesQuery.mockReturnValue(idle)
+  hooks.useGetIntakeOrdersQuery.mockReturnValue({ ...idle, data: [{ id: '11111111-1111-4111-8111-111111111111', deliveryCity: 'Colombo', packageDescription: 'Test', status: 'Pending' }] })
+  hooks.useGetVehiclesQuery.mockReturnValue({ ...idle, data: [{ id: 'VEH-001', capacity: 1000 }] })
 })
 
 describe('package intake and safe API feedback', () => {
   const orderId = '11111111-1111-4111-8111-111111111111'
 
   const fillValidIntake = async (user: ReturnType<typeof userEvent.setup>) => {
-    await user.type(screen.getByLabelText('Order ID'), orderId)
+    await user.selectOptions(screen.getByLabelText('Order'), orderId)
     await user.selectOptions(screen.getByLabelText('Storage zone'), zone.id)
     await user.type(screen.getByLabelText('Tracking code'), 'TRACK-001')
+    await user.clear(screen.getByLabelText('Weight (kg)'))
     await user.type(screen.getByLabelText('Weight (kg)'), '2')
+    await user.clear(screen.getByLabelText('Volume (m³)'))
     await user.type(screen.getByLabelText('Volume (m³)'), '1')
   }
 
@@ -85,10 +94,12 @@ describe('package intake and safe API feedback', () => {
     expect(screen.getByText(/positive weight and volume are required/i)).toBeInTheDocument()
     expect(receive).not.toHaveBeenCalled()
 
-    await user.type(screen.getByLabelText('Order ID'), orderId)
+    await user.selectOptions(screen.getByLabelText('Order'), orderId)
     await user.selectOptions(screen.getByLabelText('Storage zone'), zone.id)
     await user.type(screen.getByLabelText('Tracking code'), 'TRACK-001')
+    await user.clear(screen.getByLabelText('Weight (kg)'))
     await user.type(screen.getByLabelText('Weight (kg)'), '-1')
+    await user.clear(screen.getByLabelText('Volume (m³)'))
     await user.type(screen.getByLabelText('Volume (m³)'), '0')
     await user.click(screen.getByRole('button', { name: 'Receive package' }))
     expect(receive).not.toHaveBeenCalled()
@@ -117,10 +128,11 @@ describe('package intake and safe API feedback', () => {
     hooks.useReceivePackageMutation.mockReturnValue([receive, { isLoading: false }])
     renderWithStore(<PackageIntakeForm warehouseId={warehouse.id} zones={[zone]} />)
 
-    await user.type(screen.getByLabelText('Order ID'), 'not-an-order-uuid')
     await user.selectOptions(screen.getByLabelText('Storage zone'), zone.id)
     await user.type(screen.getByLabelText('Tracking code'), 'TRACK-001')
+    await user.clear(screen.getByLabelText('Weight (kg)'))
     await user.type(screen.getByLabelText('Weight (kg)'), '2')
+    await user.clear(screen.getByLabelText('Volume (m³)'))
     await user.type(screen.getByLabelText('Volume (m³)'), '1')
     await user.click(screen.getByRole('button', { name: 'Receive package' }))
 
@@ -131,8 +143,10 @@ describe('package intake and safe API feedback', () => {
 
 describe('dispatch creation and backend validation', () => {
   const vehicleFields = async (user: ReturnType<typeof userEvent.setup>) => {
-    await user.type(screen.getByLabelText('Vehicle ID'), 'VEH-001')
+    await user.selectOptions(screen.getByLabelText('Vehicle'), 'VEH-001')
+    await user.clear(screen.getByLabelText('Max weight (kg)'))
     await user.type(screen.getByLabelText('Max weight (kg)'), '1000')
+    await user.clear(screen.getByLabelText('Max volume (m³)'))
     await user.type(screen.getByLabelText('Max volume (m³)'), '10')
   }
 
@@ -141,8 +155,7 @@ describe('dispatch creation and backend validation', () => {
     renderWithStore(<DispatchBatchBuilder warehouseId={warehouse.id} packages={[availablePackage]} zones={[zone]} onBatchCreated={vi.fn()} />)
     expect(screen.getByText('TRACK-AVL')).toBeInTheDocument()
     expect(screen.queryByText('TRACK-REC')).not.toBeInTheDocument()
-    expect(screen.getByText(/Temporary S2 vehicle allocation inputs/i)).toBeInTheDocument()
-    expect(screen.getByText(/Replace these development-only values/i)).toBeInTheDocument()
+    expect(screen.getByLabelText('Vehicle')).toBeInTheDocument()
     await user.click(screen.getByLabelText('Select TRACK-AVL'))
     expect(screen.getByText('1 package(s) selected.')).toBeInTheDocument()
     await user.click(screen.getByLabelText('Select TRACK-AVL'))
@@ -205,18 +218,22 @@ describe('dispatch creation and backend validation', () => {
   it('sends an overweight but well-formed candidate to S3 and renders its FAIL result without creating a batch', async () => {
     const user = userEvent.setup()
     const create = vi.fn()
-    const validate = vi.fn().mockReturnValue({ unwrap: vi.fn().mockResolvedValue({
-      result: 'FAIL', agentAvailable: true,
-      ruleResults: [{ rule: 'within_weight_capacity', passed: false, detail: 'Package weight exceeds vehicle capacity.' }],
-      explanation: 'The selected vehicle capacity is exceeded.', explanationSource: 'deterministic_fallback',
-      rejectionReasons: ['Package weight exceeds vehicle capacity.'], agentMessage: null,
-    }) })
+    const validate = vi.fn().mockReturnValue({
+      unwrap: vi.fn().mockResolvedValue({
+        result: 'FAIL', agentAvailable: true,
+        ruleResults: [{ rule: 'within_weight_capacity', passed: false, detail: 'Package weight exceeds vehicle capacity.' }],
+        explanation: 'The selected vehicle capacity is exceeded.', explanationSource: 'deterministic_fallback',
+        rejectionReasons: ['Package weight exceeds vehicle capacity.'], agentMessage: null,
+      })
+    })
     const created = vi.fn()
     hooks.useCreateDispatchBatchMutation.mockReturnValue([create, { isLoading: false }])
     hooks.useValidateDispatchCandidateMutation.mockReturnValue([validate, { isLoading: false }])
     renderWithStore(<DispatchBatchBuilder warehouseId={warehouse.id} packages={[availablePackage]} zones={[zone]} onBatchCreated={created} />)
-    await user.type(screen.getByLabelText('Vehicle ID'), 'VEH-001')
+    await user.selectOptions(screen.getByLabelText('Vehicle'), 'VEH-001')
+    await user.clear(screen.getByLabelText('Max weight (kg)'))
     await user.type(screen.getByLabelText('Max weight (kg)'), '1')
+    await user.clear(screen.getByLabelText('Max volume (m³)'))
     await user.type(screen.getByLabelText('Max volume (m³)'), '10')
     await user.click(screen.getByLabelText('Select TRACK-AVL'))
     await user.click(screen.getByRole('button', { name: 'Validate allocation' }))
@@ -301,10 +318,12 @@ describe('capacity, throughput, and safe error presentation', () => {
 
   it('submits UTC date boundaries and renders actual zero-value throughput fields', async () => {
     const user = userEvent.setup()
-    hooks.useGetWarehouseThroughputQuery.mockReturnValue({ ...idle, data: {
-      warehouseId: warehouse.id, fromUtc: '', toUtc: '', receivedPackageCount: 0, receivedWeightKg: 0, receivedVolumeM3: 0,
-      reservedPackageCount: 0, dispatchedPackageCount: 0, createdDispatchBatchCount: 0, batchedPackageCount: 0,
-    } })
+    hooks.useGetWarehouseThroughputQuery.mockReturnValue({
+      ...idle, data: {
+        warehouseId: warehouse.id, fromUtc: '', toUtc: '', receivedPackageCount: 0, receivedWeightKg: 0, receivedVolumeM3: 0,
+        reservedPackageCount: 0, dispatchedPackageCount: 0, createdDispatchBatchCount: 0, batchedPackageCount: 0,
+      }
+    })
     renderWithStore(<MemoryRouter initialEntries={['/warehouse/warehouse-001/throughput']} future={routerFuture}><Routes><Route path="/warehouse/:warehouseId/throughput" element={<ThroughputPage />} /></Routes></MemoryRouter>)
     await user.clear(screen.getByLabelText('From'))
     await user.type(screen.getByLabelText('From'), '2026-09-01')

@@ -10,6 +10,10 @@ vi.mock('../../src/features/orders/ordersApi', () => ({
     cancelOrder: vi.fn(),
 }));
 
+vi.mock('../../src/features/delivery/components/OrderTrackingSection', () => ({
+    OrderTrackingSection: () => <div>OrderTrackingSection</div>
+}));
+
 import { getOrderById, cancelOrder } from '../../src/features/orders/ordersApi';
 
 const mockOrder: DeliveryOrderResponse = {

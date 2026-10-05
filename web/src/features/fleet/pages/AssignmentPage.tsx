@@ -4,7 +4,7 @@ import { FleetHeader } from '../components/FleetHeader';
 
 export const AssignmentPage: React.FC = () => {
   return (
-    <section className="users-page" aria-labelledby="assignment-page-title">
+    <section className="portal-container" aria-labelledby="assignment-page-title">
       <FleetHeader
         title="Driver & Vehicle Assignments"
         subtitle="Manage active driver-vehicle assignments and assignment history."

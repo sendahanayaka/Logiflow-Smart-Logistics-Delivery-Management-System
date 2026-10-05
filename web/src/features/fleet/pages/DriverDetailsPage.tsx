@@ -30,7 +30,7 @@ export const DriverDetailsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <section className="users-page">
+      <section className="portal-container">
         <div className="details-card" style={{ textAlign: 'center', color: 'var(--color-muted)', padding: '3rem' }}>
           Loading driver details...
         </div>
@@ -40,7 +40,7 @@ export const DriverDetailsPage: React.FC = () => {
 
   if (isError || !driver) {
     return (
-      <section className="users-page">
+      <section className="portal-container">
         <div className="error-message">
           <h3>Driver Not Found</h3>
           <p>
@@ -64,7 +64,7 @@ export const DriverDetailsPage: React.FC = () => {
   const statusInfo = getDriverStatusInfo(driver.status);
 
   return (
-    <section className="users-page">
+    <section className="portal-container">
       <FleetHeader
         title={driver.fullName || `License #${driver.licenseNumber}`}
         subtitle={`License #${driver.licenseNumber} • Created on ${formatDate(driver.createdAt)}`}
