@@ -17,4 +17,17 @@ public interface IAgentServiceClient
         string workflowKey,
         AgentApprovalRequest request,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Ask the agent (Ollama) to write a short driver-to-customer delivery message.
+    /// Used for the auto "on my way" DM; callers fall back to a template on failure.
+    /// </summary>
+    Task<DriverMessageResponse> GenerateDriverMessageAsync(
+        DriverMessageRequest request,
+        CancellationToken cancellationToken = default);
 }
+
+/// <summary>Context for the driver-to-customer delivery message (item 5).</summary>
+public sealed record DriverMessageRequest(string Stage, string? DeliveryCity, string? CustomerName);
+
+public sealed record DriverMessageResponse(string Message);

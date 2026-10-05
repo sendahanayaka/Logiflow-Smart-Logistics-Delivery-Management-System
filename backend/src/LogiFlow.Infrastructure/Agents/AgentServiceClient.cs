@@ -41,6 +41,14 @@ public class AgentServiceClient : IAgentServiceClient
             request,
             cancellationToken);
 
+    public Task<DriverMessageResponse> GenerateDriverMessageAsync(
+        DriverMessageRequest request,
+        CancellationToken cancellationToken = default) =>
+        PostAsync<DriverMessageRequest, DriverMessageResponse>(
+            "message/driver-update",
+            request,
+            cancellationToken);
+
     private async Task<TResponse> PostAsync<TRequest, TResponse>(
         string path,
         TRequest body,

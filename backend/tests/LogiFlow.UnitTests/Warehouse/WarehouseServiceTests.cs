@@ -390,6 +390,8 @@ public sealed class WarehouseServiceTests : IAsyncLifetime
         public DbSet<LogiFlow.Domain.Entities.ApprovalDecision> ApprovalDecisions => _context.ApprovalDecisions;
         public DbSet<LogiFlow.Domain.Entities.TrackingEvent> TrackingEvents => _context.TrackingEvents;
         public DbSet<LogiFlow.Domain.Entities.ProofOfDelivery> ProofOfDeliveries => _context.ProofOfDeliveries;
+        public DbSet<LogiFlow.Domain.Entities.Notification> Notifications => _context.Notifications;
+        public DbSet<LogiFlow.Domain.Entities.Message> Messages => _context.Messages;
         public void ClearChangeTracker() => _context.ClearChangeTracker();
 
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>

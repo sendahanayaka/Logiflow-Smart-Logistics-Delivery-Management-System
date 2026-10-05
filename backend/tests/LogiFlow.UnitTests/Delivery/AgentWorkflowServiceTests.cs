@@ -220,6 +220,10 @@ public sealed class AgentWorkflowServiceTests : IAsyncLifetime
             string workflowKey, AgentApprovalRequest request, CancellationToken cancellationToken = default) =>
             Task.FromResult(new AgentApprovalResponse(workflowKey, "COMPLETED", "dispatched", null));
 
+        public Task<DriverMessageResponse> GenerateDriverMessageAsync(
+            DriverMessageRequest request, CancellationToken cancellationToken = default) =>
+            Task.FromResult(new DriverMessageResponse("On my way!"));
+
         // Mimics the real agent: echoes the stops in order with deterministic ETAs.
         internal static AgentRunResponse DefaultResponse(AgentRunPayload payload)
         {

@@ -37,4 +37,8 @@ public sealed class FakeAgentServiceClient : IAgentServiceClient
         var status = request.Action == "APPROVE" ? "COMPLETED" : "REJECTED";
         return Task.FromResult(new AgentApprovalResponse(workflowKey, status, "outcome", null));
     }
+
+    public Task<DriverMessageResponse> GenerateDriverMessageAsync(
+        DriverMessageRequest request, CancellationToken cancellationToken = default) =>
+        Task.FromResult(new DriverMessageResponse("On my way with your order!"));
 }

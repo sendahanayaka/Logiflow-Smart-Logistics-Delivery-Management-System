@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using LogiFlow.Application.Common.Interfaces;
 using LogiFlow.Application.Delivery;
@@ -30,12 +31,28 @@ public sealed class ShipmentServiceTests : IAsyncLifetime
             .Options;
         _context = new AppDbContext(_options);
         await _context.Database.EnsureCreatedAsync();
-        _service = new ShipmentService(_context, _currentUser, NullLogger<ShipmentService>.Instance);
+        _service = new ShipmentService(_context, _currentUser, new StubAgent(), NullLogger<ShipmentService>.Instance);
     }
 
     private sealed class StubCurrentUser : ICurrentUserService
     {
         public Guid? UserId { get; set; }
+    }
+
+    private sealed class StubAgent : LogiFlow.Application.Workflows.IAgentServiceClient
+    {
+        public Task<LogiFlow.Application.Workflows.DTOs.AgentRunResponse> RunAsync(
+            LogiFlow.Application.Workflows.DTOs.AgentRunPayload payload, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<LogiFlow.Application.Workflows.DTOs.AgentApprovalResponse> ApproveAsync(
+            string workflowKey, LogiFlow.Application.Workflows.DTOs.AgentApprovalRequest request,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<LogiFlow.Application.Workflows.DriverMessageResponse> GenerateDriverMessageAsync(
+            LogiFlow.Application.Workflows.DriverMessageRequest request, CancellationToken cancellationToken = default) =>
+            Task.FromResult(new LogiFlow.Application.Workflows.DriverMessageResponse("On my way with your order!"));
     }
 
     public async Task DisposeAsync() => await _context.DisposeAsync();

@@ -1,6 +1,8 @@
 // [S4]  shipment service
 using LogiFlow.Application.Common.Interfaces;
 using LogiFlow.Application.Delivery.DTOs;
+using LogiFlow.Application.Notifications;
+using LogiFlow.Application.Workflows;
 using LogiFlow.Domain.Entities;
 using LogiFlow.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -12,12 +14,18 @@ public class ShipmentService : IShipmentService
 {
     private readonly IAppDbContext _context;
     private readonly ICurrentUserService _currentUser;
+    private readonly IAgentServiceClient _agent;
     private readonly ILogger<ShipmentService> _logger;
 
-    public ShipmentService(IAppDbContext context, ICurrentUserService currentUser, ILogger<ShipmentService> logger)
+    public ShipmentService(
+        IAppDbContext context,
+        ICurrentUserService currentUser,
+        IAgentServiceClient agent,
+        ILogger<ShipmentService> logger)
     {
         _context = context;
         _currentUser = currentUser;
+        _agent = agent;
         _logger = logger;
     }
 
@@ -142,6 +150,14 @@ public class ShipmentService : IShipmentService
             _ => "Dispatched"
         };
 
+        // Run origin (first stop) for the customer's live map.
+        var origin = await _context.RouteStops
+            .AsNoTracking()
+            .Where(routeStop => routeStop.AgentWorkflowId == stop.AgentWorkflowId)
+            .OrderBy(routeStop => routeStop.Sequence)
+            .Select(routeStop => new { routeStop.Latitude, routeStop.Longitude })
+            .FirstOrDefaultAsync(cancellationToken);
+
         return new CustomerOrderTrackingView(
             orderId,
             true,
@@ -157,7 +173,11 @@ public class ShipmentService : IShipmentService
             stop.OnTime,
             arrived?.OccurredAt,
             pod?.DeliveredAt,
-            pod?.ReceivedByName);
+            pod?.ReceivedByName,
+            OriginLat: origin?.Latitude,
+            OriginLng: origin?.Longitude,
+            DestinationLat: stop.Latitude,
+            DestinationLng: stop.Longitude);
     }
 
     public async Task<TrackingView?> GetTrackingByCodeAsync(string shipmentCode, CancellationToken cancellationToken = default)
@@ -257,6 +277,9 @@ public class ShipmentService : IShipmentService
 
             AddEvent(shipment.Id, null, TrackingEventType.Dispatched, now,
                 "Run started — parcels picked up by the driver.", null, null);
+
+            await AddCustomerNotificationsAsync(shipment, NotificationFactory.PickedUp, cancellationToken);
+            await SendDriverPickupMessagesAsync(shipment, cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Shipment {Code}: run started (picked up).", shipment.ShipmentCode);
@@ -366,6 +389,7 @@ public class ShipmentService : IShipmentService
         {
             shipment.Status = ShipmentStatus.Delivered;
             shipment.CompletedAt = DateTime.UtcNow;
+            await AddCustomerNotificationsAsync(shipment, NotificationFactory.Delivered, cancellationToken);
         }
         else if (shipment.Status is ShipmentStatus.Created or ShipmentStatus.Dispatched)
         {
@@ -393,6 +417,87 @@ public class ShipmentService : IShipmentService
         }
 
         return await query.FirstOrDefaultAsync(s => s.Id == shipmentId, cancellationToken);
+    }
+
+    // On pickup, post an auto "on my way" DM from the driver into each order's
+    // conversation (item 5). The text is Ollama-generated with a template fallback.
+    private async Task SendDriverPickupMessagesAsync(Shipment shipment, CancellationToken cancellationToken)
+    {
+        var driverUserId = await _context.Drivers
+            .Where(driver => driver.Id == shipment.DriverId)
+            .Select(driver => driver.UserId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (driverUserId is null)
+        {
+            return; // driver profile isn't linked to a login — no sender.
+        }
+
+        var orderIds = shipment.AgentWorkflow.RouteStops
+            .Select(stop => stop.OrderId)
+            .Distinct()
+            .ToList();
+        if (orderIds.Count == 0)
+        {
+            return;
+        }
+
+        var body = await GeneratePickupMessageAsync(cancellationToken);
+        foreach (var orderId in orderIds)
+        {
+            _context.Messages.Add(new Message
+            {
+                Id = Guid.NewGuid(),
+                OrderId = orderId,
+                SenderUserId = driverUserId.Value,
+                SenderRole = "DRIVER",
+                Body = body,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+    }
+
+    private async Task<string> GeneratePickupMessageAsync(CancellationToken cancellationToken)
+    {
+        const string fallback = "Hi! I've picked up your order and I'm on my way. I'll keep you posted.";
+        try
+        {
+            // Cap the agent/Ollama call so opening a run never blocks on it.
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(TimeSpan.FromSeconds(6));
+            var response = await _agent.GenerateDriverMessageAsync(
+                new DriverMessageRequest("PickedUp", null, null), cts.Token);
+            var message = response.Message?.Trim();
+            return string.IsNullOrWhiteSpace(message) ? fallback : message!;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogInformation(exception,
+                "Driver pickup message generation failed; using the template fallback.");
+            return fallback;
+        }
+    }
+
+    // Queue a lifecycle notification for every customer with an order on this run.
+    // Added to the context only; the caller's SaveChanges persists them.
+    private async Task AddCustomerNotificationsAsync(
+        Shipment shipment,
+        Func<Guid, Guid, Notification> make,
+        CancellationToken cancellationToken)
+    {
+        var orderIds = shipment.AgentWorkflow.RouteStops
+            .Select(stop => stop.OrderId)
+            .Distinct()
+            .ToList();
+        var orderCustomers = await _context.DeliveryOrders
+            .Where(order => orderIds.Contains(order.Id))
+            .Select(order => new { order.Id, order.CustomerId })
+            .ToListAsync(cancellationToken);
+        foreach (var oc in orderCustomers)
+        {
+            _context.Notifications.Add(make(oc.CustomerId, oc.Id));
+        }
     }
 
     // Add via the DbSet (forces Added — the shipment is a tracked parent, so a

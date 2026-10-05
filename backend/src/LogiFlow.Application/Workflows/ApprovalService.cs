@@ -130,6 +130,18 @@ public class ApprovalService : IApprovalService
         _context.Shipments.Add(shipment);
         workflow.Status = WorkflowStatus.Completed;
 
+        // Notify each affected customer that their order was approved + assigned.
+        var orderIds = stops.Select(stop => stop.OrderId).Distinct().ToList();
+        var orderCustomers = await _context.DeliveryOrders
+            .Where(order => orderIds.Contains(order.Id))
+            .Select(order => new { order.Id, order.CustomerId })
+            .ToListAsync(cancellationToken);
+        foreach (var oc in orderCustomers)
+        {
+            _context.Notifications.Add(
+                Notifications.NotificationFactory.OrderApproved(oc.CustomerId, oc.Id));
+        }
+
         _logger.LogInformation(
             "Workflow {WorkflowKey} approved by {DecidedBy}; shipment {ShipmentCode} dispatched.",
             workflow.WorkflowKey, command.DecidedBy, shipment.ShipmentCode);
