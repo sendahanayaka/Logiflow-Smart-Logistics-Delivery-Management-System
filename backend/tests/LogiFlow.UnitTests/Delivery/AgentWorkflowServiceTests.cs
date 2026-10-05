@@ -148,6 +148,11 @@ public sealed class AgentWorkflowServiceTests : IAsyncLifetime
         Assert.NotNull(found);
         Assert.Equal(2, found!.Stops.Count);
 
+        // Items 9 & 10: the agent audit trail is parsed into per-step rows.
+        Assert.NotNull(found.AgentSteps);
+        Assert.NotEmpty(found.AgentSteps!);
+        Assert.All(found.AgentSteps!, step => Assert.False(string.IsNullOrWhiteSpace(step.Agent)));
+
         Assert.Null(await _service.GetWorkflowAsync(Guid.NewGuid()));
     }
 
