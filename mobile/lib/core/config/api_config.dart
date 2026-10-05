@@ -23,5 +23,9 @@ class ApiConfig {
   }
 
   /// Base URL including the `/api` prefix, e.g. http://10.0.2.2:5000/api
-  static String get baseUrl => 'http://$_host:$_port/api';
+  static String get baseUrl {
+    final scheme = _port == '443' ? 'https' : 'http';
+    final portString = (_port == '80' || _port == '443') ? '' : ':$_port';
+    return '$scheme://$_host$portString/api';
+  }
 }
