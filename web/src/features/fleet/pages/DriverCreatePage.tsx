@@ -7,7 +7,7 @@ export const DriverCreatePage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="users-page">
+    <section className="portal-container">
       <FleetHeader
         title="Add New Driver"
         subtitle="Register a new driver into the fleet management database."

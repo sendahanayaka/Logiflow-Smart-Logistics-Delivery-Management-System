@@ -59,13 +59,14 @@ export const AdminPortalPage: React.FC = () => {
 
     return (
         <div className="portal-container">
-            <header className="portal-header">
+            <header className="portal-header fade-in-up">
                 <span className="portal-role-badge">ADMIN</span>
                 <h1>Operations Dashboard</h1>
+                <div className="portal-divider"></div>
                 <p>Approve routing plans, monitor the agent workflow, and oversee deliveries.</p>
             </header>
 
-            <nav className="admin-tabs">
+            <nav className="admin-tabs fade-in-up" style={{ animationDelay: '100ms' }}>
                 {TABS.map((t) => (
                     <button
                         key={t.key}
@@ -77,7 +78,7 @@ export const AdminPortalPage: React.FC = () => {
                 ))}
             </nav>
 
-            <main className="admin-content">
+            <main className="admin-content fade-in-up" style={{ animationDelay: '200ms' }}>
                 {tab === 'overview' && <Overview />}
                 {tab === 'approvals' && <ApprovalsSection />}
                 {tab === 'monitor' && <WorkflowMonitor />}

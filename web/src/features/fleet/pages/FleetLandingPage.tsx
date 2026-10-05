@@ -6,7 +6,7 @@ export const FleetLandingPage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="users-page" aria-labelledby="fleet-hub-title">
+    <section className="portal-container" aria-labelledby="fleet-hub-title">
       <FleetHeader
         title="Fleet Management Hub"
         subtitle="Manage drivers, vehicles, assignments, and multi-order AI trip dispatches."

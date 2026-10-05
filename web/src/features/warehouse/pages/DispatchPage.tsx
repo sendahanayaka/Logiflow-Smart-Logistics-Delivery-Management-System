@@ -7,6 +7,7 @@ import { DispatchBatchBuilder } from '../components/DispatchBatchBuilder'
 import { ValidationResult } from '../components/ValidationResult'
 import { useGetPackagesQuery, useGetStorageZonesQuery } from '../warehouseApi'
 import { useTriggerWorkflowFromBatchMutation } from '../../delivery/deliveryApi'
+import '../../portals/Portal.css'
 
 function DispatchToOps({ batchId }: { batchId: string }) {
   const [trigger, { isLoading }] = useTriggerWorkflowFromBatchMutation()
@@ -46,13 +47,22 @@ export function DispatchPage() {
   if (availablePackages.isLoading || zones.isLoading) return <ApiMessage>Loading available packages…</ApiMessage>
   if (availablePackages.error || zones.error) return <ApiMessage kind="error">{userFacingApiError(availablePackages.error ?? zones.error, 'Dispatch prerequisites could not be loaded.')}</ApiMessage>
   return (
-    <section className="warehouse-page">
-      <Link className="back-link" to={`/warehouse/${warehouseId}`}>← Back to warehouse</Link>
-      <div className="page-heading"><div><p className="eyebrow">Outbound operations</p><h1>Dispatch batch builder</h1><p>Choose available packages, plan a deterministic load sequence, and verify every safety rule.</p></div></div>
-      <DispatchBatchBuilder warehouseId={warehouseId} packages={availablePackages.data?.items ?? []} zones={zones.data ?? []} onBatchCreated={setBatchId} />
-      {batchId && <ValidationResult batchId={batchId} />}
-      {batchId && <AgentValidationPanel batchId={batchId} />}
-      {batchId && <DispatchToOps batchId={batchId} />}
-    </section>
+    <div className="portal-container">
+      <Link className="btn-primary-outline" to={`/warehouse/${warehouseId}`} style={{ display: 'inline-block', marginBottom: '2rem' }}>← Back to warehouse</Link>
+
+      <header className="portal-header fade-in-up">
+        <span className="portal-role-badge">OUTBOUND OPERATIONS</span>
+        <h1>Dispatch Batch Builder</h1>
+        <div className="portal-divider"></div>
+        <p>Choose available packages, plan a deterministic load sequence, and verify every safety rule.</p>
+      </header>
+
+      <div className="create-warehouse-card fade-in-up" style={{ marginTop: 0 }}>
+        <DispatchBatchBuilder warehouseId={warehouseId} packages={availablePackages.data?.items ?? []} zones={zones.data ?? []} onBatchCreated={setBatchId} />
+        {batchId && <ValidationResult batchId={batchId} />}
+        {batchId && <AgentValidationPanel batchId={batchId} />}
+        {batchId && <DispatchToOps batchId={batchId} />}
+      </div>
+    </div>
   )
 }

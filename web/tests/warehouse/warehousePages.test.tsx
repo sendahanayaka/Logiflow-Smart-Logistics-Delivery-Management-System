@@ -85,7 +85,7 @@ describe('warehouse list and detail pages', () => {
     expect(screen.getByRole('heading', { name: 'Colombo Central' })).toBeInTheDocument()
     expect(screen.getByText('Colombo')).toBeInTheDocument()
     expect(screen.getByText('75 m³ remaining (25.0% occupied)')).toBeInTheDocument()
-    expect(screen.getByText('COLD')).toBeInTheDocument()
+    expect(screen.getAllByText(/COLD/).length).toBeGreaterThan(0)
     expect(screen.getByText('10 / 50 m³')).toBeInTheDocument()
   })
 

@@ -1,38 +1,52 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Footer.css';
+import logoUrl from '../../assets/logo.png';
 
 export const Footer: React.FC = () => {
     return (
-        <footer className="footer" id="contact">
-            <div className="footer-container">
-                <div className="footer-brand">
-                    <h3>📦 LogiFlow</h3>
-                    <p>
-                        Smart logistics and delivery management platform helping
-                        organizations manage orders, fleets, and warehouses seamlessly.
-                    </p>
-                </div>
+        <footer className="footer-ref" id="contact">
+            <div className="footer-logo-container">
+                <img src={logoUrl} alt="LogiFlow Logo" className="footer-logo" />
+            </div>
+            <p className="footer-text">
+                LogiFlow is a Global Logistics, Freight, Port Services and Delivery Management company. We are part of
+                multiple networks and have been in operation for over 19 years.
+            </p>
 
-                <div className="footer-links">
-                    <h4>Navigation</h4>
-                    <ul>
-                        <li><a href="#home">Home</a></li>
-                        <li><a href="#about">About</a></li>
-                        <li><a href="#services">Services</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                    </ul>
-                </div>
+            <div className="footer-links">
+                <a href="#home">Home</a>
+                <span className="divider">|</span>
+                <a href="#about">About Us</a>
+                <span className="divider">|</span>
+                <a href="#services">Services</a>
+                <span className="divider">|</span>
+                <a href="#contact">Contact Us</a>
+            </div>
 
-                <div className="footer-contact">
-                    <h4>Contact Us</h4>
-                    <p>Email: contact@logiflow.com</p>
-                    <p>Phone: +1 234 567 890</p>
+            <div className="footer-contact">
+                <div className="contact-item">
+                    <span className="phone-icon">📞</span>
+                    <span className="contact-text">+94-11 266 2050</span>
+                </div>
+                <div className="contact-item">
+                    <span className="phone-icon">📞</span>
+                    <span className="contact-text">+94-11 266 2060</span>
+                </div>
+                <div className="contact-item">
+                    <span className="phone-icon">✉️</span>
+                    <span className="contact-text">info@logiflow.com</span>
                 </div>
             </div>
 
+            <div className="footer-socials">
+                <div className="social-circle">in</div>
+                <div className="social-circle">f</div>
+                <div className="social-circle">yt</div>
+            </div>
+
             <div className="footer-bottom">
-                <p>&copy; {new Date().getFullYear()} LogiFlow. All rights reserved.</p>
+                © {new Date().getFullYear()} LogiFlow All Rights Reserved. Made by LogiFlow Systems
             </div>
         </footer>
     );

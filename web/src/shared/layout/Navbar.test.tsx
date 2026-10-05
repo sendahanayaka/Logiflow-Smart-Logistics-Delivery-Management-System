@@ -7,6 +7,11 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '../../features/auth/authSlice';
 import { baseApi } from '../../app/api';
 import { Navbar } from './Navbar';
+import { vi } from 'vitest';
+
+vi.mock('../../features/notifications/NotificationBell', () => ({
+    NotificationBell: () => <div data-testid="mock-notification-bell" />
+}));
 
 // The Navbar renders <NotificationBell/>, which uses RTK-Query hooks, so the
 // test store must register the api slice (reducer + middleware).

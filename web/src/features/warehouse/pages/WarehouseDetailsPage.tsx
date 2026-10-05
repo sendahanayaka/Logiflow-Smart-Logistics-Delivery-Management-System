@@ -7,6 +7,7 @@ import { CreateStorageZoneForm } from '../components/CreateStorageZoneForm'
 import { EditWarehouseForm } from '../components/EditWarehouseForm'
 import { EditStorageZoneForm } from '../components/EditStorageZoneForm'
 import { useGetStorageZonesQuery, useGetWarehouseQuery } from '../warehouseApi'
+import '../../portals/Portal.css'
 
 export function WarehouseDetailsPage() {
   const { warehouseId } = useParams()
@@ -47,13 +48,20 @@ export function WarehouseDetailsPage() {
         <Link to={`/warehouse/${warehouseId}/dispatch`}><strong>Dispatch</strong><span>Build and validate vehicle loads</span></Link>
         <Link to={`/warehouse/${warehouseId}/throughput`}><strong>Throughput</strong><span>Review date-range metrics</span></Link>
       </nav>
-      <h2>Storage zones</h2>
-      {!zones.data?.length ? <ApiMessage>No storage zones are configured for this warehouse.</ApiMessage> : (
-        <div className="zone-grid">
+
+      <div className="section-header-inline fade-in-up" style={{ animationDelay: '100ms' }}>
+        <h2>Storage Zones</h2>
+      </div>
+
+      {!zones.data?.length ? <div className="empty-state"><h3>No Storage Zones</h3><p>No storage zones are configured for this warehouse.</p></div> : (
+        <div className="warehouse-grid fade-in-up" style={{ animationDelay: '150ms' }}>
           {zones.data.map((zone) => (
-            <article className="zone-card" key={zone.id}>
-              <span className="zone-code">{zone.code}</span>
-              <h3>{zone.name}</h3>
+            <article className="warehouse-card" key={zone.id}>
+              <div className="card-header">
+                <div className="card-icon">📦</div>
+                <h3>{zone.name}</h3>
+              </div>
+              <p style={{ color: '#6B7280', fontWeight: 'bold', marginBottom: '1rem' }}>Zone Code: {zone.code}</p>
               <CapacityIndicator label="Zone volume" occupied={zone.occupiedVolumeM3} total={zone.totalVolumeM3} unit="m³" />
               <button type="button" className="secondary" onClick={() => setEditingZoneId(zone.id)}>Edit zone</button>
             </article>

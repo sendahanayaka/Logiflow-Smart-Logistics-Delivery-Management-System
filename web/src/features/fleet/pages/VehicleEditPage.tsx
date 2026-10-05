@@ -14,7 +14,7 @@ export const VehicleEditPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <section className="users-page">
+      <section className="portal-container">
         <div className="details-card" style={{ textAlign: 'center', color: 'var(--color-muted)', padding: '3rem' }}>
           Loading vehicle details for editing...
         </div>
@@ -24,7 +24,7 @@ export const VehicleEditPage: React.FC = () => {
 
   if (isError || !vehicle) {
     return (
-      <section className="users-page">
+      <section className="portal-container">
         <div className="error-message">
           <h3>Vehicle Not Found</h3>
           <p>
@@ -46,7 +46,7 @@ export const VehicleEditPage: React.FC = () => {
   }
 
   return (
-    <section className="users-page">
+    <section className="portal-container">
       <FleetHeader
         title={`Edit Vehicle: ${vehicle.registrationNumber}`}
         subtitle={`Update specifications for ${vehicle.make} ${vehicle.model} (${vehicle.capacity} kg)`}

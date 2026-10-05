@@ -6,6 +6,8 @@ import { logout } from '../../features/auth/authSlice';
 import { NotificationBell } from '../../features/notifications/NotificationBell';
 import './Navbar.css';
 
+import logoUrl from '../../assets/logo.png';
+
 export const Navbar: React.FC = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
@@ -24,8 +26,8 @@ export const Navbar: React.FC = () => {
         <header className={`navbar${menuOpen ? ' navbar--menu-open' : ''}`}>
             <div className="navbar-container">
                 <div className="navbar-brand">
-                    <Link to="/">
-                        <span className="brand-logo">📦 LogiFlow</span>
+                    <Link to="/" style={{ display: 'flex', alignItems: 'center' }}>
+                        <img src={logoUrl} alt="LogiFlow Logo" style={{ height: '65px', display: 'block' }} />
                     </Link>
                 </div>
 
@@ -47,8 +49,7 @@ export const Navbar: React.FC = () => {
                         {!isAuthenticated && (
                             <>
                                 <li><a onClick={close} href="#home">Home</a></li>
-                                <li><a onClick={close} href="#services">Services</a></li>
-                                <li><a onClick={close} href="#how-it-works">How It Works</a></li>
+                                <li><a onClick={close} href="#success">Our Success</a></li>
                                 <li><a onClick={close} href="#about">About</a></li>
                                 <li><a onClick={close} href="#contact">Contact</a></li>
                             </>

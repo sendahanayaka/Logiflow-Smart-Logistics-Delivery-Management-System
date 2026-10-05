@@ -4,6 +4,7 @@ import { ApiMessage, userFacingApiError } from '../components/ApiMessage'
 import { CreateWarehouseForm } from '../components/CreateWarehouseForm'
 import { WarehouseTable } from '../components/WarehouseTable'
 import { useGetWarehousesQuery } from '../warehouseApi'
+import '../../portals/Portal.css'
 
 export function WarehouseListPage() {
   const { data, error, isLoading } = useGetWarehousesQuery()
