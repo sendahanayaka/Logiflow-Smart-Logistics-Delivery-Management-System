@@ -148,6 +148,37 @@ try
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         dbContext.Database.Migrate();
+
+        var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+        
+        var adminRole = dbContext.Roles.FirstOrDefault(r => r.Name == "ADMIN");
+        var driverRole = dbContext.Roles.FirstOrDefault(r => r.Name == "DRIVER");
+        
+        if (adminRole != null && !dbContext.Users.Any(u => u.Email == "admin@logiflow.com"))
+        {
+            dbContext.Users.Add(new LogiFlow.Domain.Entities.User {
+                Id = Guid.NewGuid(),
+                Name = "System Administrator",
+                Email = "admin@logiflow.com",
+                PasswordHash = passwordHasher.HashPassword("admin123"),
+                RoleId = adminRole.Id,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+        if (driverRole != null && !dbContext.Users.Any(u => u.Email == "driver@logiflow.com"))
+        {
+            dbContext.Users.Add(new LogiFlow.Domain.Entities.User {
+                Id = Guid.NewGuid(),
+                Name = "Test Driver",
+                Email = "driver@logiflow.com",
+                PasswordHash = passwordHasher.HashPassword("driver123"),
+                RoleId = driverRole.Id,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+        dbContext.SaveChanges();
     }
 }
 catch
