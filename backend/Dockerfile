@@ -8,7 +8,7 @@ COPY src/LogiFlow.Api/LogiFlow.Api.csproj src/LogiFlow.Api/
 COPY src/LogiFlow.Application/LogiFlow.Application.csproj src/LogiFlow.Application/
 COPY src/LogiFlow.Domain/LogiFlow.Domain.csproj src/LogiFlow.Domain/
 COPY src/LogiFlow.Infrastructure/LogiFlow.Infrastructure.csproj src/LogiFlow.Infrastructure/
-RUN dotnet restore
+RUN dotnet restore src/LogiFlow.Api/LogiFlow.Api.csproj
 
 # Copy all source code and publish
 COPY . ./
