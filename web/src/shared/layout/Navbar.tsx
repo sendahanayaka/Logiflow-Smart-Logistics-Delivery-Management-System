@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../app/store';
 import { logout } from '../../features/auth/authSlice';
+import { NotificationBell } from '../../features/notifications/NotificationBell';
 import './Navbar.css';
 
 export const Navbar: React.FC = () => {
@@ -51,6 +52,10 @@ export const Navbar: React.FC = () => {
                 <div className="navbar-actions">
                     {isAuthenticated && user ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
+                            <NotificationBell />
+                            {(user.role === 'CUSTOMER' || user.role === 'DRIVER') && (
+                                <Link to="/messages" className="btn-login">Messages</Link>
+                            )}
                             <Link to="/track" className="btn-login">Track</Link>
                             <span style={{ fontWeight: '500', color: 'var(--color-navy, #08006C)' }}>
                                 Welcome, {user.name}

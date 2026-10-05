@@ -76,6 +76,9 @@ export const baseApi = createApi({
     'User',
     'Role',
     'Order',
+    'Notification',
+    'Message',
+    'Conversation',
   ],
   endpoints: () => ({}),
 });

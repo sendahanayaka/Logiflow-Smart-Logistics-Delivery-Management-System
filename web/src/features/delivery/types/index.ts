@@ -109,6 +109,10 @@ export interface CustomerOrderTracking {
   arrivedAt: string | null;
   deliveredAt: string | null;
   receivedByName: string | null;
+  originLat: number | null;
+  originLng: number | null;
+  destinationLat: number | null;
+  destinationLng: number | null;
 }
 
 export interface DriverRunView {

@@ -2,6 +2,33 @@
 import React from 'react';
 import { useGetOrderTrackingQuery } from '../deliveryApi';
 import { OrderStatusTimeline } from '../../orders/components/OrderStatusTimeline';
+import { RouteMap, type MapMarker } from './RouteMap';
+import type { CustomerOrderTracking } from '../types';
+
+// Approximate the driver's position along origin→destination by lifecycle stage
+// (no live GPS yet — "any point is fine for now", item 11).
+const driverFraction = (shipmentStatus: string | null, stopStatus: string | null): number => {
+  if (stopStatus === 'Delivered' || shipmentStatus === 'Delivered') return 1;
+  switch (shipmentStatus) {
+    case 'InTransit': return 0.6;
+    case 'Dispatched': return 0.3;
+    default: return 0; // Created / driver assigned
+  }
+};
+
+const buildTrackingMarkers = (d: CustomerOrderTracking): { markers: MapMarker[]; path: [number, number][] } => {
+  const o = d.originLat && d.originLng ? ([d.originLat, d.originLng] as [number, number]) : null;
+  const dest = d.destinationLat && d.destinationLng ? ([d.destinationLat, d.destinationLng] as [number, number]) : null;
+  const markers: MapMarker[] = [];
+  const path: [number, number][] = [];
+  if (o) { markers.push({ lat: o[0], lng: o[1], color: '#64748b', label: 'Pickup / origin' }); path.push(o); }
+  if (dest) { markers.push({ lat: dest[0], lng: dest[1], color: '#16a34a', label: 'Your delivery location' }); path.push(dest); }
+  if (o && dest) {
+    const f = driverFraction(d.shipmentStatus, d.stopStatus);
+    markers.push({ lat: o[0] + (dest[0] - o[0]) * f, lng: o[1] + (dest[1] - o[1]) * f, color: '#FD5901', label: '🚚 Driver' });
+  }
+  return { markers, path };
+};
 
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : '—');
 
@@ -71,6 +98,15 @@ export const OrderTrackingSection: React.FC<{ orderId: string }> = ({ orderId })
               : '📦 Your order is being prepared at the warehouse. Tracking appears once it’s dispatched.'}
           </p>
         ) : (
+          <>
+          {(() => {
+            const { markers, path } = buildTrackingMarkers(data);
+            return markers.length > 0 ? (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <RouteMap markers={markers} path={path} height={240} />
+              </div>
+            ) : null;
+          })()}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: '1.5rem' }}>
             <div>
               <h4 style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', margin: '0 0 0.4rem' }}>Shipment</h4>
@@ -116,6 +152,7 @@ export const OrderTrackingSection: React.FC<{ orderId: string }> = ({ orderId })
               )}
             </div>
           </div>
+          </>
         )}
       </div>
     </>

@@ -5,8 +5,16 @@ import { useGetDriverRunQuery, useRecordStopEventMutation, useStartRunMutation }
 import { shipmentBadgeClass, stopBadgeClass } from '../statusBadge';
 import { activeStopSequence, deliveredCount } from '../driverRun';
 import { PodForm } from './PodForm';
-import { TrackingMap } from './TrackingMap';
-import '../delivery.css'; // map-sketch styles
+import { RouteMap, type MapMarker } from './RouteMap';
+import '../delivery.css';
+
+const STOP_COLOR: Record<string, string> = {
+  Delivered: '#16a34a',
+  Arrived: '#f59e0b',
+  EnRoute: '#2563eb',
+  Departed: '#2563eb',
+  Pending: '#94a3b8',
+};
 
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : '—');
 
@@ -77,7 +85,19 @@ export const DriverRunDetail: React.FC<{ shipmentId: string }> = ({ shipmentId }
       </header>
 
       <div className="run-detail__map">
-        <TrackingMap stops={stops} />
+        <RouteMap
+          markers={stops
+            .filter((s) => s.latitude !== 0 || s.longitude !== 0)
+            .map<MapMarker>((s) => ({
+              lat: s.latitude,
+              lng: s.longitude,
+              color: STOP_COLOR[s.status] ?? '#4338ca',
+              label: `#${s.sequence} · ${s.address} (${s.status})`,
+            }))}
+          path={stops
+            .filter((s) => s.latitude !== 0 || s.longitude !== 0)
+            .map((s) => [s.latitude, s.longitude] as [number, number])}
+        />
       </div>
 
       {error && <div className="run-detail__error">{error}</div>}
