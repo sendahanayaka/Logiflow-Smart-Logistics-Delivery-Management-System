@@ -153,6 +153,9 @@ try
         
         var adminRole = dbContext.Roles.FirstOrDefault(r => r.Name == "ADMIN");
         var driverRole = dbContext.Roles.FirstOrDefault(r => r.Name == "DRIVER");
+        var customerRole = dbContext.Roles.FirstOrDefault(r => r.Name == "CUSTOMER");
+        var warehouseRole = dbContext.Roles.FirstOrDefault(r => r.Name == "WAREHOUSE");
+        
         
         if (adminRole != null && !dbContext.Users.Any(u => u.Email == "admin@logiflow.com"))
         {
@@ -174,6 +177,30 @@ try
                 Email = "driver@logiflow.com",
                 PasswordHash = passwordHasher.HashPassword("driver123"),
                 RoleId = driverRole.Id,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+        if (customerRole != null && !dbContext.Users.Any(u => u.Email == "customer@logiflow.com"))
+        {
+            dbContext.Users.Add(new LogiFlow.Domain.Entities.User {
+                Id = Guid.NewGuid(),
+                Name = "Test Customer",
+                Email = "customer@logiflow.com",
+                PasswordHash = passwordHasher.HashPassword("customer123"),
+                RoleId = customerRole.Id,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+        if (warehouseRole != null && !dbContext.Users.Any(u => u.Email == "warehouse@logiflow.com"))
+        {
+            dbContext.Users.Add(new LogiFlow.Domain.Entities.User {
+                Id = Guid.NewGuid(),
+                Name = "Warehouse Staff",
+                Email = "warehouse@logiflow.com",
+                PasswordHash = passwordHasher.HashPassword("warehouse123"),
+                RoleId = warehouseRole.Id,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             });
