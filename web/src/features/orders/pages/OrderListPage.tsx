@@ -59,10 +59,8 @@ export const OrderListPage: React.FC = () => {
   return (
     <section className="users-page" aria-labelledby="orders-page-title">
       <FleetHeader
-        title="Multi-Order AI Trip Builder"
-        subtitle="Select multiple compatible dispatch-ready orders to consolidate into a single operational trip assigned to one driver & vehicle."
-        breadcrumbs={[{ label: 'Multi-Order Trips' }]}
-        activeTab="trips"
+        title="Orders"
+        subtitle="Manage customer orders."
         actionButton={
           <button type="button" className="button button--secondary" onClick={() => refetch()}>
             Refresh Orders
@@ -71,7 +69,7 @@ export const OrderListPage: React.FC = () => {
       />
 
       {/* Main Responsive Grid Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.5fr) minmax(320px, 1fr)', gap: '1.5rem', alignItems: 'start' }}>
+      <div>
         {/* Left Column: Orders Selection Table */}
         <div>
           {/* Search & Filter Toolbar */}
@@ -205,13 +203,7 @@ export const OrderListPage: React.FC = () => {
           )}
         </div>
 
-        {/* Right Column: Sticky AI Multi-Order Trip Panel */}
-        <div>
-          <MultiOrderTripPanel
-            selectedOrders={selectedOrders}
-            onClearSelection={() => setSelectedOrderIds([])}
-          />
-        </div>
+
       </div>
     </section>
   );

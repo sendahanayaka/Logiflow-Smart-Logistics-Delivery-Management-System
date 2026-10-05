@@ -9,7 +9,7 @@ export const FleetLandingPage: React.FC = () => {
     <section className="users-page" aria-labelledby="fleet-hub-title">
       <FleetHeader
         title="Fleet Management Hub"
-        subtitle="Manage drivers, vehicles, assignments, and multi-order AI trip dispatches."
+        subtitle="Manage drivers, vehicles, and assignments."
         activeTab="hub"
       />
 
@@ -271,61 +271,6 @@ export const FleetLandingPage: React.FC = () => {
             style={{ width: '100%', padding: '0.65rem', fontWeight: 700 }}
           >
             Manage Maintenance →
-          </button>
-        </div>
-
-        {/* Card 6: Multi-Order Trips */}
-        <div
-          className="details-card"
-          style={{
-            borderRadius: '12px',
-            padding: '1.5rem',
-            backgroundColor: '#fff7ed',
-            border: '2px solid #FF5000',
-            boxShadow: '0 4px 16px rgba(255, 80, 0, 0.1)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div>
-            <div
-              style={{
-                width: '44px',
-                height: '44px',
-                borderRadius: '10px',
-                backgroundColor: '#ffedd5',
-                color: '#FF5000',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '1rem',
-              }}
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-              </svg>
-            </div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#c2410c', margin: '0 0 0.4rem 0' }}>
-              Multi-Order AI Trips
-            </h2>
-            <p style={{ fontSize: '0.88rem', color: '#9a3412', lineHeight: 1.5, marginBottom: '1.25rem' }}>
-              Consolidate multiple compatible orders into a single operational trip using the Agentic AI allocation workflow.
-            </p>
-          </div>
-          <button
-            type="button"
-            className="button button--primary"
-            onClick={() => navigate('/orders')}
-            style={{
-              width: '100%',
-              padding: '0.65rem',
-              fontWeight: 800,
-              backgroundColor: '#FF5000',
-              borderColor: '#FF5000',
-            }}
-          >
-            Create Multi-Order Trip
           </button>
         </div>
       </div>

@@ -256,34 +256,6 @@ export const FleetHeader: React.FC<FleetHeaderProps> = ({
           </svg>
           <span>Maintenance</span>
         </button>
-
-        <button
-          type="button"
-          role="tab"
-          aria-selected={currentTab === 'trips'}
-          onClick={() => navigate('/orders')}
-          style={{
-            padding: '0.55rem 1.1rem',
-            borderRadius: '6px 6px 0 0',
-            border: 'none',
-            borderBottom: currentTab === 'trips' ? '3px solid #FF5000' : '3px solid transparent',
-            backgroundColor: currentTab === 'trips' ? '#fff7ed' : 'transparent',
-            color: currentTab === 'trips' ? '#c2410c' : '#64748b',
-            fontWeight: currentTab === 'trips' ? 800 : 600,
-            fontSize: '0.88rem',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            whiteSpace: 'nowrap',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.45rem',
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-          </svg>
-          <span>Multi-Order Trips</span>
-        </button>
       </div>
     </header>
   );
