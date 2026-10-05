@@ -5,18 +5,13 @@ import { AppDispatch, RootState } from '../../../app/store';
 import { registerUser, clearError } from '../authSlice';
 import '../Auth.css';
 
+// Public registration is CUSTOMER-only. Drivers and warehouse staff are created
+// by an admin from the Users screen — no role picker is shown here.
 export const RegisterPage: React.FC = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    // Valid roles: CUSTOMER, WAREHOUSE_STAFF, DRIVER
-    // Seeded GUIDs from Phase 2A Backend Setup
-    const rolesMapping: Record<string, string> = {
-        'CUSTOMER': '22222222-2222-2222-2222-222222222222',
-        'WAREHOUSE_STAFF': '33333333-3333-3333-3333-333333333333',
-        'DRIVER': '44444444-4444-4444-4444-444444444444'
-    };
-    const [selectedRole, setSelectedRole] = useState('CUSTOMER');
+    const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string }>({});
 
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
@@ -28,8 +23,6 @@ export const RegisterPage: React.FC = () => {
 
     useEffect(() => {
         if (isAuthenticated && user) {
-            // Wait, per instructions: "use a sensible flow... redirecting to login with success message OR log them in".
-            // Since authSlice currently handles Register exactly identically to Login (returns AuthResponse), it logs them in implicitly.
             switch (user.role) {
                 case 'ADMIN': navigate('/admin'); break;
                 case 'CUSTOMER': navigate('/orders'); break;
@@ -40,22 +33,35 @@ export const RegisterPage: React.FC = () => {
         }
     }, [isAuthenticated, user, navigate]);
 
+    const validate = () => {
+        const next: typeof errors = {};
+        const trimmedName = name.trim();
+        if (!trimmedName) next.name = 'Full name is required.';
+        else if (trimmedName.length > 255) next.name = 'Name cannot exceed 255 characters.';
+
+        const trimmedEmail = email.trim();
+        if (!trimmedEmail) next.email = 'Email is required.';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) next.email = 'Enter a valid email address.';
+
+        if (!password) next.password = 'Password is required.';
+        else if (password.length < 6) next.password = 'Password must be at least 6 characters.';
+
+        setErrors(next);
+        return Object.keys(next).length === 0;
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch(registerUser({
-            name,
-            email,
-            password,
-            roleId: rolesMapping[selectedRole]
-        }));
+        if (!validate()) return;
+        dispatch(registerUser({ name: name.trim(), email: email.trim(), password }));
     };
 
     return (
         <div className="auth-container">
             <div className="auth-card">
-                <h2 className="auth-title">Create an Account</h2>
+                <h2 className="auth-title">Create a Customer Account</h2>
                 {error && <div className="auth-error">{error}</div>}
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} noValidate>
                     <div className="auth-form-group">
                         <label htmlFor="name">Full Name</label>
                         <input
@@ -64,8 +70,9 @@ export const RegisterPage: React.FC = () => {
                             className="auth-input"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            required
+                            aria-invalid={!!errors.name}
                         />
+                        {errors.name && <span className="auth-field-error">{errors.name}</span>}
                     </div>
                     <div className="auth-form-group">
                         <label htmlFor="email">Email</label>
@@ -75,8 +82,9 @@ export const RegisterPage: React.FC = () => {
                             className="auth-input"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            required
+                            aria-invalid={!!errors.email}
                         />
+                        {errors.email && <span className="auth-field-error">{errors.email}</span>}
                     </div>
                     <div className="auth-form-group">
                         <label htmlFor="password">Password</label>
@@ -86,29 +94,16 @@ export const RegisterPage: React.FC = () => {
                             className="auth-input"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            required
+                            aria-invalid={!!errors.password}
                         />
-                    </div>
-                    <div className="auth-form-group">
-                        <label htmlFor="role">Role</label>
-                        <select
-                            id="role"
-                            className="auth-select"
-                            value={selectedRole}
-                            onChange={(e) => setSelectedRole(e.target.value)}
-                            required
-                        >
-                            <option value="CUSTOMER">Customer</option>
-                            <option value="WAREHOUSE_STAFF">Warehouse Staff</option>
-                            <option value="DRIVER">Driver</option>
-                        </select>
+                        {errors.password && <span className="auth-field-error">{errors.password}</span>}
                     </div>
                     <button type="submit" className="auth-button" disabled={status === 'loading'}>
                         {status === 'loading' ? 'Registering...' : 'Register'}
                     </button>
                 </form>
                 <div className="auth-links">
-                    Already have an account? <span style={{ cursor: 'pointer', color: '#08006C', textDecoration: 'underline' }} onClick={() => navigate('/login')}>Login</span>
+                    Already have an account? <Link to="/login">Login</Link>
                 </div>
             </div>
         </div>

@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../app/store';
 import { AgenticAIDrawer } from '../features/fleet/components/AgenticAIDrawer';
 
 export const AppLayout: React.FC = () => {
+  const role = useSelector((s: RootState) => s.auth.user?.role);
   const [isAgentDrawerOpen, setIsAgentDrawerOpen] = useState(false);
+
+  // The agentic AI assistant is an ops-manager tool — never shown to customers/others.
+  if (role !== 'ADMIN') {
+    return null;
+  }
 
   return (
     <>
-      <Outlet />
 
       {/* Floating Agentic AI Trigger Button in Bottom-Right Corner - Global across all pages */}
       <button

@@ -25,7 +25,7 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
                 .AddEnvironmentVariables()
                 .Build();
 
-            connectionString = configuration.GetConnectionString("DefaultConnection") 
+            connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
         }
 

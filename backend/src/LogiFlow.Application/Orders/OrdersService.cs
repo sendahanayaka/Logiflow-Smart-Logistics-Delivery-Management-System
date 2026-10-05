@@ -1,0 +1,305 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using LogiFlow.Application.Common;
+using LogiFlow.Application.Common.Interfaces;
+using LogiFlow.Application.Delivery;
+using LogiFlow.Application.Orders.DTOs;
+using LogiFlow.Domain.Entities;
+using LogiFlow.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
+
+namespace LogiFlow.Application.Orders;
+
+public class OrdersService : IOrdersService
+{
+    private readonly IAppDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IOrderIntelligenceService _intelligenceService;
+    private readonly IDeliveryPricingService _pricingService;
+
+    public OrdersService(
+        IAppDbContext context, 
+        ICurrentUserService currentUserService,
+        IOrderIntelligenceService intelligenceService,
+        IDeliveryPricingService pricingService)
+    {
+        _context = context;
+        _currentUserService = currentUserService;
+        _intelligenceService = intelligenceService;
+        _pricingService = pricingService;
+    }
+
+    private Guid GetAuthenticatedCustomerId()
+    {
+        if (_currentUserService.UserId is null)
+        {
+            throw new UnauthorizedAccessException("You must be authenticated to perform this action.");
+        }
+        return _currentUserService.UserId.Value;
+    }
+
+    public async Task<DeliveryOrderResponse> CreateOrderAsync(
+        CreateDeliveryOrderCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        var customerId = GetAuthenticatedCustomerId();
+
+        ValidateOrder(command);
+
+        if (!Enum.TryParse<DeliveryPriority>(command.Priority, true, out var priority))
+        {
+            throw new ArgumentException("Invalid delivery priority.", nameof(command.Priority));
+        }
+
+        var order = new DeliveryOrder
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            PickupAddress = command.PickupAddress.Trim(),
+            PickupCity = command.PickupCity.Trim(),
+            DeliveryAddress = command.DeliveryAddress.Trim(),
+            DeliveryCity = command.DeliveryCity.Trim(),
+            PreferredPickupDate = command.PreferredPickupDate,
+            PreferredPickupTime = command.PreferredPickupTime,
+            Priority = priority,
+            PackageDescription = command.PackageDescription.Trim(),
+            WeightKg = command.WeightKg,
+            LengthCm = command.LengthCm,
+            WidthCm = command.WidthCm,
+            HeightCm = command.HeightCm,
+            SpecialHandling = NormalizeOptional(command.SpecialHandling),
+            RecipientName = NormalizeOptional(command.RecipientName),
+            RecipientContact = NormalizeOptional(command.RecipientContact),
+            Status = OrderStatus.Pending,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.DeliveryOrders.Add(order);
+        _context.Notifications.Add(
+            Notifications.NotificationFactory.OrderPlaced(customerId, order.Id));
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return MapOrder(order);
+    }
+
+    public async Task<IEnumerable<DeliveryOrderResponse>> GetMyOrdersAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var customerId = GetAuthenticatedCustomerId();
+
+        var orders = await _context.DeliveryOrders
+            .AsNoTracking()
+            .Where(o => o.CustomerId == customerId)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        return orders.Select(o => MapOrder(o));
+    }
+
+    public async Task<IEnumerable<DeliveryOrderResponse>> ListOrdersAsync(
+        string? status = null, CancellationToken cancellationToken = default)
+    {
+        LogiFlow.Domain.Enums.OrderStatus? parsed =
+            Enum.TryParse<LogiFlow.Domain.Enums.OrderStatus>(status, ignoreCase: true, out var s) ? s : null;
+
+        var orders = await _context.DeliveryOrders
+            .AsNoTracking()
+            .Where(o => parsed == null || o.Status == parsed)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        return orders.Select(o => MapOrder(o));
+    }
+
+    public async Task<DeliveryOrderResponse> GetOrderByIdAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var customerId = GetAuthenticatedCustomerId();
+
+        var order = await _context.DeliveryOrders
+            .AsNoTracking()
+            .FirstOrDefaultAsync(o => o.Id == id && o.CustomerId == customerId, cancellationToken);
+
+        if (order is null)
+        {
+            throw new KeyNotFoundException($"Order '{id}' was not found.");
+        }
+
+        return MapOrder(order);
+    }
+
+    public async Task<DeliveryOrderResponse> CancelOrderAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var customerId = GetAuthenticatedCustomerId();
+
+        var order = await _context.DeliveryOrders
+            .FirstOrDefaultAsync(o => o.Id == id && o.CustomerId == customerId, cancellationToken);
+
+        if (order is null)
+        {
+            throw new KeyNotFoundException($"Order '{id}' was not found.");
+        }
+
+        if (order.Status != OrderStatus.Pending)
+        {
+            throw new InvalidOperationException($"Cannot cancel order in status '{order.Status}'. Only Pending orders can be cancelled.");
+        }
+
+        order.Status = OrderStatus.Cancelled;
+        order.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return MapOrder(order);
+    }
+
+    public async Task<DeliveryOrderResponse> ConfirmOrderAsync(
+        Guid id,
+        string paymentMethod,
+        CancellationToken cancellationToken = default)
+    {
+        var customerId = GetAuthenticatedCustomerId();
+
+        var order = await _context.DeliveryOrders
+            .FirstOrDefaultAsync(o => o.Id == id && o.CustomerId == customerId, cancellationToken);
+
+        if (order is null)
+        {
+            throw new KeyNotFoundException($"Order '{id}' was not found.");
+        }
+
+        if (order.Status != OrderStatus.Pending)
+        {
+            var message = order.Status == OrderStatus.Confirmed 
+                ? "This order has already been confirmed." 
+                : $"Cannot confirm order in status '{order.Status}'.";
+            throw new InvalidOperationException(message);
+        }
+
+        if (string.IsNullOrWhiteSpace(paymentMethod))
+        {
+            throw new ArgumentException("Payment method is required.", nameof(paymentMethod));
+        }
+
+        order.PaymentMethod = paymentMethod;
+        order.Status = OrderStatus.Confirmed;
+        order.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return MapOrder(order);
+    }
+
+    private static void ValidateOrder(CreateDeliveryOrderCommand command)
+    {
+        if (string.IsNullOrWhiteSpace(command.PickupAddress))
+        {
+            throw new ArgumentException("Pickup address is required.", nameof(command.PickupAddress));
+        }
+
+        if (string.IsNullOrWhiteSpace(command.PickupCity))
+        {
+            throw new ArgumentException("Pickup city is required.", nameof(command.PickupCity));
+        }
+
+        if (string.IsNullOrWhiteSpace(command.DeliveryAddress))
+        {
+            throw new ArgumentException("Delivery address is required.", nameof(command.DeliveryAddress));
+        }
+
+        if (string.IsNullOrWhiteSpace(command.DeliveryCity))
+        {
+            throw new ArgumentException("Delivery city is required.", nameof(command.DeliveryCity));
+        }
+
+        if (string.IsNullOrWhiteSpace(command.PackageDescription))
+        {
+            throw new ArgumentException("Package description is required.", nameof(command.PackageDescription));
+        }
+
+        if (command.PreferredPickupDate < DateTime.UtcNow.Date)
+        {
+            throw new ArgumentException("Preferred pickup date cannot be in the past.", nameof(command.PreferredPickupDate));
+        }
+
+        if (command.WeightKg <= 0)
+        {
+            throw new ArgumentException("Weight must be greater than zero.", nameof(command.WeightKg));
+        }
+
+        if (command.LengthCm <= 0)
+        {
+            throw new ArgumentException("Length must be greater than zero.", nameof(command.LengthCm));
+        }
+
+        if (command.WidthCm <= 0)
+        {
+            throw new ArgumentException("Width must be greater than zero.", nameof(command.WidthCm));
+        }
+
+        if (command.HeightCm <= 0)
+        {
+            throw new ArgumentException("Height must be greater than zero.", nameof(command.HeightCm));
+        }
+
+        if (!string.IsNullOrWhiteSpace(command.RecipientContact) && command.RecipientContact.Length < 3)
+        {
+            throw new ArgumentException("Recipient contact format is invalid.", nameof(command.RecipientContact));
+        }
+    }
+
+    private static string? NormalizeOptional(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    // Level-A quote: estimate the point-to-point delivery distance from the pickup
+    // city to the delivery city so the fee can be shown and paid at order time
+    // (before any routing). The multi-stop route distance is used for ops ETAs, not
+    // billing — each customer is billed for their own leg, computed up front.
+    private static decimal EstimateQuoteDistanceKm(DeliveryOrder order)
+    {
+        var from = GeoLookup.Resolve(order.PickupCity);
+        var to = GeoLookup.Resolve(order.DeliveryCity);
+        var straightLineKm = EtaEngine.HaversineKm(from.Lat, from.Lng, to.Lat, to.Lng);
+        var roadKm = straightLineKm * 1.3; // straight-line → road-distance factor
+        return Math.Round((decimal)Math.Max(roadKm, 2.0), 2); // floor for same-city
+    }
+
+    // Billing uses the order-time point-to-point quote so the fee is visible at
+    // checkout and fixed (the multi-stop route distance is ops-only, not billing).
+    private DeliveryOrderResponse MapOrder(DeliveryOrder order)
+    {
+        var intelligence = _intelligenceService.Analyze(order);
+        var pricing = _pricingService.CalculateFee(
+            order, intelligence.HandlingRequirement, EstimateQuoteDistanceKm(order));
+
+        return new DeliveryOrderResponse(
+            order.Id,
+            order.CustomerId,
+            order.PickupAddress,
+            order.PickupCity,
+            order.DeliveryAddress,
+            order.DeliveryCity,
+            order.PackageDescription,
+            order.SpecialHandling,
+            order.PreferredPickupDate,
+            order.PreferredPickupTime,
+            order.Priority.ToString(),
+            order.WeightKg,
+            order.LengthCm,
+            order.WidthCm,
+            order.HeightCm,
+            order.RecipientName,
+            order.RecipientContact,
+            order.Status.ToString(),
+            order.CreatedAt,
+            order.UpdatedAt,
+            intelligence,
+            pricing);
+    }
+}

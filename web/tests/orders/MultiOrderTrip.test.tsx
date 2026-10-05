@@ -82,7 +82,6 @@ describe('Multi-Order Trip Allocation UI [Phase 2.5 S2]', () => {
             total_volume_m3: 1.45,
             capacity_utilization_percent: 54.2,
             reasons: ['Alternative available vehicle'],
-            constraints_checked: ['vehicle_capacity'],
           },
         ],
         compliance_passed: true,

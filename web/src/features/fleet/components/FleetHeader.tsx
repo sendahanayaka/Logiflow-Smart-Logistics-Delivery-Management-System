@@ -30,16 +30,16 @@ export const FleetHeader: React.FC<FleetHeaderProps> = ({
     (currentPath.includes('/drivers')
       ? 'drivers'
       : currentPath.includes('/vehicles')
-      ? 'vehicles'
-      : currentPath.includes('/assignments')
-      ? 'assignments'
-      : currentPath.includes('/orders') || currentPath.includes('/trips')
-      ? 'trips'
-      : currentPath.includes('/schedules')
-      ? 'schedules'
-      : currentPath.includes('/maintenance')
-      ? 'maintenance'
-      : 'hub');
+        ? 'vehicles'
+        : currentPath.includes('/assignments')
+          ? 'assignments'
+          : currentPath.includes('/orders') || currentPath.includes('/trips')
+            ? 'trips'
+            : currentPath.includes('/schedules')
+              ? 'schedules'
+              : currentPath.includes('/maintenance')
+                ? 'maintenance'
+                : 'hub');
 
   return (
     <header className="users-page__header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '0.75rem', marginBottom: '1.5rem' }}>
@@ -83,14 +83,14 @@ export const FleetHeader: React.FC<FleetHeaderProps> = ({
 
       {/* Main Header Title & Primary Action */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
-        <div className="page-heading" style={{ margin: 0 }}>
-          <span className="eyebrow" style={{ color: '#FF5000', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '0.78rem' }}>
-            Logistics Fleet Operations
+        <div className="page-heading" style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
+          <span className="portal-role-badge" style={{ marginBottom: '0.5rem' }}>
+            LOGISTICS FLEET OPERATIONS
           </span>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#08006C', margin: '0.2rem 0' }}>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--color-navy, #08006C)', margin: 0, letterSpacing: '-0.02em' }}>
             {title}
           </h1>
-          {subtitle && <p style={{ color: '#64748b', fontSize: '0.92rem', margin: 0 }}>{subtitle}</p>}
+          {subtitle && <p style={{ color: '#4B5563', fontSize: '1.1rem', margin: 0, maxWidth: '800px', lineHeight: 1.5 }}>{subtitle}</p>}
         </div>
 
         {actionButton && <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>{actionButton}</div>}

@@ -70,7 +70,7 @@ export const MaintenancePage: React.FC = () => {
   }, [vehicles, vehicleForStatus]);
 
   return (
-    <section className="users-page" aria-labelledby="maintenance-page-title">
+    <section className="portal-container" aria-labelledby="maintenance-page-title">
       <FleetHeader
         title="Vehicle Maintenance Records"
         subtitle="Record, manage, and track servicing, repairs, and operational maintenance for fleet vehicles."

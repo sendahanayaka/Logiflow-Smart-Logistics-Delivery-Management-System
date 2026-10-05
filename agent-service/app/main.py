@@ -17,10 +17,21 @@ from langgraph.checkpoint.memory import MemorySaver
 from pydantic import BaseModel
 
 from app import config
+from app.agents.validation_agent import _run as run_dispatch_validation
 from app.schemas.common import ApprovalDecision
+from app.schemas.validation import ValidationInput, ValidationOutput
 from app.state import initial_state
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="LogiFlow Agent Service", version="0.1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # One in-process checkpointer keeps paused workflows between /run and /approval.
 # NOTE: durable state is owned by PostgreSQL via the backend; this is the runtime
@@ -50,6 +61,36 @@ def _config_for(workflow_id: str) -> dict:
 
 class RunRequest(BaseModel):
     payload: dict[str, Any]
+
+
+@app.post(
+    "/validation/dispatch",
+    response_model=ValidationOutput,
+    dependencies=[Depends(require_internal_key)],
+)
+def validate_dispatch(request: ValidationInput) -> ValidationOutput:
+    """Run the S3 safety agent without invoking unfinished cross-team stages."""
+    return run_dispatch_validation(request)
+
+
+class DriverMessageRequest(BaseModel):
+    stage: str
+    delivery_city: str | None = None
+    customer_name: str | None = None
+
+
+class DriverMessageResponse(BaseModel):
+    message: str
+
+
+@app.post("/message/driver-update", dependencies=[Depends(require_internal_key)])
+def driver_message(req: DriverMessageRequest) -> DriverMessageResponse:
+    """Generate a short driver→customer delivery message (Ollama + fallback)."""
+    from app.llm import generate_driver_message
+
+    return DriverMessageResponse(
+        message=generate_driver_message(req.stage, req.delivery_city, req.customer_name)
+    )
 
 
 @app.get("/health")

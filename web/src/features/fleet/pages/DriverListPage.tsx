@@ -138,7 +138,7 @@ export const DriverListPage: React.FC = () => {
   );
 
   return (
-    <section className="users-page" aria-labelledby="driver-management-title">
+    <section className="portal-container" aria-labelledby="driver-management-title">
       <FleetHeader
         title="Driver Management"
         subtitle="Manage drivers, availability and licensing information."

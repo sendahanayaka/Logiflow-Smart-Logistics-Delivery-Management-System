@@ -14,7 +14,7 @@ export const DriverEditPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <section className="users-page">
+      <section className="portal-container">
         <div className="details-card" style={{ textAlign: 'center', color: 'var(--color-muted)', padding: '3rem' }}>
           Loading driver details for editing...
         </div>
@@ -24,7 +24,7 @@ export const DriverEditPage: React.FC = () => {
 
   if (isError || !driver) {
     return (
-      <section className="users-page">
+      <section className="portal-container">
         <div className="error-message">
           <h3>Driver Not Found</h3>
           <p>
@@ -46,7 +46,7 @@ export const DriverEditPage: React.FC = () => {
   }
 
   return (
-    <section className="users-page">
+    <section className="portal-container">
       <FleetHeader
         title={`Edit Driver: ${driver.fullName}`}
         subtitle={`Update driver information for License: ${driver.licenseNumber}`}

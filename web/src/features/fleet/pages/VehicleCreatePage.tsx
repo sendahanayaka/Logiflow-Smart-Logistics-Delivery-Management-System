@@ -7,7 +7,7 @@ export const VehicleCreatePage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="users-page">
+    <section className="portal-container">
       <FleetHeader
         title="Register Vehicle"
         subtitle="Add a new vehicle asset into the fleet inventory."

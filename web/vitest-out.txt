@@ -1,0 +1,63 @@
+﻿
+[1m[7m[36m RUN [39m[27m[22m [36mv2.1.9 [39m[90mE:/SLIIT/Y3S1/Framework/Assignment/logiflow-system/Logiflow-Smart-Logistics-Delivery-Management-System/web[39m
+
+ [32mΓ£ô[39m tests/fleet/FleetPage.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 475[2mms[22m[39m
+ [32mΓ£ô[39m tests/orders/MultiOrderTrip.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 876[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Multi-Order Trip Allocation UI [Phase 2.5 S2][2m > [22m1. Renders selection summary with zero orders selected and disables trigger button [33m365[2mms[22m[39m
+ [32mΓ£ô[39m tests/orders/OrderDetailsPage.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 412[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m OrderDetailsPage[2m > [22mrenders Calculating delivery fee when pricing is absent [33m335[2mms[22m[39m
+ [32mΓ£ô[39m tests/fleet/FleetNavigation.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 950[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Fleet Management UI 3-Page Navigation Restructuring [S2][2m > [22m1. Renders FleetHeader with breadcrumbs, title, and sub-navigation tabs [33m446[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Fleet Management UI 3-Page Navigation Restructuring [S2][2m > [22m4. Renders Fleet Management Landing Hub at /fleet with navigation cards [33m311[2mms[22m[39m
+ [32mΓ£ô[39m tests/orders/OrderCheckoutPage.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1585[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m OrderCheckoutPage Validation[2m > [22mrequires a payment method to be selected [33m1144[2mms[22m[39m
+ [32mΓ£ô[39m tests/warehouse/warehousePages.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 3247[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m warehouse list and detail pages[2m > [22mrenders warehouse-list loading, success, empty, and error states [33m690[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m warehouse list and detail pages[2m > [22mcreates the first warehouse from the empty workspace [33m835[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m warehouse list and detail pages[2m > [22mcreates a storage zone from the warehouse details page [33m725[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m inventory page[2m > [22msends status, zone, tracking search, and pagination state through the inventory query hook [33m573[2mms[22m[39m
+ [32mΓ£ô[39m src/features/auth/components/ProtectedRoute.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[90m 151[2mms[22m[39m
+ [32mΓ£ô[39m src/features/auth/authSlice.test.ts [2m([22m[2m3 tests[22m[2m)[22m[90m 14[2mms[22m[39m
+ [32mΓ£ô[39m src/features/delivery/driver.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 406[2mms[22m[39m
+ [32mΓ£ô[39m tests/orders/OrderSuccessPage.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 604[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m OrderSuccessPage Component[2m > [22mrenders the successful order state, ID, details, fee and payment method [33m601[2mms[22m[39m
+ [31mΓ¥»[39m src/shared/layout/Navbar.test.tsx [2m([22m[2m2 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 425[2mms[22m[39m
+[31m   [31m├ù[31m Navbar.tsx Logout Behaviors[2m > [22mrenders Logout button securely for authenticated users[33m 383[2mms[22m[31m[39m
+[31m     ΓåÆ Warning: Middleware for RTK-Query API at reducerPath "api" has not been added to the store.
+    You must add the middleware for RTK-Query to function correctly![39m
+[31m   [31m├ù[31m Navbar.tsx Logout Behaviors[2m > [22mclears session and returns pure Login/Register paths globally upon Logout execution[90m 37[2mms[22m[31m[39m
+[31m     ΓåÆ Warning: Middleware for RTK-Query API at reducerPath "api" has not been added to the store.
+    You must add the middleware for RTK-Query to function correctly![39m
+ [32mΓ£ô[39m tests/auth/ProtectedRoute.test.tsx [2m([22m[2m1 test[22m[2m)[22m[90m 7[2mms[22m[39m
+ [32mΓ£ô[39m src/features/delivery/components/WorkflowPipeline.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[90m 123[2mms[22m[39m
+ [32mΓ£ô[39m tests/warehouse/WarehousePage.test.tsx [2m([22m[2m1 test[22m[2m)[22m[90m 193[2mms[22m[39m
+ [32mΓ£ô[39m tests/delivery/TrackingPage.test.tsx [2m([22m[2m1 test[22m[2m)[22m[90m 6[2mms[22m[39m
+ [32mΓ£ô[39m src/features/ai-planning/pages/AIPlanningPage.test.tsx [2m([22m[2m1 test[22m[2m)[22m[90m 285[2mms[22m[39m
+ [32mΓ£ô[39m tests/warehouse/warehouseApi.test.ts [2m([22m[2m3 tests[22m[2m)[22m[90m 106[2mms[22m[39m
+ [32mΓ£ô[39m tests/warehouse/warehouseWorkflows.test.tsx [2m([22m[2m27 tests[22m[2m)[22m[33m 12575[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m package intake and safe API feedback[2m > [22msubmits the real intake payload and shows 201 success [33m1693[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m package intake and safe API feedback[2m > [22mrejects missing, zero, and negative intake values before calling the backend [33m852[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m package intake and safe API feedback[2m > [22mshows a safe intake error for 400 without backend details [33m892[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m package intake and safe API feedback[2m > [22mshows a safe intake error for 404 without backend details [33m635[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m package intake and safe API feedback[2m > [22mshows a safe intake error for 409 without backend details [33m1088[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m package intake and safe API feedback[2m > [22mshows a safe intake error for 500 without backend details [33m979[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m package intake and safe API feedback[2m > [22mshows a safe intake error for FETCH_ERROR without backend details [33m903[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m package intake and safe API feedback[2m > [22mrejects a non-UUID order identifier before calling the backend [33m1108[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m dispatch creation and backend validation[2m > [22moffers only Available packages passed from the API, supports selection and deselection, and uses temporary vehicle fields [33m403[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m dispatch creation and backend validation[2m > [22msends an overweight but well-formed candidate to S3 and renders its FAIL result without creating a batch [33m626[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m dispatch creation and backend validation[2m > [22mallows atomic backend batch creation only after the S3 agent returns PASS [33m995[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m dispatch creation and backend validation[2m > [22mupdates an existing reserved batch through the item replacement endpoint [33m846[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m capacity, throughput, and safe error presentation[2m > [22msubmits UTC date boundaries and renders actual zero-value throughput fields [33m673[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m capacity, throughput, and safe error presentation[2m > [22mhandles invalid throughput dates, loading, and API failures safely [33m627[2mms[22m[39m
+ [32mΓ£ô[39m tests/auth/LoginPage.test.tsx [2m([22m[2m1 test[22m[2m)[22m[90m 6[2mms[22m[39m
+ [32mΓ£ô[39m tests/users/UserListPage.test.tsx [2m([22m[2m1 test[22m[2m)[22m[90m 5[2mms[22m[39m
+ [32mΓ£ô[39m tests/orders/OrderListPage.test.tsx [2m([22m[2m1 test[22m[2m)[22m[90m 7[2mms[22m[39m
+ [32mΓ£ô[39m tests/warehouse/warehouseRoutes.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 518[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m S3 warehouse routes[2m > [22mrenders /warehouse [33m396[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m21 passed[39m[22m[90m (22)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m91 passed[39m[22m[90m (93)[39m
+[2m   Start at [22m 16:33:20
+[2m   Duration [22m 24.85s[2m (transform 10.58s, setup 23.28s, collect 20.75s, tests 22.97s, environment 73.73s, prepare 7.53s)[22m
+
+

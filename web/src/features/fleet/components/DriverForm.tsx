@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCreateDriverMutation, useUpdateDriverMutation } from '../api/fleetApi';
+import { useGetUsersQuery } from '../../users/usersApi';
 import { CreateDriverRequest, DriverStatus, Driver } from '../types';
 
 interface DriverFormProps {
@@ -32,6 +33,9 @@ export const DriverForm: React.FC<DriverFormProps> = ({
   const navigate = useNavigate();
   const [createDriver, createResult] = useCreateDriverMutation();
   const [updateDriver, updateResult] = useUpdateDriverMutation();
+  // DRIVER-role accounts to link this fleet profile to (so the driver sees their runs).
+  const { data: allUsers = [] } = useGetUsersQuery();
+  const driverUsers = allUsers.filter((u) => u.role === 'DRIVER');
 
   const isLoading = isEditMode ? updateResult.isLoading : createResult.isLoading;
   const isError = isEditMode ? updateResult.isError : createResult.isError;
@@ -297,16 +301,19 @@ export const DriverForm: React.FC<DriverFormProps> = ({
             </div>
 
             <div className="form-field">
-              <label htmlFor="driver-userid">System User Account ID (Optional)</label>
-              <input
+              <label htmlFor="driver-userid">Driver's login account</label>
+              <select
                 id="driver-userid"
                 name="userId"
-                type="text"
                 value={values.userId || ''}
                 onChange={handleChange}
-                placeholder="Optional User GUID reference"
                 disabled={isLoading}
-              />
+              >
+                <option value="">— Select the driver's user account —</option>
+                {driverUsers.map((u) => (
+                  <option key={u.id} value={u.id}>{u.name} — {u.email}</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>

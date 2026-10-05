@@ -1,0 +1,380 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/loading_state.dart';
+import '../../../core/widgets/status_badge.dart';
+import '../data/customer_repository.dart';
+import '../data/models/customer_tracking.dart';
+
+/// Live tracking for one of the customer's orders. Polls every 5s.
+/// Shows ONLY this order's progress + the assigned driver's contact —
+/// never batching, the route, or other customers on the same van.
+class TrackingPage extends ConsumerStatefulWidget {
+  const TrackingPage({super.key, required this.orderId});
+  final String orderId;
+
+  @override
+  ConsumerState<TrackingPage> createState() => _TrackingPageState();
+}
+
+class _TrackingPageState extends ConsumerState<TrackingPage> {
+  static const _steps = [
+    'Preparing',
+    'Awaiting dispatch',
+    'On the way',
+    'Delivered'
+  ];
+
+  CustomerTracking? _t;
+  bool _loading = true;
+  String? _error;
+  Timer? _poll;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetch();
+    _poll = Timer.periodic(const Duration(seconds: 5), (_) => _fetch());
+  }
+
+  @override
+  void dispose() {
+    _poll?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _fetch() async {
+    try {
+      final t = await ref
+          .read(customerRepositoryProvider)
+          .orderTracking(widget.orderId);
+      if (!mounted) return;
+      setState(() {
+        _t = t;
+        _loading = false;
+        _error = null;
+      });
+      if (t.isDelivered) _poll?.cancel(); // nothing more to poll for
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        if (_t == null) _error = "Couldn't load tracking.";
+      });
+    }
+  }
+
+  int _currentStep(CustomerTracking t) {
+    if (t.isDelivered) return 3;
+    final ship = (t.shipmentStatus ?? '').toUpperCase();
+    if (ship == 'DELIVERED') return 3;
+    // Picked up / in transit → "On the way".
+    if (ship == 'DISPATCHED' || ship == 'INTRANSIT') return 2;
+    // Driver assigned (Created) but not yet picked up.
+    if (ship == 'CREATED') return 1;
+    final stage = t.stage.toUpperCase();
+    if (stage == 'AWAITINGDISPATCH') return 1;
+    return 0;
+  }
+
+  double _driverFraction(CustomerTracking t) {
+    if (t.isDelivered) return 1;
+    switch ((t.shipmentStatus ?? '').toUpperCase()) {
+      case 'INTRANSIT':
+        return 0.6;
+      case 'DISPATCHED':
+        return 0.3;
+      default:
+        return 0; // driver assigned, not yet picked up
+    }
+  }
+
+  Marker _marker(LatLng p, Color color, IconData icon) =>
+      Marker(point: p, width: 40, height: 40, child: Icon(icon, color: color, size: 30));
+
+  /// A real OSM map of the run (item 11): pickup origin + the customer's delivery
+  /// point + an approximate driver marker. Null when coordinates aren't available.
+  Widget? _mapCard(CustomerTracking t) {
+    LatLng? pt(double? lat, double? lng) =>
+        (lat != null && lng != null && (lat != 0 || lng != 0)) ? LatLng(lat, lng) : null;
+    final o = pt(t.originLat, t.originLng);
+    final d = pt(t.destinationLat, t.destinationLng);
+    if (o == null && d == null) return null;
+
+    final markers = <Marker>[];
+    if (o != null) markers.add(_marker(o, Colors.blueGrey, Icons.store));
+    if (d != null) markers.add(_marker(d, Colors.green, Icons.home));
+
+    LatLng center;
+    double zoom;
+    if (o != null && d != null) {
+      center = LatLng((o.latitude + d.latitude) / 2, (o.longitude + d.longitude) / 2);
+      zoom = 10;
+      final f = _driverFraction(t);
+      markers.add(_marker(
+        LatLng(o.latitude + (d.latitude - o.latitude) * f, o.longitude + (d.longitude - o.longitude) * f),
+        const Color(0xFFFD5901),
+        Icons.local_shipping,
+      ));
+    } else {
+      center = (d ?? o)!;
+      zoom = 13;
+    }
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: SizedBox(
+        height: 220,
+        child: FlutterMap(
+          options: MapOptions(initialCenter: center, initialZoom: zoom),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.logiflow.mobile',
+            ),
+            if (o != null && d != null)
+              PolylineLayer(polylines: [
+                Polyline(points: [o, d], color: Colors.indigo, strokeWidth: 3),
+              ]),
+            MarkerLayer(markers: markers),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _callDriver(String contact) async {
+    final uri = Uri(scheme: 'tel', path: contact);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else if (mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Call $contact')));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Track Delivery')),
+      body: _loading
+          ? const LoadingState(label: 'Loading delivery tracking…')
+          : _t == null
+              ? EmptyState(
+                  icon: Icons.location_searching,
+                  title: 'Tracking unavailable',
+                  message:
+                      _error ?? 'No tracking information is available yet.',
+                  actionLabel: 'Retry',
+                  onAction: _fetch,
+                )
+              : RefreshIndicator(
+                  onRefresh: _fetch,
+                  child: ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: _body(_t!),
+                  ),
+                ),
+    );
+  }
+
+  List<Widget> _body(CustomerTracking t) {
+    final step = _currentStep(t);
+    final mapCard = _mapCard(t);
+    return [
+      if (t.shipmentCode != null)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text('Shipment ${t.shipmentCode}',
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, color: AppTheme.navy)),
+        ),
+      _stepper(step, t.isDelivered),
+      const SizedBox(height: 16),
+      if (mapCard != null) ...[
+        mapCard,
+        const SizedBox(height: 16),
+      ],
+      if (t.isDelivered)
+        _deliveredCard(t)
+      else if (t.hasShipment)
+        _driverCard(t)
+      else
+        _preparingCard(),
+    ];
+  }
+
+  Widget _stepper(int current, bool delivered) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: List.generate(_steps.length, (i) {
+            final done = i < current || (delivered && i <= current);
+            final active = i == current && !delivered;
+            final last = i == _steps.length - 1;
+            return IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Column(
+                    children: [
+                      CircleAvatar(
+                        radius: 14,
+                        backgroundColor: done
+                            ? Colors.green
+                            : active
+                                ? AppTheme.orange
+                                : Colors.black12,
+                        child: Icon(
+                          done ? Icons.check : Icons.circle,
+                          size: done ? 16 : 10,
+                          color: done || active ? Colors.white : Colors.black38,
+                        ),
+                      ),
+                      if (!last)
+                        Expanded(
+                          child: Container(
+                            width: 2,
+                            color: i < current ? Colors.green : Colors.black12,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(width: 12),
+                  Padding(
+                    padding: EdgeInsets.only(top: 4, bottom: last ? 0 : 20),
+                    child: Text(
+                      _steps[i],
+                      style: TextStyle(
+                        fontWeight: active || done
+                            ? FontWeight.w600
+                            : FontWeight.normal,
+                        color: active || done ? Colors.black : Colors.black45,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ),
+      ),
+    );
+  }
+
+  Widget _driverCard(CustomerTracking t) {
+    final eta = t.eta;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('YOUR DRIVER',
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black54,
+                  letterSpacing: 0.5)),
+          const SizedBox(height: 12),
+          Row(children: [
+            const CircleAvatar(
+                backgroundColor: AppTheme.navy,
+                child: Icon(Icons.person, color: Colors.white)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(t.driverName ?? 'Assigned driver',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 15)),
+                    if (t.vehicleRegistration != null)
+                      Text(t.vehicleRegistration!,
+                          style: const TextStyle(color: Colors.black54)),
+                  ]),
+            ),
+            if (t.driverContact != null)
+              IconButton.filled(
+                onPressed: () => _callDriver(t.driverContact!),
+                icon: const Icon(Icons.call),
+                tooltip: 'Call driver',
+              ),
+          ]),
+          const Divider(height: 24),
+          if (eta != null)
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                const Icon(Icons.schedule, size: 18, color: AppTheme.muted),
+                Text('ETA ${DateFormat('d MMM, h:mm a').format(eta)}'),
+                if (t.onTime != null)
+                  StatusBadge(t.onTime! ? 'OnTime' : 'Delayed',
+                      label: t.onTime! ? 'On time' : 'Delayed'),
+              ],
+            ),
+          if (t.arrivedAt != null) ...[
+            const SizedBox(height: 8),
+            Row(children: [
+              const Icon(Icons.location_on, size: 18, color: Colors.black54),
+              const SizedBox(width: 8),
+              Text(
+                  'Driver arrived ${DateFormat('h:mm a').format(t.arrivedAt!)}'),
+            ]),
+          ],
+        ]),
+      ),
+    );
+  }
+
+  Widget _deliveredCard(CustomerTracking t) => Card(
+        color: const Color(0xFFECFDF5),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Row(children: [
+              Icon(Icons.check_circle, color: Colors.green),
+              SizedBox(width: 8),
+              Text('Delivered — thanks for your order! 🎉',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: Color(0xFF065F46))),
+            ]),
+            const SizedBox(height: 8),
+            if (t.deliveredAt != null)
+              Text(
+                  'On ${DateFormat('d MMM yyyy, h:mm a').format(t.deliveredAt!)}',
+                  style: const TextStyle(color: Color(0xFF047857))),
+            if (t.receivedByName != null)
+              Text('Received by ${t.receivedByName}',
+                  style: const TextStyle(color: Color(0xFF047857))),
+          ]),
+        ),
+      );
+
+  Widget _preparingCard() => const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Row(children: [
+            Icon(Icons.inventory_2_outlined, color: Colors.black54),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                  "Your order is being prepared. You'll see driver details here once it's dispatched.",
+                  style: TextStyle(color: Colors.black54)),
+            ),
+          ]),
+        ),
+      );
+}

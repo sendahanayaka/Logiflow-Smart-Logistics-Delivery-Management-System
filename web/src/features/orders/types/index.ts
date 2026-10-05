@@ -1,3 +1,55 @@
+export interface CreateDeliveryOrderRequest {
+  pickupAddress: string;
+  pickupCity: string;
+  deliveryAddress: string;
+  deliveryCity: string;
+  packageDescription: string;
+  specialHandling?: string;
+  preferredPickupDate: string;
+  preferredPickupTime: string;
+  priority: string;
+  weightKg: number;
+  lengthCm: number;
+  widthCm: number;
+  heightCm: number;
+  recipientName?: string;
+  recipientContact?: string;
+}
+
+export interface DeliveryOrderResponse {
+  id: string;
+  customerId: string;
+  pickupAddress: string;
+  pickupCity: string;
+  deliveryAddress: string;
+  deliveryCity: string;
+  packageDescription: string;
+  specialHandling?: string;
+  preferredPickupDate: string;
+  preferredPickupTime: string;
+  priority: string;
+  weightKg: number;
+  lengthCm: number;
+  widthCm: number;
+  heightCm: number;
+  recipientName?: string;
+  recipientContact?: string;
+  status: string;
+  createdAt: string;
+  updatedAt?: string;
+  intelligence?: OrderIntelligenceResponse;
+  pricing?: DeliveryFeeBreakdown;
+  paymentMethod?: string;
+}
+
+export interface OrderIntelligenceResponse {
+  volumeM3: number;
+  weightClassification: string;
+  handlingRequirement: string;
+  recommendedPriority: string;
+  risksOrAmbiguities: string[];
+}
+
 export interface PackageItem {
   package_id: string;
   weight_kg: number;
@@ -100,3 +152,14 @@ export const INITIAL_DISPATCH_ORDERS: DispatchOrder[] = [
     contactPhone: '0912233445',
   },
 ];
+
+export interface DeliveryFeeBreakdown {
+  baseFee: number;
+  distanceCharge: number;
+  weightCharge: number;
+  volumeCharge: number;
+  priorityCharge: number;
+  handlingCharge: number;
+  totalDeliveryFee: number;
+}
+

@@ -19,11 +19,27 @@ public interface IAppDbContext
     DbSet<WarehouseEntity> Warehouses { get; }
     DbSet<StorageZone> StorageZones { get; }
     DbSet<Package> Packages { get; }
+    DbSet<DispatchBatch> DispatchBatches { get; }
+    DbSet<DispatchBatchItem> DispatchBatchItems { get; }
+
+    // [S1] Identity
     DbSet<User> Users { get; }
     DbSet<Role> Roles { get; }
+    DbSet<DeliveryOrder> DeliveryOrders { get; }
 
-    Task<int> SaveChangesAsync(
-        CancellationToken cancellationToken = default);
+    // [S4] Delivery execution & tracking
+    DbSet<AgentWorkflow> AgentWorkflows { get; }
+    DbSet<RouteStop> RouteStops { get; }
+    DbSet<Shipment> Shipments { get; }
+    DbSet<ApprovalDecision> ApprovalDecisions { get; }
+    DbSet<TrackingEvent> TrackingEvents { get; }
+    DbSet<ProofOfDelivery> ProofOfDeliveries { get; }
+    DbSet<Notification> Notifications { get; }
+    DbSet<Message> Messages { get; }
+
+    void ClearChangeTracker();
+
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
     // Transaction support
     Task<IDbContextTransaction> BeginTransactionAsync(

@@ -19,6 +19,71 @@ public class WarehouseService : IWarehouseService
         _context = context;
     }
 
+    public async Task<IReadOnlyCollection<WarehouseResponse>> GetWarehousesAsync(
+        CancellationToken cancellationToken = default) =>
+        await _context.Warehouses
+            .AsNoTracking()
+            .OrderBy(warehouse => warehouse.Name)
+            .ThenBy(warehouse => warehouse.Id)
+            .Select(warehouse => new WarehouseResponse(
+                warehouse.Id,
+                warehouse.Name,
+                warehouse.Location,
+                warehouse.TotalVolumeM3,
+                warehouse.OccupiedVolumeM3,
+                warehouse.CreatedAt,
+                warehouse.UpdatedAt))
+            .ToListAsync(cancellationToken);
+
+    public async Task<WarehouseResponse> GetWarehouseAsync(
+        Guid warehouseId,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureWarehouseId(warehouseId);
+
+        var warehouse = await _context.Warehouses
+            .AsNoTracking()
+            .FirstOrDefaultAsync(item => item.Id == warehouseId, cancellationToken);
+
+        if (warehouse is null)
+        {
+            throw new KeyNotFoundException($"Warehouse '{warehouseId}' was not found.");
+        }
+
+        return MapWarehouse(warehouse);
+    }
+
+    public async Task<IReadOnlyCollection<StorageZoneResponse>> GetStorageZonesAsync(
+        Guid warehouseId,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureWarehouseId(warehouseId);
+
+        var warehouseExists = await _context.Warehouses
+            .AnyAsync(warehouse => warehouse.Id == warehouseId, cancellationToken);
+
+        if (!warehouseExists)
+        {
+            throw new KeyNotFoundException($"Warehouse '{warehouseId}' was not found.");
+        }
+
+        return await _context.StorageZones
+            .AsNoTracking()
+            .Where(zone => zone.WarehouseId == warehouseId)
+            .OrderBy(zone => zone.Code)
+            .ThenBy(zone => zone.Id)
+            .Select(zone => new StorageZoneResponse(
+                zone.Id,
+                zone.WarehouseId,
+                zone.Name,
+                zone.Code,
+                zone.TotalVolumeM3,
+                zone.OccupiedVolumeM3,
+                zone.CreatedAt,
+                zone.UpdatedAt))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<WarehouseResponse> CreateWarehouseAsync(
         CreateWarehouseCommand command,
         CancellationToken cancellationToken = default)
@@ -88,6 +153,223 @@ public class WarehouseService : IWarehouseService
         await _context.SaveChangesAsync(cancellationToken);
 
         return MapStorageZone(zone);
+    }
+
+    public async Task<WarehouseResponse> UpdateWarehouseAsync(
+        Guid warehouseId,
+        UpdateWarehouseCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureWarehouseId(warehouseId);
+        ValidateWarehouse(new CreateWarehouseCommand(command.Name, command.Location, command.TotalVolumeM3));
+
+        var warehouse = await _context.Warehouses
+            .FirstOrDefaultAsync(item => item.Id == warehouseId, cancellationToken);
+
+        if (warehouse is null)
+        {
+            throw new KeyNotFoundException($"Warehouse '{warehouseId}' was not found.");
+        }
+
+        if (command.TotalVolumeM3 < warehouse.OccupiedVolumeM3)
+        {
+            throw new InvalidOperationException(
+                $"Total volume cannot be less than the currently occupied volume ({warehouse.OccupiedVolumeM3:0.##} m³).");
+        }
+
+        warehouse.Name = command.Name.Trim();
+        warehouse.Location = command.Location.Trim();
+        warehouse.TotalVolumeM3 = command.TotalVolumeM3;
+        warehouse.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return MapWarehouse(warehouse);
+    }
+
+    public async Task<StorageZoneResponse> UpdateStorageZoneAsync(
+        Guid warehouseId,
+        Guid zoneId,
+        UpdateStorageZoneCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureWarehouseId(warehouseId);
+
+        if (zoneId == Guid.Empty)
+        {
+            throw new ArgumentException("Storage zone ID is required.", nameof(zoneId));
+        }
+
+        ValidateStorageZone(new CreateStorageZoneCommand(command.Name, command.Code, command.TotalVolumeM3));
+
+        var zone = await _context.StorageZones
+            .FirstOrDefaultAsync(item => item.Id == zoneId && item.WarehouseId == warehouseId, cancellationToken);
+
+        if (zone is null)
+        {
+            throw new KeyNotFoundException(
+                $"Storage zone '{zoneId}' was not found in warehouse '{warehouseId}'.");
+        }
+
+        var normalizedCode = command.Code.Trim().ToUpperInvariant();
+        var duplicateCode = await _context.StorageZones
+            .AnyAsync(
+                item => item.WarehouseId == warehouseId && item.Code == normalizedCode && item.Id != zoneId,
+                cancellationToken);
+
+        if (duplicateCode)
+        {
+            throw new InvalidOperationException(
+                $"Storage zone code '{normalizedCode}' already exists in this warehouse.");
+        }
+
+        if (command.TotalVolumeM3 < zone.OccupiedVolumeM3)
+        {
+            throw new InvalidOperationException(
+                $"Total volume cannot be less than the currently occupied volume ({zone.OccupiedVolumeM3:0.##} m³).");
+        }
+
+        zone.Name = command.Name.Trim();
+        zone.Code = normalizedCode;
+        zone.TotalVolumeM3 = command.TotalVolumeM3;
+        zone.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return MapStorageZone(zone);
+    }
+
+    public async Task<PackageResponse> UpdatePackageAsync(
+        Guid packageId,
+        UpdatePackageCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        if (packageId == Guid.Empty)
+        {
+            throw new ArgumentException("Package ID is required.", nameof(packageId));
+        }
+
+        if (command.StorageZoneId == Guid.Empty)
+        {
+            throw new ArgumentException("Storage zone ID is required.", nameof(command.StorageZoneId));
+        }
+
+        if (command.WeightKg <= 0)
+        {
+            throw new ArgumentException("Package weight must be greater than zero.", nameof(command.WeightKg));
+        }
+
+        if (command.VolumeM3 <= 0)
+        {
+            throw new ArgumentException("Package volume must be greater than zero.", nameof(command.VolumeM3));
+        }
+
+        await using var transaction = await _context.BeginTransactionAsync(
+            IsolationLevel.Serializable,
+            cancellationToken);
+
+        try
+        {
+            var package = await _context.Packages
+                .FirstOrDefaultAsync(item => item.Id == packageId, cancellationToken);
+
+            if (package is null)
+            {
+                throw new KeyNotFoundException($"Package '{packageId}' was not found.");
+            }
+
+            // Editing is only safe before the package is committed to a dispatch batch.
+            if (package.Status != PackageStatus.Received && package.Status != PackageStatus.Available)
+            {
+                throw new InvalidOperationException(
+                    "Only received or available packages can be edited; this package is already reserved or dispatched.");
+            }
+
+            var warehouse = await _context.Warehouses
+                .FirstOrDefaultAsync(item => item.Id == package.WarehouseId, cancellationToken);
+
+            if (warehouse is null)
+            {
+                throw new KeyNotFoundException($"Warehouse '{package.WarehouseId}' was not found.");
+            }
+
+            var newZone = await _context.StorageZones
+                .FirstOrDefaultAsync(item => item.Id == command.StorageZoneId, cancellationToken);
+
+            if (newZone is null)
+            {
+                throw new KeyNotFoundException($"Storage zone '{command.StorageZoneId}' was not found.");
+            }
+
+            if (newZone.WarehouseId != warehouse.Id)
+            {
+                throw new ArgumentException(
+                    "The selected storage zone does not belong to the package's warehouse.");
+            }
+
+            var oldVolume = package.VolumeM3;
+            var oldZoneId = package.StorageZoneId;
+
+            // Rebalance warehouse occupancy for the volume change.
+            var warehouseProjected = warehouse.OccupiedVolumeM3 - oldVolume + command.VolumeM3;
+            if (warehouseProjected > warehouse.TotalVolumeM3)
+            {
+                throw new InvalidOperationException(
+                    "The warehouse does not have enough remaining capacity for the updated volume.");
+            }
+
+            if (oldZoneId == newZone.Id)
+            {
+                var zoneProjected = newZone.OccupiedVolumeM3 - oldVolume + command.VolumeM3;
+                if (zoneProjected > newZone.TotalVolumeM3)
+                {
+                    throw new InvalidOperationException(
+                        "The storage zone does not have enough remaining capacity for the updated volume.");
+                }
+
+                newZone.OccupiedVolumeM3 = zoneProjected;
+                newZone.UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                var oldZone = await _context.StorageZones
+                    .FirstOrDefaultAsync(item => item.Id == oldZoneId, cancellationToken);
+                if (oldZone is not null)
+                {
+                    oldZone.OccupiedVolumeM3 -= oldVolume;
+                    oldZone.UpdatedAt = DateTime.UtcNow;
+                }
+
+                var newZoneProjected = newZone.OccupiedVolumeM3 + command.VolumeM3;
+                if (newZoneProjected > newZone.TotalVolumeM3)
+                {
+                    throw new InvalidOperationException(
+                        "The target storage zone does not have enough remaining capacity.");
+                }
+
+                newZone.OccupiedVolumeM3 = newZoneProjected;
+                newZone.UpdatedAt = DateTime.UtcNow;
+            }
+
+            warehouse.OccupiedVolumeM3 = warehouseProjected;
+            warehouse.UpdatedAt = DateTime.UtcNow;
+
+            package.StorageZoneId = newZone.Id;
+            package.WeightKg = command.WeightKg;
+            package.VolumeM3 = command.VolumeM3;
+            package.IsFragile = command.IsFragile;
+            package.SpecialHandling = NormalizeOptional(command.SpecialHandling);
+
+            await _context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            return MapPackage(package);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
     }
 
     public async Task<PackageResponse> ReceivePackageAsync(
@@ -254,6 +536,35 @@ public class WarehouseService : IWarehouseService
             totalCount);
     }
 
+    public async Task<PackageResponse> MakePackageAvailableAsync(
+        Guid packageId,
+        CancellationToken cancellationToken = default)
+    {
+        if (packageId == Guid.Empty)
+        {
+            throw new ArgumentException("Package ID is required.", nameof(packageId));
+        }
+
+        var package = await _context.Packages
+            .FirstOrDefaultAsync(item => item.Id == packageId, cancellationToken);
+
+        if (package is null)
+        {
+            throw new KeyNotFoundException($"Package '{packageId}' was not found.");
+        }
+
+        if (package.Status != PackageStatus.Received)
+        {
+            throw new InvalidOperationException(
+                "Only received packages may be made available for dispatch.");
+        }
+
+        package.Status = PackageStatus.Available;
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return MapPackage(package);
+    }
+
     private static void ValidateWarehouse(CreateWarehouseCommand command)
     {
         if (string.IsNullOrWhiteSpace(command.Name))
@@ -271,6 +582,14 @@ public class WarehouseService : IWarehouseService
             throw new ArgumentException(
                 "Warehouse total volume must be greater than zero.",
                 nameof(command.TotalVolumeM3));
+        }
+    }
+
+    private static void EnsureWarehouseId(Guid warehouseId)
+    {
+        if (warehouseId == Guid.Empty)
+        {
+            throw new ArgumentException("Warehouse ID is required.", nameof(warehouseId));
         }
     }
 

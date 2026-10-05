@@ -1,4 +1,4 @@
-# [S4] Runtime configuration, read from environment (.env is git-ignored).
+# [Shared] Runtime configuration, read from environment (.env is git-ignored).
 from __future__ import annotations
 
 import os
@@ -22,15 +22,25 @@ try:
     from dotenv import load_dotenv
 
     load_dotenv()
-except Exception:  # dotenv optional; env vars may be provided by the OS/CI
+except Exception:
     pass
 
-# LLM (Ollama, local, free — satisfies the no-paid-service rule)
-OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
+# LLM (Ollama, local, free)
+OLLAMA_BASE_URL: str = os.getenv(
+    "OLLAMA_BASE_URL",
+    "http://localhost:11434"
+)
 
-# The ASP.NET Core backend the agents reach for allow-listed tool endpoints.
-BACKEND_API_BASE_URL: str = os.getenv("BACKEND_API_BASE_URL", "http://localhost:5080")
+OLLAMA_MODEL: str = os.getenv(
+    "OLLAMA_MODEL",
+    "llama3.2:3b"
+)
+
+# ASP.NET Core backend
+BACKEND_API_BASE_URL: str = os.getenv(
+    "BACKEND_API_BASE_URL",
+    "http://localhost:5000"
+)
 
 # Maps / routing for the S4 distance-matrix tool. Speaks the OSRM protocol.
 # In production point this at a self-hosted OSRM (or the backend MapsGateway that
@@ -43,4 +53,9 @@ FALLBACK_AVG_SPEED_KMH: float = _env_positive_float("FALLBACK_AVG_SPEED_KMH", 40
 
 # Shared secret so ONLY the backend can call this internal service. When unset
 # (local dev) the guard is disabled; set it in staging/demo.
-AGENT_SERVICE_API_KEY: str | None = os.getenv("AGENT_SERVICE_API_KEY") or None
+# Shared secret the agent presents to the backend's role-locked endpoints.
+# Defaults to the dev key (matches the backend's appsettings.Development.json) so
+# local runs need zero setup; override with the AGENT_SERVICE_API_KEY env var in prod.
+AGENT_SERVICE_API_KEY: str | None = (
+    os.getenv("AGENT_SERVICE_API_KEY") or "dev-internal-agent-key-change-me"
+)

@@ -137,7 +137,7 @@ export const VehicleListPage: React.FC = () => {
   );
 
   return (
-    <section className="users-page" aria-labelledby="vehicle-management-title">
+    <section className="portal-container" aria-labelledby="vehicle-management-title">
       <FleetHeader
         title="Vehicle Management"
         subtitle="Manage fleet vehicles, capacity and operational status."
