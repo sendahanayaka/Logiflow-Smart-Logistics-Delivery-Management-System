@@ -34,9 +34,12 @@ public class AuthService : IAuthService
         if (await _context.Users.AnyAsync(u => u.Email == normalizedEmail))
             throw new InvalidOperationException("Email is already registered."); // 409 Conflict
 
-        var role = await _context.Roles.FindAsync(request.RoleId);
+        // Public self-registration is always CUSTOMER. Drivers and warehouse staff
+        // are provisioned by an admin through the Users API, so no role is taken
+        // from the request.
+        var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "CUSTOMER");
         if (role == null)
-            throw new ArgumentException("Invalid role selected.");
+            throw new InvalidOperationException("CUSTOMER role is not configured.");
 
         var user = new User
         {
@@ -44,7 +47,7 @@ public class AuthService : IAuthService
             Name = request.Name,
             Email = normalizedEmail,
             PasswordHash = _passwordHasher.HashPassword(request.Password),
-            RoleId = request.RoleId,
+            RoleId = role.Id,
             Role = role,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
