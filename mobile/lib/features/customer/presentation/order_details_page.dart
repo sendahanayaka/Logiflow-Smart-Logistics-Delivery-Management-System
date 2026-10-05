@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/section_card.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/loading_state.dart';
 import '../data/customer_repository.dart';
 import '../data/models/order.dart';
 import 'controllers/orders_controller.dart';
@@ -27,10 +30,17 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Cancel order?'),
-        content: const Text('This will cancel the delivery order. This cannot be undone.'),
+        content: const Text(
+            'This will cancel the delivery order. This cannot be undone.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Keep')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Cancel order')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Keep')),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.danger),
+            child: const Text('Cancel order'),
+          ),
         ],
       ),
     );
@@ -42,12 +52,13 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
       ref.invalidate(orderByIdProvider(order.id));
       await ref.read(ordersControllerProvider.notifier).refresh();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Order cancelled.')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Order cancelled.')));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Could not cancel the order. Please try again.')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Could not cancel the order. Please try again.')));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -61,22 +72,17 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Order Details')),
       body: orderAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text("Couldn't load this order."),
-              const SizedBox(height: 12),
-              OutlinedButton(
-                onPressed: () => ref.invalidate(orderByIdProvider(widget.orderId)),
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
+        loading: () => const LoadingState(label: 'Loading order details…'),
+        error: (e, _) => EmptyState(
+          icon: Icons.cloud_off_outlined,
+          title: "Couldn't load this order",
+          message: 'Check your connection and try again.',
+          actionLabel: 'Retry',
+          onAction: () => ref.invalidate(orderByIdProvider(widget.orderId)),
         ),
         data: (order) => RefreshIndicator(
-          onRefresh: () async => ref.invalidate(orderByIdProvider(widget.orderId)),
+          onRefresh: () async =>
+              ref.invalidate(orderByIdProvider(widget.orderId)),
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
@@ -85,7 +91,8 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
               _routeCard(order),
               const SizedBox(height: 12),
               _packageCard(order),
-              if (order.recipientName != null || order.recipientContact != null) ...[
+              if (order.recipientName != null ||
+                  order.recipientContact != null) ...[
                 const SizedBox(height: 12),
                 _recipientCard(order),
               ],
@@ -107,31 +114,11 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
 
   // --- section cards ---------------------------------------------------------
 
-  Widget _card({required String title, required List<Widget> children}) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title.toUpperCase(),
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54, letterSpacing: 0.5)),
-              const SizedBox(height: 12),
-              ...children,
-            ],
-          ),
-        ),
-      );
+  Widget _card({required String title, required List<Widget> children}) =>
+      SectionCard(title: title, child: Column(children: children));
 
-  Widget _row(String label, String value) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(width: 120, child: Text(label, style: const TextStyle(color: Colors.black54))),
-            Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w500))),
-          ],
-        ),
-      );
+  Widget _row(String label, String value) =>
+      InfoRow(label: label, value: value);
 
   Widget _headerCard(Order order) => Card(
         color: AppTheme.navy,
@@ -143,16 +130,24 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
               Row(
                 children: [
                   Expanded(
-                    child: Text(order.packageDescription.isEmpty ? 'Delivery order' : order.packageDescription,
-                        style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    child: Text(
+                        order.packageDescription.isEmpty
+                            ? 'Delivery order'
+                            : order.packageDescription,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold)),
                   ),
                   OrderStatusBadge(order.status),
                 ],
               ),
               const SizedBox(height: 8),
-              Text('${order.pickupCity} → ${order.deliveryCity}', style: const TextStyle(color: Colors.white70)),
+              Text('${order.pickupCity} → ${order.deliveryCity}',
+                  style: const TextStyle(color: Colors.white70)),
               const SizedBox(height: 4),
-              Text('Created ${DateFormat('d MMM yyyy, h:mm a').format(order.createdAt)}',
+              Text(
+                  'Created ${DateFormat('d MMM yyyy, h:mm a').format(order.createdAt)}',
                   style: const TextStyle(color: Colors.white60, fontSize: 12)),
             ],
           ),
@@ -170,16 +165,20 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
   Widget _packageCard(Order order) => _card(title: 'Package', children: [
         _row('Description', order.packageDescription),
         _row('Weight', '${order.weightKg} kg'),
-        _row('Dimensions', '${order.lengthCm} × ${order.widthCm} × ${order.heightCm} cm'),
-        if ((order.specialHandling ?? '').isNotEmpty) _row('Special handling', order.specialHandling!),
+        _row('Dimensions',
+            '${order.lengthCm} × ${order.widthCm} × ${order.heightCm} cm'),
+        if ((order.specialHandling ?? '').isNotEmpty)
+          _row('Special handling', order.specialHandling!),
       ]);
 
   Widget _recipientCard(Order order) => _card(title: 'Recipient', children: [
         if (order.recipientName != null) _row('Name', order.recipientName!),
-        if (order.recipientContact != null) _row('Contact', order.recipientContact!),
+        if (order.recipientContact != null)
+          _row('Contact', order.recipientContact!),
       ]);
 
-  Widget _insightsCard(OrderIntelligence intel) => _card(title: 'AI Package Insights', children: [
+  Widget _insightsCard(OrderIntelligence intel) =>
+      _card(title: 'AI Package Insights', children: [
         _row('Volume', '${intel.volumeM3.toStringAsFixed(3)} m³'),
         _row('Weight class', intel.weightClassification),
         _row('Handling', intel.handlingRequirement),
@@ -190,10 +189,12 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
           const SizedBox(height: 4),
           ...intel.risksOrAmbiguities.map((r) => Padding(
                 padding: const EdgeInsets.only(bottom: 4),
-                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('• '),
-                  Expanded(child: Text(r)),
-                ]),
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('• '),
+                      Expanded(child: Text(r)),
+                    ]),
               )),
         ],
       ]);
@@ -202,16 +203,23 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
     final p = order.pricing;
     if (p == null) {
       return _card(title: 'Delivery Fee', children: const [
-        Text('Fee is being calculated and will be settled before dispatch / on delivery.',
+        Text(
+            'Fee is being calculated and will be settled before dispatch / on delivery.',
             style: TextStyle(color: Colors.black54)),
       ]);
     }
     Widget line(String l, double v, {bool bold = false}) => Padding(
           padding: const EdgeInsets.only(bottom: 6),
-          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text(l, style: TextStyle(color: bold ? Colors.black : Colors.black54, fontWeight: bold ? FontWeight.bold : null)),
+          child:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(l,
+                style: TextStyle(
+                    color: bold ? Colors.black : Colors.black54,
+                    fontWeight: bold ? FontWeight.bold : null)),
             Text('Rs. ${v.toStringAsFixed(2)}',
-                style: TextStyle(fontWeight: bold ? FontWeight.bold : FontWeight.w500, fontSize: bold ? 16 : 14)),
+                style: TextStyle(
+                    fontWeight: bold ? FontWeight.bold : FontWeight.w500,
+                    fontSize: bold ? 16 : 14)),
           ]),
         );
     return _card(title: 'Delivery Fee', children: [
@@ -228,7 +236,9 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
 
   Widget _actions(Order order) {
     if (order.isCancelled) {
-      return const Center(child: Text('This order was cancelled.', style: TextStyle(color: Colors.black54)));
+      return const Center(
+          child: Text('This order was cancelled.',
+              style: TextStyle(color: Colors.black54)));
     }
     if (order.isConfirmed) {
       return Column(children: [
@@ -242,7 +252,9 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
     // Pending
     return Column(children: [
       FilledButton.icon(
-        onPressed: _busy ? null : () => context.push('/customer/order/${order.id}/checkout'),
+        onPressed: _busy
+            ? null
+            : () => context.push('/customer/order/${order.id}/checkout'),
         icon: const Icon(Icons.payment),
         label: const Text('Checkout & Pay'),
       ),

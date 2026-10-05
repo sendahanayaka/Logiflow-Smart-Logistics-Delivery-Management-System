@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../../../core/widgets/sign_out_button.dart';
 import '../data/tracking_code.dart';
 
 /// Scans one tracking code and returns it to the intake page. It deliberately
@@ -42,7 +43,10 @@ class _WarehouseQrScannerPageState extends State<WarehouseQrScannerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Scan tracking code')),
+      appBar: AppBar(
+        title: const Text('Scan tracking code'),
+        actions: const [SignOutButton()],
+      ),
       body: Stack(
         fit: StackFit.expand,
         children: [

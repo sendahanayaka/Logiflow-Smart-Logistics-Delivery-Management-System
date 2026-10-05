@@ -8,6 +8,11 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import 'dart:io';
 
+import '../../../core/widgets/sign_out_button.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/loading_state.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/status_badge.dart';
 import '../data/driver_repository.dart';
 import '../data/models/driver_models.dart';
 
@@ -16,7 +21,8 @@ class DriverRunDetailPage extends ConsumerStatefulWidget {
   final String shipmentId;
 
   @override
-  ConsumerState<DriverRunDetailPage> createState() => _DriverRunDetailPageState();
+  ConsumerState<DriverRunDetailPage> createState() =>
+      _DriverRunDetailPageState();
 }
 
 class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
@@ -57,7 +63,8 @@ class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Stop marked as ${kind == "ARRIVED" ? "Arrived" : "En Route"}.'),
+            content: Text(
+                'Stop marked as ${kind == "ARRIVED" ? "Arrived" : "En Route"}.'),
             backgroundColor: Colors.green,
           ),
         );
@@ -81,7 +88,7 @@ class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) => _PodFormBottomSheet(
         shipmentId: widget.shipmentId,
@@ -126,7 +133,8 @@ class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
   }
 
   Future<void> _makeCall(String phoneNumber) async {
-    final uri = Uri.parse('tel:${phoneNumber.replaceAll(RegExp(r'[^\d+]'), '')}');
+    final uri =
+        Uri.parse('tel:${phoneNumber.replaceAll(RegExp(r'[^\d+]'), '')}');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
@@ -148,31 +156,27 @@ class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => ref.invalidate(driverRunDetailProvider(widget.shipmentId)),
+            onPressed: () =>
+                ref.invalidate(driverRunDetailProvider(widget.shipmentId)),
           ),
+          const SignOutButton(),
         ],
       ),
       body: runAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 12),
-              Text('Error: $err', style: const TextStyle(color: Colors.red)),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => ref.invalidate(driverRunDetailProvider(widget.shipmentId)),
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
+        loading: () => const LoadingState(label: 'Loading run details…'),
+        error: (err, stack) => EmptyState(
+          icon: Icons.cloud_off_outlined,
+          title: 'Run details unavailable',
+          message: 'Check your connection and try again.',
+          actionLabel: 'Retry',
+          onAction: () =>
+              ref.invalidate(driverRunDetailProvider(widget.shipmentId)),
         ),
         data: (runView) {
           final stops = runView.stops;
           final activeStop = runView.activeStop;
-          final deliveredCount = stops.where((s) => s.status.toLowerCase() == 'delivered').length;
+          final deliveredCount =
+              stops.where((s) => s.status.toLowerCase() == 'delivered').length;
           final notStarted = runView.status.toLowerCase() == 'created';
 
           // Compute valid lat/lng points for the flutter_map
@@ -188,8 +192,8 @@ class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
                   // Run Header Banner
                   Container(
                     width: double.infinity,
-                    color: Colors.indigo.shade800,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    color: AppTheme.navy,
+                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -203,27 +207,30 @@ class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
-                            Chip(
-                              label: Text(
-                                runView.status.toUpperCase(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              backgroundColor: Colors.indigo.shade600,
-                            ),
+                            StatusBadge(runView.status,
+                                label: runView.status.toUpperCase()),
                           ],
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '$deliveredCount / ${stops.length} Stops Delivered',
-                          style: const TextStyle(color: Colors.white70, fontSize: 13),
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 13),
                         ),
+                        const SizedBox(height: 12),
+                        ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: LinearProgressIndicator(
+                                value: stops.isEmpty
+                                    ? 0
+                                    : deliveredCount / stops.length,
+                                minHeight: 6,
+                                backgroundColor: Colors.white24,
+                                valueColor: const AlwaysStoppedAnimation(
+                                    AppTheme.orange))),
                       ],
                     ),
                   ),
@@ -239,32 +246,37 @@ class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
                             ),
                             children: [
                               TileLayer(
-                                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                urlTemplate:
+                                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                                 userAgentPackageName: 'com.logiflow.mobile',
                               ),
                               PolylineLayer(
                                 polylines: [
                                   Polyline(
                                     points: mapPoints,
-                                    color: Colors.indigo,
+                                    color: AppTheme.orange,
                                     strokeWidth: 4.0,
                                   ),
                                 ],
                               ),
                               MarkerLayer(
                                 markers: stops
-                                    .where((s) => s.latitude != null && s.longitude != null)
+                                    .where((s) =>
+                                        s.latitude != null &&
+                                        s.longitude != null)
                                     .map(
                                       (s) => Marker(
-                                        point: LatLng(s.latitude!, s.longitude!),
+                                        point:
+                                            LatLng(s.latitude!, s.longitude!),
                                         width: 36,
                                         height: 36,
                                         child: CircleAvatar(
                                           backgroundColor: s == activeStop
                                               ? Colors.amber
-                                              : (s.status.toLowerCase() == 'delivered'
+                                              : (s.status.toLowerCase() ==
+                                                      'delivered'
                                                   ? Colors.green
-                                                  : Colors.indigo),
+                                                  : AppTheme.navy),
                                           child: Text(
                                             '${s.sequence}',
                                             style: const TextStyle(
@@ -281,11 +293,11 @@ class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
                             ],
                           )
                         : Container(
-                            color: Colors.grey.shade200,
+                            color: AppTheme.canvas,
                             child: const Center(
                               child: Text(
-                                'Route map preview (locations loaded with stops)',
-                                style: TextStyle(color: Colors.grey),
+                                'Route map unavailable for these stops',
+                                style: TextStyle(color: AppTheme.muted),
                               ),
                             ),
                           ),
@@ -329,7 +341,8 @@ class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
                       padding: const EdgeInsets.all(12),
                       child: const Row(
                         children: [
-                          Icon(Icons.check_circle, color: Colors.green, size: 28),
+                          Icon(Icons.check_circle,
+                              color: Colors.green, size: 28),
                           SizedBox(width: 12),
                           Expanded(
                             child: Text(
@@ -347,8 +360,9 @@ class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
 
                   // Stops List Header
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    color: Colors.grey.shade100,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    color: AppTheme.canvas,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -357,7 +371,7 @@ class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
-                            color: Colors.black87,
+                            color: AppTheme.navy,
                           ),
                         ),
                         const Text(
@@ -382,7 +396,8 @@ class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
                           stop: stop,
                           isActive: isActive,
                           canAct: !notStarted,
-                          onRecordEvent: (kind) => _handleRecordEvent(stop.stopKey, kind),
+                          onRecordEvent: (kind) =>
+                              _handleRecordEvent(stop.stopKey, kind),
                           onOpenPod: () => _openPodSheet(stop),
                           onMakeCall: _makeCall,
                         );
@@ -391,7 +406,6 @@ class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
                   ),
                 ],
               ),
-
               if (_isSubmitting)
                 Container(
                   color: Colors.black38,
@@ -422,35 +436,17 @@ class _StopCard extends StatelessWidget {
   final VoidCallback onOpenPod;
   final Function(String phone) onMakeCall;
 
-  Color _statusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'delivered':
-        return Colors.green;
-      case 'arrived':
-        return Colors.purple;
-      case 'enroute':
-      case 'en_route':
-      case 'departed':
-        return Colors.blue;
-      case 'pending':
-        return Colors.orange;
-      default:
-        return Colors.grey;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final statusColor = _statusColor(stop.status);
     final statusLower = stop.status.toLowerCase();
 
     return Card(
-      elevation: isActive ? 4 : 1,
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: isActive ? Colors.indigo : Colors.grey.shade300,
-          width: isActive ? 2 : 1,
+          color: isActive ? AppTheme.orange : AppTheme.border,
+          width: isActive ? 1.6 : 1,
         ),
       ),
       child: Padding(
@@ -460,57 +456,51 @@ class _StopCard extends StatelessWidget {
           children: [
             // Stop Sequence & Status header
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 14,
-                      backgroundColor: isActive ? Colors.indigo : Colors.grey.shade400,
-                      child: Text(
-                        '${stop.sequence}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    if (isActive)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.amber.shade100,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          'ACTIVE STOP',
-                          style: TextStyle(
-                            color: Colors.amber,
-                            fontSize: 10,
+                Expanded(
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 14,
+                        backgroundColor:
+                            isActive ? AppTheme.navy : AppTheme.muted,
+                        child: Text(
+                          '${stop.sequence}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+                      const SizedBox(width: 8),
+                      if (isActive)
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppTheme.orange.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: const Text(
+                              'ACTIVE STOP',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: AppTheme.orange,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                  child: Text(
-                    stop.status.toUpperCase(),
-                    style: TextStyle(
-                      color: statusColor,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
                 ),
+                const SizedBox(width: 8),
+                StatusBadge(stop.status, label: stop.status.toUpperCase()),
               ],
             ),
             const SizedBox(height: 12),
@@ -519,7 +509,8 @@ class _StopCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.location_on, color: Colors.redAccent, size: 20),
+                const Icon(Icons.location_on_outlined,
+                    color: AppTheme.orange, size: 20),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -534,13 +525,14 @@ class _StopCard extends StatelessWidget {
             ),
 
             // Recipient & Call Button
-            if (stop.recipientName != null || stop.recipientContact != null) ...[
+            if (stop.recipientName != null ||
+                stop.recipientContact != null) ...[
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppTheme.navy.withValues(alpha: 0.045),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -552,20 +544,24 @@ class _StopCard extends StatelessWidget {
                           if (stop.recipientName != null)
                             Text(
                               'Recipient: ${stop.recipientName}',
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                              style: const TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w600),
                             ),
                           if (stop.recipientContact != null)
                             Text(
                               stop.recipientContact!,
-                              style: const TextStyle(fontSize: 12, color: Colors.black87),
+                              style: const TextStyle(
+                                  fontSize: 12, color: Colors.black87),
                             ),
                         ],
                       ),
                     ),
-                    if (stop.recipientContact != null && stop.recipientContact!.isNotEmpty)
+                    if (stop.recipientContact != null &&
+                        stop.recipientContact!.isNotEmpty)
                       IconButton.filled(
                         icon: const Icon(Icons.phone, size: 18),
-                        style: IconButton.styleFrom(backgroundColor: Colors.green),
+                        style:
+                            IconButton.styleFrom(backgroundColor: Colors.green),
                         onPressed: () => onMakeCall(stop.recipientContact!),
                       ),
                   ],
@@ -584,11 +580,13 @@ class _StopCard extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.access_time, size: 14, color: Colors.grey),
+                      const Icon(Icons.access_time,
+                          size: 14, color: Colors.grey),
                       const SizedBox(width: 4),
                       Text(
                         'ETA: ${DateFormat('HH:mm').format(stop.plannedEta!)}',
-                        style: const TextStyle(fontSize: 12, color: Colors.black87),
+                        style: const TextStyle(
+                            fontSize: 12, color: Colors.black87),
                       ),
                     ],
                   ),
@@ -600,7 +598,8 @@ class _StopCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         'Arrived: ${DateFormat('HH:mm').format(stop.actualAt!)}',
-                        style: const TextStyle(fontSize: 12, color: Colors.green),
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.green),
                       ),
                     ],
                   ),
@@ -612,7 +611,8 @@ class _StopCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         '${stop.distanceFromPrevKm!.toStringAsFixed(1)} km leg',
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ],
                   ),
@@ -624,7 +624,6 @@ class _StopCard extends StatelessWidget {
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 8),
-
               if (statusLower == 'pending') ...[
                 Row(
                   children: [
@@ -653,7 +652,9 @@ class _StopCard extends StatelessWidget {
                     ),
                   ],
                 ),
-              ] else if (statusLower == 'enroute' || statusLower == 'en_route' || statusLower == 'departed') ...[
+              ] else if (statusLower == 'enroute' ||
+                  statusLower == 'en_route' ||
+                  statusLower == 'departed') ...[
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
@@ -766,7 +767,8 @@ class _PodFormBottomSheetState extends State<_PodFormBottomSheet> {
                 children: [
                   Text(
                     'Proof of Delivery - Stop #${widget.stop.sequence}',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
@@ -810,13 +812,15 @@ class _PodFormBottomSheetState extends State<_PodFormBottomSheet> {
                   OutlinedButton.icon(
                     onPressed: _pickImage,
                     icon: const Icon(Icons.camera_alt),
-                    label: Text(_imageFile == null ? 'Take POD Photo' : 'Retake Photo'),
+                    label: Text(
+                        _imageFile == null ? 'Take POD Photo' : 'Retake Photo'),
                   ),
                   if (_imageFile != null) ...[
                     const SizedBox(width: 12),
                     const Icon(Icons.check_circle, color: Colors.green),
                     const SizedBox(width: 4),
-                    const Text('Photo attached', style: TextStyle(color: Colors.green, fontSize: 12)),
+                    const Text('Photo attached',
+                        style: TextStyle(color: Colors.green, fontSize: 12)),
                   ],
                 ],
               ),
@@ -835,7 +839,9 @@ class _PodFormBottomSheetState extends State<_PodFormBottomSheet> {
                     if (_formKey.currentState!.validate()) {
                       widget.onSubmit(
                         _nameController.text.trim(),
-                        _notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null,
+                        _notesController.text.trim().isNotEmpty
+                            ? _notesController.text.trim()
+                            : null,
                         _photoBase64,
                       );
                     }

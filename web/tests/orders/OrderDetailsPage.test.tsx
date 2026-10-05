@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -10,11 +10,13 @@ vi.mock('../../src/features/orders/ordersApi', () => ({
     cancelOrder: vi.fn(),
 }));
 
+// These tests cover order details and pricing. Tracking has its own tests and
+// uses RTK Query, so keep its store/network requirements outside this suite.
 vi.mock('../../src/features/delivery/components/OrderTrackingSection', () => ({
-    OrderTrackingSection: () => <div>OrderTrackingSection</div>
+    OrderTrackingSection: () => <div data-testid="order-tracking" />,
 }));
 
-import { getOrderById, cancelOrder } from '../../src/features/orders/ordersApi';
+import { getOrderById } from '../../src/features/orders/ordersApi';
 
 const mockOrder: DeliveryOrderResponse = {
     id: 'ord-123',

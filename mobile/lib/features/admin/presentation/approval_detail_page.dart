@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/auth/session_controller.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/loading_state.dart';
 import '../../auth/presentation/login_page.dart' show friendlyError;
 import '../data/admin_repository.dart';
 import '../data/models/workflow.dart';
@@ -12,7 +13,8 @@ import 'widgets/workflow_status_chip.dart';
 
 /// Review the agent's routing plan + allocation, then Approve / Reject / Revise.
 class ApprovalDetailPage extends ConsumerStatefulWidget {
-  const ApprovalDetailPage({super.key, required this.workflowId, this.readOnly = false});
+  const ApprovalDetailPage(
+      {super.key, required this.workflowId, this.readOnly = false});
   final String workflowId;
   final bool readOnly;
 
@@ -27,10 +29,13 @@ class _ApprovalDetailPageState extends ConsumerState<ApprovalDetailPage> {
 
   String get _decidedBy {
     final u = ref.read(sessionControllerProvider).user;
-    return (u?.name.isNotEmpty ?? false) ? u!.name : (u?.email ?? 'ops-manager');
+    return (u?.name.isNotEmpty ?? false)
+        ? u!.name
+        : (u?.email ?? 'ops-manager');
   }
 
-  Future<void> _decide(String action, WorkflowDetail wf, {String? reason}) async {
+  Future<void> _decide(String action, WorkflowDetail wf,
+      {String? reason}) async {
     setState(() {
       _busy = true;
       _error = null;
@@ -48,7 +53,10 @@ class _ApprovalDetailPageState extends ConsumerState<ApprovalDetailPage> {
       ref.invalidate(workflowsProvider(null));
       if (mounted) setState(() => _result = res);
     } catch (e) {
-      if (mounted) setState(() => _error = friendlyError(e, 'The decision could not be recorded.'));
+      if (mounted) {
+        setState(() =>
+            _error = friendlyError(e, 'The decision could not be recorded.'));
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -65,12 +73,17 @@ class _ApprovalDetailPageState extends ConsumerState<ApprovalDetailPage> {
           autofocus: true,
           maxLines: 3,
           decoration: InputDecoration(
-            labelText: action == 'Reject' ? 'Reason for rejection' : 'What should be revised?',
+            labelText: action == 'Reject'
+                ? 'Reason for rejection'
+                : 'What should be revised?',
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: Text(action)),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+              child: Text(action)),
         ],
       ),
     );
@@ -85,13 +98,14 @@ class _ApprovalDetailPageState extends ConsumerState<ApprovalDetailPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Review Plan')),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const LoadingState(label: 'Loading approval details…'),
         error: (e, _) => Center(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             const Text("Couldn't load this plan."),
             const SizedBox(height: 12),
             OutlinedButton(
-                onPressed: () => ref.invalidate(workflowDetailProvider(widget.workflowId)),
+                onPressed: () =>
+                    ref.invalidate(workflowDetailProvider(widget.workflowId)),
                 child: const Text('Retry')),
           ]),
         ),
@@ -104,11 +118,13 @@ class _ApprovalDetailPageState extends ConsumerState<ApprovalDetailPage> {
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Text('“${wf.summary}”', style: const TextStyle(fontStyle: FontStyle.italic)),
+                  child: Text('“${wf.summary}”',
+                      style: const TextStyle(fontStyle: FontStyle.italic)),
                 ),
               ),
             ],
-            if ((wf.allocationSummary ?? '').isNotEmpty || wf.allocatedDriverId != null) ...[
+            if ((wf.allocationSummary ?? '').isNotEmpty ||
+                wf.allocatedDriverId != null) ...[
               const SizedBox(height: 12),
               _allocationCard(wf),
             ],
@@ -135,20 +151,26 @@ class _ApprovalDetailPageState extends ConsumerState<ApprovalDetailPage> {
         color: AppTheme.navy,
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
               Expanded(
                 child: Text(wf.workflowKey,
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold)),
               ),
               WorkflowStatusChip(wf.status),
             ]),
             if ((wf.objective ?? '').isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text(wf.objective!, style: const TextStyle(color: Colors.white70)),
+              Text(wf.objective!,
+                  style: const TextStyle(color: Colors.white70)),
             ],
             const SizedBox(height: 8),
-            Text('${wf.stopCount} stops · ${wf.totalDistanceKm.toStringAsFixed(1)} km total',
+            Text(
+                '${wf.stopCount} stops · ${wf.totalDistanceKm.toStringAsFixed(1)} km total',
                 style: const TextStyle(color: Colors.white60, fontSize: 12)),
           ]),
         ),
@@ -160,29 +182,37 @@ class _ApprovalDetailPageState extends ConsumerState<ApprovalDetailPage> {
           child: Row(children: [
             const Text('🤖 ', style: TextStyle(fontSize: 18)),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('Agent allocation', style: TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 2),
-                Text(
-                  (wf.allocationSummary ?? '').isNotEmpty
-                      ? wf.allocationSummary!
-                      : 'Driver & vehicle pre-selected by the allocation agent.',
-                  style: const TextStyle(color: Colors.black54),
-                ),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Agent allocation',
+                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 2),
+                    Text(
+                      (wf.allocationSummary ?? '').isNotEmpty
+                          ? wf.allocationSummary!
+                          : 'Driver & vehicle pre-selected by the allocation agent.',
+                      style: const TextStyle(color: Colors.black54),
+                    ),
+                  ]),
             ),
           ]),
         ),
       );
 
   Widget _stopsCard(WorkflowDetail wf) {
-    final stops = [...wf.stops]..sort((a, b) => a.sequence.compareTo(b.sequence));
+    final stops = [...wf.stops]
+      ..sort((a, b) => a.sequence.compareTo(b.sequence));
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('ROUTE PLAN',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54, letterSpacing: 0.5)),
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black54,
+                  letterSpacing: 0.5)),
           const SizedBox(height: 8),
           for (final s in stops) _stopRow(s),
         ]),
@@ -193,13 +223,20 @@ class _ApprovalDetailPageState extends ConsumerState<ApprovalDetailPage> {
   Widget _stopRow(RouteStop s) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          CircleAvatar(radius: 12, backgroundColor: AppTheme.navy, child: Text('${s.sequence}', style: const TextStyle(color: Colors.white, fontSize: 12))),
+          CircleAvatar(
+              radius: 12,
+              backgroundColor: AppTheme.navy,
+              child: Text('${s.sequence}',
+                  style: const TextStyle(color: Colors.white, fontSize: 12))),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(s.address, style: const TextStyle(fontWeight: FontWeight.w500)),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(s.address,
+                  style: const TextStyle(fontWeight: FontWeight.w500)),
               const SizedBox(height: 2),
-              Text('ETA ${DateFormat('d MMM, h:mm a').format(s.eta)} · ${s.distanceFromPrevKm.toStringAsFixed(1)} km',
+              Text(
+                  'ETA ${DateFormat('d MMM, h:mm a').format(s.eta)} · ${s.distanceFromPrevKm.toStringAsFixed(1)} km',
                   style: const TextStyle(color: Colors.black54, fontSize: 12)),
             ]),
           ),
@@ -213,22 +250,27 @@ class _ApprovalDetailPageState extends ConsumerState<ApprovalDetailPage> {
         color: const Color(0xFFECFDF5),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
               const Icon(Icons.check_circle, color: Colors.green),
               const SizedBox(width: 8),
               Text('Decision recorded (${r.status})',
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF065F46))),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, color: Color(0xFF065F46))),
             ]),
             const SizedBox(height: 8),
             Text(r.message, style: const TextStyle(color: Color(0xFF047857))),
             if (r.shipmentCode != null) ...[
               const SizedBox(height: 4),
               Text('Shipment ${r.shipmentCode}',
-                  style: const TextStyle(color: Color(0xFF047857), fontWeight: FontWeight.w600)),
+                  style: const TextStyle(
+                      color: Color(0xFF047857), fontWeight: FontWeight.w600)),
             ],
             const SizedBox(height: 12),
-            FilledButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Done')),
+            FilledButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Done')),
           ]),
         ),
       );
@@ -238,7 +280,9 @@ class _ApprovalDetailPageState extends ConsumerState<ApprovalDetailPage> {
     if (!canDecide) {
       return Center(
         child: Text(
-          widget.readOnly ? 'Read-only view.' : 'This plan is ${wf.status} — no action needed.',
+          widget.readOnly
+              ? 'Read-only view.'
+              : 'This plan is ${wf.status} — no action needed.',
           style: const TextStyle(color: Colors.black54),
         ),
       );

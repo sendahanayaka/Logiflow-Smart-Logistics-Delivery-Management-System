@@ -54,11 +54,28 @@ class _AdminDashboardPageState extends ConsumerState<AdminDashboardPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    const Text('LogiFlow Ops',
-                        style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text(user?.name ?? 'Admin', style: const TextStyle(color: Colors.white70)),
-                    Text(user?.email ?? '', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                    Row(children: [
+                      Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(11)),
+                          child: const Icon(Icons.local_shipping_rounded,
+                              color: Colors.white, size: 22)),
+                      const SizedBox(width: 10),
+                      const Text('LogiFlow Ops',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800)),
+                    ]),
+                    const SizedBox(height: 12),
+                    Text(user?.name ?? 'Admin',
+                        style: const TextStyle(color: Colors.white70)),
+                    Text(user?.email ?? '',
+                        style: const TextStyle(
+                            color: Colors.white54, fontSize: 12)),
                   ],
                 ),
               ),
@@ -72,6 +89,13 @@ class _AdminDashboardPageState extends ConsumerState<AdminDashboardPage> {
                         title: Text(_sections[i].title),
                         selected: i == _index,
                         selectedColor: AppTheme.navy,
+                        selectedTileColor:
+                            AppTheme.orange.withValues(alpha: 0.09),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 18),
+                        minLeadingWidth: 28,
                         onTap: () {
                           setState(() => _index = i);
                           Navigator.pop(context);
@@ -83,14 +107,17 @@ class _AdminDashboardPageState extends ConsumerState<AdminDashboardPage> {
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text('Sign out', style: TextStyle(color: Colors.red)),
-                onTap: () => ref.read(sessionControllerProvider.notifier).signOut(),
+                title:
+                    const Text('Sign out', style: TextStyle(color: Colors.red)),
+                onTap: () =>
+                    ref.read(sessionControllerProvider.notifier).signOut(),
               ),
             ],
           ),
         ),
       ),
-      body: IndexedStack(index: _index, children: [for (final s in _sections) s.page]),
+      body: IndexedStack(
+          index: _index, children: [for (final s in _sections) s.page]),
     );
   }
 }

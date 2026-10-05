@@ -8,6 +8,9 @@ import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/loading_state.dart';
+import '../../../core/widgets/status_badge.dart';
 import '../data/customer_repository.dart';
 import '../data/models/customer_tracking.dart';
 
@@ -23,7 +26,12 @@ class TrackingPage extends ConsumerStatefulWidget {
 }
 
 class _TrackingPageState extends ConsumerState<TrackingPage> {
-  static const _steps = ['Preparing', 'Awaiting dispatch', 'On the way', 'Delivered'];
+  static const _steps = [
+    'Preparing',
+    'Awaiting dispatch',
+    'On the way',
+    'Delivered'
+  ];
 
   CustomerTracking? _t;
   bool _loading = true;
@@ -45,7 +53,9 @@ class _TrackingPageState extends ConsumerState<TrackingPage> {
 
   Future<void> _fetch() async {
     try {
-      final t = await ref.read(customerRepositoryProvider).orderTracking(widget.orderId);
+      final t = await ref
+          .read(customerRepositoryProvider)
+          .orderTracking(widget.orderId);
       if (!mounted) return;
       setState(() {
         _t = t;
@@ -146,7 +156,8 @@ class _TrackingPageState extends ConsumerState<TrackingPage> {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Call $contact')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Call $contact')));
     }
   }
 
@@ -155,9 +166,16 @@ class _TrackingPageState extends ConsumerState<TrackingPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Track Delivery')),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const LoadingState(label: 'Loading delivery tracking…')
           : _t == null
-              ? Center(child: Text(_error ?? 'No tracking available.'))
+              ? EmptyState(
+                  icon: Icons.location_searching,
+                  title: 'Tracking unavailable',
+                  message:
+                      _error ?? 'No tracking information is available yet.',
+                  actionLabel: 'Retry',
+                  onAction: _fetch,
+                )
               : RefreshIndicator(
                   onRefresh: _fetch,
                   child: ListView(
@@ -176,7 +194,8 @@ class _TrackingPageState extends ConsumerState<TrackingPage> {
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Text('Shipment ${t.shipmentCode}',
-              style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.navy)),
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, color: AppTheme.navy)),
         ),
       _stepper(step, t.isDelivered),
       const SizedBox(height: 16),
@@ -236,7 +255,9 @@ class _TrackingPageState extends ConsumerState<TrackingPage> {
                     child: Text(
                       _steps[i],
                       style: TextStyle(
-                        fontWeight: active || done ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight: active || done
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                         color: active || done ? Colors.black : Colors.black45,
                       ),
                     ),
@@ -257,17 +278,28 @@ class _TrackingPageState extends ConsumerState<TrackingPage> {
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('YOUR DRIVER',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54, letterSpacing: 0.5)),
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black54,
+                  letterSpacing: 0.5)),
           const SizedBox(height: 12),
           Row(children: [
-            const CircleAvatar(backgroundColor: AppTheme.navy, child: Icon(Icons.person, color: Colors.white)),
+            const CircleAvatar(
+                backgroundColor: AppTheme.navy,
+                child: Icon(Icons.person, color: Colors.white)),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(t.driverName ?? 'Assigned driver', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-                if (t.vehicleRegistration != null)
-                  Text(t.vehicleRegistration!, style: const TextStyle(color: Colors.black54)),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(t.driverName ?? 'Assigned driver',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 15)),
+                    if (t.vehicleRegistration != null)
+                      Text(t.vehicleRegistration!,
+                          style: const TextStyle(color: Colors.black54)),
+                  ]),
             ),
             if (t.driverContact != null)
               IconButton.filled(
@@ -278,31 +310,25 @@ class _TrackingPageState extends ConsumerState<TrackingPage> {
           ]),
           const Divider(height: 24),
           if (eta != null)
-            Row(children: [
-              const Icon(Icons.schedule, size: 18, color: Colors.black54),
-              const SizedBox(width: 8),
-              Text('ETA ${DateFormat('d MMM, h:mm a').format(eta)}'),
-              const Spacer(),
-              if (t.onTime != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: t.onTime! ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(t.onTime! ? 'On time' : 'Delayed',
-                      style: TextStyle(
-                          color: t.onTime! ? const Color(0xFF166534) : const Color(0xFF991B1B),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600)),
-                ),
-            ]),
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                const Icon(Icons.schedule, size: 18, color: AppTheme.muted),
+                Text('ETA ${DateFormat('d MMM, h:mm a').format(eta)}'),
+                if (t.onTime != null)
+                  StatusBadge(t.onTime! ? 'OnTime' : 'Delayed',
+                      label: t.onTime! ? 'On time' : 'Delayed'),
+              ],
+            ),
           if (t.arrivedAt != null) ...[
             const SizedBox(height: 8),
             Row(children: [
               const Icon(Icons.location_on, size: 18, color: Colors.black54),
               const SizedBox(width: 8),
-              Text('Driver arrived ${DateFormat('h:mm a').format(t.arrivedAt!)}'),
+              Text(
+                  'Driver arrived ${DateFormat('h:mm a').format(t.arrivedAt!)}'),
             ]),
           ],
         ]),
@@ -314,19 +340,25 @@ class _TrackingPageState extends ConsumerState<TrackingPage> {
         color: const Color(0xFFECFDF5),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Row(children: [
               Icon(Icons.check_circle, color: Colors.green),
               SizedBox(width: 8),
               Text('Delivered — thanks for your order! 🎉',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF065F46))),
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: Color(0xFF065F46))),
             ]),
             const SizedBox(height: 8),
             if (t.deliveredAt != null)
-              Text('On ${DateFormat('d MMM yyyy, h:mm a').format(t.deliveredAt!)}',
+              Text(
+                  'On ${DateFormat('d MMM yyyy, h:mm a').format(t.deliveredAt!)}',
                   style: const TextStyle(color: Color(0xFF047857))),
             if (t.receivedByName != null)
-              Text('Received by ${t.receivedByName}', style: const TextStyle(color: Color(0xFF047857))),
+              Text('Received by ${t.receivedByName}',
+                  style: const TextStyle(color: Color(0xFF047857))),
           ]),
         ),
       );
@@ -338,7 +370,8 @@ class _TrackingPageState extends ConsumerState<TrackingPage> {
             Icon(Icons.inventory_2_outlined, color: Colors.black54),
             SizedBox(width: 12),
             Expanded(
-              child: Text("Your order is being prepared. You'll see driver details here once it's dispatched.",
+              child: Text(
+                  "Your order is being prepared. You'll see driver details here once it's dispatched.",
                   style: TextStyle(color: Colors.black54)),
             ),
           ]),

@@ -14,13 +14,12 @@ const hooks = vi.hoisted(() => ({
   useGetPackagesQuery: vi.fn(),
   useGetStorageZonesQuery: vi.fn(),
   useGetIntakeOrdersQuery: vi.fn(),
-  useGetVehiclesQuery: vi.fn(),
 }))
 
+const fleetHooks = vi.hoisted(() => ({ useGetVehiclesQuery: vi.fn() }))
+
 vi.mock('../../src/features/warehouse/warehouseApi', () => hooks)
-vi.mock('../../src/features/fleet/api/fleetApi', () => ({
-  useGetVehiclesQuery: hooks.useGetVehiclesQuery,
-}))
+vi.mock('../../src/features/fleet/api/fleetApi', () => fleetHooks)
 
 import { ApiMessage, userFacingApiError } from '../../src/features/warehouse/components/ApiMessage'
 import { AgentValidationPanel } from '../../src/features/warehouse/components/AgentValidationPanel'
@@ -35,6 +34,11 @@ import { renderWithStore, availablePackage, receivedPackage, warehouse, zone } f
 const routerFuture = { v7_startTransition: true, v7_relativeSplatPath: true } as const
 
 const idle = { data: undefined, error: undefined, isLoading: false }
+const intakeOrder = {
+  id: '11111111-1111-4111-8111-111111111111', deliveryCity: 'Colombo',
+  recipientName: 'Test recipient', packageDescription: 'Test parcel', status: 'Pending',
+}
+const vehicle = { id: '22222222-2222-4222-8222-222222222222', registrationNumber: 'VEH-001', vehicleType: 'Van', capacity: 1000 }
 const validation = {
   batchId: 'batch-001', warehouseId: warehouse.id, packageCount: 1, totalWeightKg: 2, totalVolumeM3: 1,
   weightCapacityValid: true, volumeCapacityValid: true, packageAvailabilityValid: true,
@@ -52,8 +56,8 @@ beforeEach(() => {
   hooks.useGetWarehouseThroughputQuery.mockReturnValue(idle)
   hooks.useGetPackagesQuery.mockReturnValue(idle)
   hooks.useGetStorageZonesQuery.mockReturnValue(idle)
-  hooks.useGetIntakeOrdersQuery.mockReturnValue({ ...idle, data: [{ id: '11111111-1111-4111-8111-111111111111', deliveryCity: 'Colombo', packageDescription: 'Test', status: 'Pending' }] })
-  hooks.useGetVehiclesQuery.mockReturnValue({ ...idle, data: [{ id: 'VEH-001', capacity: 1000 }] })
+  hooks.useGetIntakeOrdersQuery.mockReturnValue({ ...idle, data: [intakeOrder] })
+  fleetHooks.useGetVehiclesQuery.mockReturnValue({ ...idle, data: [vehicle] })
 })
 
 describe('package intake and safe API feedback', () => {
@@ -63,9 +67,7 @@ describe('package intake and safe API feedback', () => {
     await user.selectOptions(screen.getByLabelText('Order'), orderId)
     await user.selectOptions(screen.getByLabelText('Storage zone'), zone.id)
     await user.type(screen.getByLabelText('Tracking code'), 'TRACK-001')
-    await user.clear(screen.getByLabelText('Weight (kg)'))
     await user.type(screen.getByLabelText('Weight (kg)'), '2')
-    await user.clear(screen.getByLabelText('Volume (m³)'))
     await user.type(screen.getByLabelText('Volume (m³)'), '1')
   }
 
@@ -97,9 +99,7 @@ describe('package intake and safe API feedback', () => {
     await user.selectOptions(screen.getByLabelText('Order'), orderId)
     await user.selectOptions(screen.getByLabelText('Storage zone'), zone.id)
     await user.type(screen.getByLabelText('Tracking code'), 'TRACK-001')
-    await user.clear(screen.getByLabelText('Weight (kg)'))
     await user.type(screen.getByLabelText('Weight (kg)'), '-1')
-    await user.clear(screen.getByLabelText('Volume (m³)'))
     await user.type(screen.getByLabelText('Volume (m³)'), '0')
     await user.click(screen.getByRole('button', { name: 'Receive package' }))
     expect(receive).not.toHaveBeenCalled()
@@ -122,17 +122,17 @@ describe('package intake and safe API feedback', () => {
     expect(screen.queryByText(/private stack trace/i)).not.toBeInTheDocument()
   })
 
-  it('rejects a non-UUID order identifier before calling the backend', async () => {
+  it('rejects a malformed order identifier returned by the intake API', async () => {
     const user = userEvent.setup()
     const receive = vi.fn()
     hooks.useReceivePackageMutation.mockReturnValue([receive, { isLoading: false }])
+    hooks.useGetIntakeOrdersQuery.mockReturnValue({ ...idle, data: [{ ...intakeOrder, id: 'not-an-order-uuid' }] })
     renderWithStore(<PackageIntakeForm warehouseId={warehouse.id} zones={[zone]} />)
 
+    await user.selectOptions(screen.getByLabelText('Order'), 'not-an-order-uuid')
     await user.selectOptions(screen.getByLabelText('Storage zone'), zone.id)
     await user.type(screen.getByLabelText('Tracking code'), 'TRACK-001')
-    await user.clear(screen.getByLabelText('Weight (kg)'))
     await user.type(screen.getByLabelText('Weight (kg)'), '2')
-    await user.clear(screen.getByLabelText('Volume (m³)'))
     await user.type(screen.getByLabelText('Volume (m³)'), '1')
     await user.click(screen.getByRole('button', { name: 'Receive package' }))
 
@@ -143,19 +143,19 @@ describe('package intake and safe API feedback', () => {
 
 describe('dispatch creation and backend validation', () => {
   const vehicleFields = async (user: ReturnType<typeof userEvent.setup>) => {
-    await user.selectOptions(screen.getByLabelText('Vehicle'), 'VEH-001')
+    await user.selectOptions(screen.getByLabelText('Vehicle'), vehicle.id)
     await user.clear(screen.getByLabelText('Max weight (kg)'))
     await user.type(screen.getByLabelText('Max weight (kg)'), '1000')
     await user.clear(screen.getByLabelText('Max volume (m³)'))
     await user.type(screen.getByLabelText('Max volume (m³)'), '10')
   }
 
-  it('offers only Available packages passed from the API, supports selection and deselection, and uses temporary vehicle fields', async () => {
+  it('offers only Available packages passed from the API, supports selection and deselection, and offers fleet vehicles', async () => {
     const user = userEvent.setup()
     renderWithStore(<DispatchBatchBuilder warehouseId={warehouse.id} packages={[availablePackage]} zones={[zone]} onBatchCreated={vi.fn()} />)
     expect(screen.getByText('TRACK-AVL')).toBeInTheDocument()
     expect(screen.queryByText('TRACK-REC')).not.toBeInTheDocument()
-    expect(screen.getByLabelText('Vehicle')).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: /VEH-001 — Van \(1000kg\)/ })).toBeInTheDocument()
     await user.click(screen.getByLabelText('Select TRACK-AVL'))
     expect(screen.getByText('1 package(s) selected.')).toBeInTheDocument()
     await user.click(screen.getByLabelText('Select TRACK-AVL'))
@@ -218,29 +218,25 @@ describe('dispatch creation and backend validation', () => {
   it('sends an overweight but well-formed candidate to S3 and renders its FAIL result without creating a batch', async () => {
     const user = userEvent.setup()
     const create = vi.fn()
-    const validate = vi.fn().mockReturnValue({
-      unwrap: vi.fn().mockResolvedValue({
-        result: 'FAIL', agentAvailable: true,
-        ruleResults: [{ rule: 'within_weight_capacity', passed: false, detail: 'Package weight exceeds vehicle capacity.' }],
-        explanation: 'The selected vehicle capacity is exceeded.', explanationSource: 'deterministic_fallback',
-        rejectionReasons: ['Package weight exceeds vehicle capacity.'], agentMessage: null,
-      })
-    })
+    const validate = vi.fn().mockReturnValue({ unwrap: vi.fn().mockResolvedValue({
+      result: 'FAIL', agentAvailable: true,
+      ruleResults: [{ rule: 'within_weight_capacity', passed: false, detail: 'Package weight exceeds vehicle capacity.' }],
+      explanation: 'The selected vehicle capacity is exceeded.', explanationSource: 'deterministic_fallback',
+      rejectionReasons: ['Package weight exceeds vehicle capacity.'], agentMessage: null,
+    }) })
     const created = vi.fn()
     hooks.useCreateDispatchBatchMutation.mockReturnValue([create, { isLoading: false }])
     hooks.useValidateDispatchCandidateMutation.mockReturnValue([validate, { isLoading: false }])
     renderWithStore(<DispatchBatchBuilder warehouseId={warehouse.id} packages={[availablePackage]} zones={[zone]} onBatchCreated={created} />)
-    await user.selectOptions(screen.getByLabelText('Vehicle'), 'VEH-001')
+    await vehicleFields(user)
     await user.clear(screen.getByLabelText('Max weight (kg)'))
     await user.type(screen.getByLabelText('Max weight (kg)'), '1')
-    await user.clear(screen.getByLabelText('Max volume (m³)'))
-    await user.type(screen.getByLabelText('Max volume (m³)'), '10')
     await user.click(screen.getByLabelText('Select TRACK-AVL'))
     await user.click(screen.getByRole('button', { name: 'Validate allocation' }))
 
     expect(validate).toHaveBeenCalledWith({
       warehouseId: warehouse.id, packageIds: [availablePackage.id], orderIds: [availablePackage.orderId],
-      vehicleId: 'VEH-001', maxWeightKg: 1, maxVolumeM3: 10,
+      vehicleId: vehicle.id, maxWeightKg: 1, maxVolumeM3: 10,
     })
     expect(await screen.findByText('S3 Load & Dispatch Validation: FAIL')).toBeInTheDocument()
     expect(screen.getAllByText('Package weight exceeds vehicle capacity.')).toHaveLength(2)
@@ -251,7 +247,7 @@ describe('dispatch creation and backend validation', () => {
 
   it('allows atomic backend batch creation only after the S3 agent returns PASS', async () => {
     const user = userEvent.setup()
-    const batch = { id: 'batch-001', warehouseId: warehouse.id, vehicleId: 'VEH-001', maxWeightKg: 1000, maxVolumeM3: 10, totalWeightKg: 2, totalVolumeM3: 1, status: 'Reserved', createdAt: '', updatedAt: null, items: [{ packageId: availablePackage.id, trackingCode: 'TRACK-AVL', loadSequence: 1, weightKg: 2, volumeM3: 1, isFragile: false }] }
+    const batch = { id: 'batch-001', warehouseId: warehouse.id, vehicleId: vehicle.id, maxWeightKg: 1000, maxVolumeM3: 10, totalWeightKg: 2, totalVolumeM3: 1, status: 'Reserved', createdAt: '', updatedAt: null, items: [{ packageId: availablePackage.id, trackingCode: 'TRACK-AVL', loadSequence: 1, weightKg: 2, volumeM3: 1, isFragile: false }] }
     const validate = vi.fn().mockReturnValue({ unwrap: vi.fn().mockResolvedValue({ result: 'PASS', agentAvailable: true, ruleResults: [{ rule: 'within_weight_capacity', passed: true, detail: 'Within capacity.' }], explanation: 'Safe to reserve.', explanationSource: 'ollama', rejectionReasons: [], agentMessage: null }) })
     const create = vi.fn().mockReturnValue({ unwrap: vi.fn().mockResolvedValue({ result: 'PASS', batch, issues: [] }) })
     const created = vi.fn()
@@ -265,7 +261,7 @@ describe('dispatch creation and backend validation', () => {
     expect(await screen.findByText('S3 Load & Dispatch Validation: PASS')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Create reserved batch' }))
 
-    expect(create).toHaveBeenCalledWith({ warehouseId: warehouse.id, vehicleId: 'VEH-001', maxWeightKg: 1000, maxVolumeM3: 10, packageIds: [availablePackage.id] })
+    expect(create).toHaveBeenCalledWith({ warehouseId: warehouse.id, vehicleId: vehicle.id, maxWeightKg: 1000, maxVolumeM3: 10, packageIds: [availablePackage.id] })
     expect(await screen.findByText(/Batch created successfully/i)).toBeInTheDocument()
     expect(created).toHaveBeenCalledWith('batch-001')
   })
@@ -273,7 +269,7 @@ describe('dispatch creation and backend validation', () => {
   it('updates an existing reserved batch through the item replacement endpoint', async () => {
     const user = userEvent.setup()
     const batch = {
-      id: 'batch-001', warehouseId: warehouse.id, vehicleId: 'VEH-001', maxWeightKg: 1000,
+      id: 'batch-001', warehouseId: warehouse.id, vehicleId: vehicle.id, maxWeightKg: 1000,
       maxVolumeM3: 10, totalWeightKg: 2, totalVolumeM3: 1, status: 'Reserved',
       createdAt: '', updatedAt: null,
       items: [{ packageId: availablePackage.id, trackingCode: 'TRACK-AVL', loadSequence: 1, weightKg: 2, volumeM3: 1, isFragile: false }],
@@ -318,12 +314,10 @@ describe('capacity, throughput, and safe error presentation', () => {
 
   it('submits UTC date boundaries and renders actual zero-value throughput fields', async () => {
     const user = userEvent.setup()
-    hooks.useGetWarehouseThroughputQuery.mockReturnValue({
-      ...idle, data: {
-        warehouseId: warehouse.id, fromUtc: '', toUtc: '', receivedPackageCount: 0, receivedWeightKg: 0, receivedVolumeM3: 0,
-        reservedPackageCount: 0, dispatchedPackageCount: 0, createdDispatchBatchCount: 0, batchedPackageCount: 0,
-      }
-    })
+    hooks.useGetWarehouseThroughputQuery.mockReturnValue({ ...idle, data: {
+      warehouseId: warehouse.id, fromUtc: '', toUtc: '', receivedPackageCount: 0, receivedWeightKg: 0, receivedVolumeM3: 0,
+      reservedPackageCount: 0, dispatchedPackageCount: 0, createdDispatchBatchCount: 0, batchedPackageCount: 0,
+    } })
     renderWithStore(<MemoryRouter initialEntries={['/warehouse/warehouse-001/throughput']} future={routerFuture}><Routes><Route path="/warehouse/:warehouseId/throughput" element={<ThroughputPage />} /></Routes></MemoryRouter>)
     await user.clear(screen.getByLabelText('From'))
     await user.type(screen.getByLabelText('From'), '2026-09-01')
