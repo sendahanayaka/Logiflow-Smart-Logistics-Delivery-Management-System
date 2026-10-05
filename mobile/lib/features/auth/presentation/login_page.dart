@@ -14,6 +14,7 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _loading = false;
@@ -27,6 +28,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
     setState(() {
       _loading = true;
       _error = null;
@@ -49,27 +51,57 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           padding: const EdgeInsets.all(24),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text('📦 LogiFlow', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 24),
-                TextField(controller: _email, decoration: const InputDecoration(labelText: 'Email'), keyboardType: TextInputType.emailAddress),
-                const SizedBox(height: 12),
-                TextField(controller: _password, decoration: const InputDecoration(labelText: 'Password'), obscureText: true),
-                const SizedBox(height: 8),
-                if (_error != null) Text(_error!, style: const TextStyle(color: Colors.red)),
-                const SizedBox(height: 12),
-                FilledButton(onPressed: _loading ? null : _submit, child: Text(_loading ? 'Signing in…' : 'Login')),
-                TextButton(onPressed: () => context.push('/register'), child: const Text("Don't have an account? Register")),
-              ],
+            child: Form(
+              key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text('📦 LogiFlow', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    controller: _email,
+                    decoration: const InputDecoration(labelText: 'Email'),
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    validator: emailError,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _password,
+                    decoration: const InputDecoration(labelText: 'Password'),
+                    obscureText: true,
+                    validator: (v) => requiredError(v, 'Password'),
+                  ),
+                  const SizedBox(height: 8),
+                  if (_error != null) Text(_error!, style: const TextStyle(color: Colors.red)),
+                  const SizedBox(height: 12),
+                  FilledButton(onPressed: _loading ? null : _submit, child: Text(_loading ? 'Signing in…' : 'Login')),
+                  TextButton(onPressed: () => context.push('/register'), child: const Text("Don't have an account? Register")),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
+}
+
+/// Shared form validators (used by login + register).
+final _emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+
+String? emailError(String? value) {
+  final v = (value ?? '').trim();
+  if (v.isEmpty) return 'Email is required.';
+  if (!_emailRegex.hasMatch(v)) return 'Enter a valid email address.';
+  return null;
+}
+
+String? requiredError(String? value, String field) {
+  if ((value ?? '').trim().isEmpty) return '$field is required.';
+  return null;
 }
 
 /// Pull a readable message out of a Dio error ({message}/{title}/validation).
