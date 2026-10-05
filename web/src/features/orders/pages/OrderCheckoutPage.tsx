@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getOrderById } from '../ordersApi';
+import { API_BASE_URL } from '../../../app/api';
 import { DeliveryOrderResponse } from '../types';
 import '../Orders.css';
 
@@ -114,7 +115,7 @@ export const OrderCheckoutPage: React.FC = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/orders/${id}/checkout`, {
+            const response = await fetch(`${API_BASE_URL}/orders/${id}/checkout`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

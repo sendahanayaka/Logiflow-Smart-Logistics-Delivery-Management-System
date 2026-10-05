@@ -54,24 +54,26 @@ export interface WorkflowRunResponse {
 
 export const agentApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    // Routed through the backend passthrough (/api/agent/*, AgentProxyController) so
+    // the internal agent key is added server-side and the agent stays internal-only.
     getAgentHealth: builder.query<{ status: string; model: string }, void>({
       query: () => ({
-        url: '/agent-api/health',
+        url: '/agent/health',
       }),
     }),
     runWorkflow: builder.mutation<WorkflowRunResponse, { payload: any }>({
       query: (body) => ({
-        url: '/agent-api/workflow/run',
+        url: '/agent/workflow/run',
         method: 'POST',
         body,
       }),
     }),
     getWorkflowState: builder.query<any, string>({
-      query: (id) => `/agent-api/workflow/${id}`,
+      query: (id) => `/agent/workflow/${id}`,
     }),
     approveWorkflow: builder.mutation<any, { workflow_id: string; action: 'APPROVE' | 'REJECT'; decided_by?: string }>({
       query: ({ workflow_id, action, decided_by }) => ({
-        url: `/agent-api/workflow/${workflow_id}/approval`,
+        url: `/agent/workflow/${workflow_id}/approval`,
         method: 'POST',
         body: { action, decided_by: decided_by || 'ops-manager' },
       }),

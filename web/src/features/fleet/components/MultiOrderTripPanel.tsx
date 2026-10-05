@@ -83,23 +83,8 @@ export const MultiOrderTripPanel: React.FC<MultiOrderTripPanelProps> = ({
       delivery_window_end: new Date(Date.now() + 8 * 3600 * 1000).toISOString(),
     };
 
-    // Try direct fetch to FastAPI Agent service (port 8000) first
-    try {
-      const directRes = await fetch('http://localhost:8000/workflow/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payload }),
-      });
-      if (directRes.ok) {
-        const json: WorkflowRunResponse = await directRes.json();
-        setActiveWorkflow(json);
-        setIsLocalExecuting(false);
-        return;
-      }
-    } catch {
-      // Fall back to RTK Query proxy
-    }
-
+    // Routed through the backend passthrough (/api/agent/workflow/run), which adds
+    // the internal key server-side. The agent is never called from the browser.
     try {
       const res = await runWorkflow({ payload }).unwrap();
       setActiveWorkflow(res);
@@ -117,31 +102,12 @@ export const MultiOrderTripPanel: React.FC<MultiOrderTripPanelProps> = ({
     if (!activeWorkflow) return;
 
     try {
-      // Try direct fetch first for speed
-      let resData: any = null;
-      try {
-        const directRes = await fetch(
-          `http://localhost:8000/workflow/${activeWorkflow.workflow_id}/approval`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'APPROVE', decided_by: 'ops-manager' }),
-          }
-        );
-        if (directRes.ok) {
-          resData = await directRes.json();
-        }
-      } catch {
-        // Fallback
-      }
-
-      if (!resData) {
-        resData = await approveWorkflow({
-          workflow_id: activeWorkflow.workflow_id,
-          action: 'APPROVE',
-          decided_by: 'ops-manager',
-        }).unwrap();
-      }
+      // Routed through the backend passthrough (/api/agent/workflow/{id}/approval).
+      await approveWorkflow({
+        workflow_id: activeWorkflow.workflow_id,
+        action: 'APPROVE',
+        decided_by: 'ops-manager',
+      }).unwrap();
 
       // Record assignment in Fleet database if driver/vehicle exist
       const proposed = activeWorkflow.proposal?.allocation?.proposed;
@@ -176,19 +142,7 @@ export const MultiOrderTripPanel: React.FC<MultiOrderTripPanelProps> = ({
     setShowRejectModal(false);
 
     try {
-      try {
-        await fetch(
-          `http://localhost:8000/workflow/${activeWorkflow.workflow_id}/approval`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'REJECT', decided_by: 'ops-manager' }),
-          }
-        );
-      } catch {
-        // Fallback
-      }
-
+      // Routed through the backend passthrough (/api/agent/workflow/{id}/approval).
       await approveWorkflow({
         workflow_id: activeWorkflow.workflow_id,
         action: 'REJECT',
