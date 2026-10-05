@@ -1,16 +1,21 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DeliveryOrderResponse, DispatchOrder } from '../types';
-import { getMyOrders, useGetDispatchOrdersQuery } from '../ordersApi';
+import { DispatchOrder } from '../types';
+import { useGetMyOrdersQuery, useGetDispatchOrdersQuery } from '../ordersApi';
 import { OrderTable } from '../components/OrderTable';
 import { MultiOrderTripPanel } from '../../fleet/components/MultiOrderTripPanel';
 import { FleetHeader } from '../../fleet/components/FleetHeader';
 import '../Orders.css';
 
 export const CustomerOrderListPage: React.FC = () => {
-  const [orders, setOrders] = useState<DeliveryOrderResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  // RTK Query: refetches on every visit and after create/cancel (tag invalidation),
+  // and reads a fresh list on reload — no more re-login to see new orders (item 13).
+  const { data: orders = [], isLoading, error: queryError, refetch } = useGetMyOrdersQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+  const error = queryError
+    ? ((queryError as { data?: { message?: string } })?.data?.message || 'Failed to fetch orders.')
+    : '';
   const navigate = useNavigate();
 
   // Search & Filter State
@@ -19,21 +24,6 @@ export const CustomerOrderListPage: React.FC = () => {
   const [priorityFilter, setPriorityFilter] = useState('ALL');
   const [dateFilter, setDateFilter] = useState('ALL');
   const [sortOrder, setSortOrder] = useState('NEWEST');
-
-  useEffect(() => {
-    loadOrders();
-  }, []);
-
-  const loadOrders = async () => {
-    try {
-      const data = await getMyOrders();
-      setOrders(data || []);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch orders.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Metrics
   const totalOrders = orders.length;
@@ -121,7 +111,7 @@ export const CustomerOrderListPage: React.FC = () => {
         <div style={{ background: '#fef2f2', border: '1px solid #dc2626', color: '#991b1b', padding: '2rem', borderRadius: '8px', textAlign: 'center', marginBottom: '2rem' }}>
           <h3 style={{ margin: '0 0 0.5rem 0' }}>Unable to load your orders</h3>
           <p style={{ margin: '0 0 1rem 0' }}>{error}</p>
-          <button onClick={loadOrders} className="orders-btn-secondary">Retry</button>
+          <button onClick={() => refetch()} className="orders-btn-secondary">Retry</button>
         </div>
       ) : isLoading ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>

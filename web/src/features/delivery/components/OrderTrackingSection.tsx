@@ -35,9 +35,23 @@ export const OrderTrackingSection: React.FC<{ orderId: string }> = ({ orderId })
   const h3: React.CSSProperties = { margin: '0 0 1rem 0', color: '#08006C', fontSize: '1.25rem' };
 
   const activeStep = data ? toActiveStep(data.hasShipment, data.stopStatus) : 1;
+  const delivered = data?.stopStatus === 'Delivered';
 
   return (
     <>
+      {delivered && (
+        <div style={{
+          background: 'linear-gradient(135deg,#1B7A43 0%,#0d9488 100%)', color: '#fff',
+          padding: '1.25rem 2.5rem', textAlign: 'center',
+        }}>
+          <strong style={{ fontSize: '1.15rem' }}>🎉 Delivered — thanks for your order!</strong>
+          <p style={{ margin: '0.35rem 0 0', opacity: 0.9, fontSize: '0.9rem' }}>
+            Your package was delivered{data?.receivedByName ? ` to ${data.receivedByName}` : ''}
+            {data?.deliveredAt ? ` on ${fmt(data.deliveredAt)}` : ''}.
+          </p>
+        </div>
+      )}
+
       <div style={{ borderBottom: '1px solid #e2e8f0' }}>
         <OrderStatusTimeline status="active" activeStep={activeStep} />
       </div>
