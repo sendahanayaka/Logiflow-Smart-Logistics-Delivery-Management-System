@@ -83,6 +83,80 @@ class AdminRepository {
 
   Future<void> deleteVehicle(String id) async => _dio.delete('/vehicles/$id');
 
+  // --- Fleet operations ----------------------------------------------------
+  Future<List<Map<String, dynamic>>> assignments({bool activeOnly = false}) async {
+    final path = activeOnly ? '/assignments/active' : '/assignments/history';
+    final response = await _dio.get<List<dynamic>>(path);
+    return (response.data ?? const <dynamic>[]).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> assignDriver({
+    required String driverId,
+    required String vehicleId,
+    String? notes,
+  }) async {
+    await _dio.post('/assignments', data: {
+      'driverId': driverId,
+      'vehicleId': vehicleId,
+      if (notes != null && notes.trim().isNotEmpty) 'notes': notes.trim(),
+    });
+  }
+
+  Future<void> endAssignment(String id) async =>
+      _dio.post('/assignments/$id/end', data: <String, dynamic>{});
+
+  Future<List<Map<String, dynamic>>> dutySchedules() async {
+    final response = await _dio.get<List<dynamic>>('/DutySchedules');
+    return (response.data ?? const <dynamic>[]).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> createDutySchedule({
+    required String driverId,
+    required DateTime start,
+    required DateTime end,
+    String? notes,
+  }) async {
+    await _dio.post('/DutySchedules', data: {
+      'driverId': driverId,
+      'startTime': start.toUtc().toIso8601String(),
+      'endTime': end.toUtc().toIso8601String(),
+      'status': 0,
+      if (notes != null && notes.trim().isNotEmpty) 'notes': notes.trim(),
+    });
+  }
+
+  Future<void> deleteDutySchedule(String id) async =>
+      _dio.delete('/DutySchedules/$id');
+
+  Future<List<Map<String, dynamic>>> maintenanceRecords() async {
+    final response = await _dio.get<List<dynamic>>('/MaintenanceRecords');
+    return (response.data ?? const <dynamic>[]).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> createMaintenanceRecord({
+    required String vehicleId,
+    required DateTime date,
+    required String type,
+    String? description,
+    required double cost,
+    DateTime? nextDate,
+  }) async {
+    await _dio.post('/MaintenanceRecords', data: {
+      'vehicleId': vehicleId,
+      'maintenanceDate': date.toUtc().toIso8601String(),
+      'maintenanceType': type.trim(),
+      if (description != null && description.trim().isNotEmpty)
+        'description': description.trim(),
+      'cost': cost,
+      if (nextDate != null)
+        'nextMaintenanceDate': nextDate.toUtc().toIso8601String(),
+      'status': 0,
+    });
+  }
+
+  Future<void> deleteMaintenanceRecord(String id) async =>
+      _dio.delete('/MaintenanceRecords/$id');
+
   // --- Users ----------------------------------------------------------------
   Future<List<AppUser>> users() async {
     final res = await _dio.get('/users');

@@ -9,6 +9,7 @@ import '../../data/models/fleet.dart';
 import '../controllers/admin_providers.dart';
 import '../driver_form_page.dart';
 import '../vehicle_form_page.dart';
+import 'fleet_operations_tabs.dart';
 
 /// Fleet management: drivers + vehicles, each with list + create/edit (+ delete
 /// for vehicles).
@@ -21,7 +22,7 @@ class FleetTab extends ConsumerStatefulWidget {
 
 class _FleetTabState extends ConsumerState<FleetTab>
     with SingleTickerProviderStateMixin {
-  late final TabController _tab = TabController(length: 2, vsync: this)
+  late final TabController _tab = TabController(length: 5, vsync: this)
     ..addListener(() => setState(() {}));
 
   @override
@@ -49,21 +50,37 @@ class _FleetTabState extends ConsumerState<FleetTab>
         children: [
           TabBar(
               controller: _tab,
-              tabs: const [Tab(text: 'Drivers'), Tab(text: 'Vehicles')]),
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              tabs: const [
+                Tab(text: 'Drivers'),
+                Tab(text: 'Vehicles'),
+                Tab(text: 'Assignments'),
+                Tab(text: 'Schedules'),
+                Tab(text: 'Maintenance'),
+              ]),
           Expanded(
             child: TabBarView(
               controller: _tab,
-              children: const [_DriversList(), _VehiclesList()],
+              children: const [
+                _DriversList(),
+                _VehiclesList(),
+                FleetAssignmentsTab(),
+                DutySchedulesTab(),
+                MaintenanceTab(),
+              ],
             ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'admin-fleet-add',
-        onPressed: _tab.index == 0 ? _addDriver : _addVehicle,
-        icon: const Icon(Icons.add),
-        label: Text(_tab.index == 0 ? 'Add driver' : 'Add vehicle'),
-      ),
+      floatingActionButton: _tab.index < 2
+          ? FloatingActionButton.extended(
+              heroTag: 'admin-fleet-add',
+              onPressed: _tab.index == 0 ? _addDriver : _addVehicle,
+              icon: const Icon(Icons.add),
+              label: Text(_tab.index == 0 ? 'Add driver' : 'Add vehicle'),
+            )
+          : null,
     );
   }
 }
