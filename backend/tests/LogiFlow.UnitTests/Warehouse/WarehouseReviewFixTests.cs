@@ -199,6 +199,9 @@ public sealed class WarehouseReviewFixTests : IAsyncLifetime
             new CreateWarehouseRequestValidator(),
             new CreateStorageZoneRequestValidator(),
             new CreatePackageRequestValidator(),
+            new UpdateWarehouseRequestValidator(),
+            new UpdateStorageZoneRequestValidator(),
+            new UpdatePackageRequestValidator(),
             new NoOpDispatchBatchService())
         {
             ControllerContext = new ControllerContext
