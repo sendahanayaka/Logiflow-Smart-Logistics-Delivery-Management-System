@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/widgets/role_scaffold.dart';
+import '../../messaging/presentation/messages_page.dart';
 import '../data/driver_repository.dart';
 import '../data/models/driver_models.dart';
 
@@ -18,6 +19,15 @@ class DriverRunsPage extends ConsumerWidget {
       title: 'My Delivery Runs',
       owner: 'Driver Team',
       todo: const ['My Runs List', 'Run Detail Timeline', 'POD Submission'],
+      actions: [
+        IconButton(
+          tooltip: 'Messages',
+          icon: const Icon(Icons.chat_bubble_outline),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const MessagesPage()),
+          ),
+        ),
+      ],
       child: RefreshIndicator(
         onRefresh: () async => ref.invalidate(driverRunsProvider),
         child: runsAsync.when(

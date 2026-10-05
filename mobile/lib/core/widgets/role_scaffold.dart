@@ -12,12 +12,16 @@ class RoleScaffold extends ConsumerWidget {
     required this.owner,
     required this.todo,
     this.child,
+    this.actions,
   });
 
   final String title;
   final String owner;
   final List<String> todo;
   final Widget? child;
+
+  /// Extra app-bar actions, shown before the sign-out button.
+  final List<Widget>? actions;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,6 +30,7 @@ class RoleScaffold extends ConsumerWidget {
       appBar: AppBar(
         title: Text(title),
         actions: [
+          ...?actions,
           IconButton(
             tooltip: 'Sign out',
             icon: const Icon(Icons.logout),
