@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/loading_state.dart';
 import '../../data/models/workflow.dart';
 import '../approval_detail_page.dart';
 import '../controllers/admin_providers.dart';
@@ -18,7 +20,14 @@ class MonitorTab extends ConsumerStatefulWidget {
 
 class _MonitorTabState extends ConsumerState<MonitorTab> {
   static const _filters = [
-    'All', 'Pending', 'Planning', 'AwaitingApproval', 'Approved', 'Completed', 'Rejected', 'Failed',
+    'All',
+    'Pending',
+    'Planning',
+    'AwaitingApproval',
+    'Approved',
+    'Completed',
+    'Rejected',
+    'Failed',
   ];
   String _filter = 'All';
 
@@ -51,21 +60,27 @@ class _MonitorTabState extends ConsumerState<MonitorTab> {
           child: RefreshIndicator(
             onRefresh: () async => ref.invalidate(workflowsProvider(null)),
             child: async.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => ListView(children: [
-                const SizedBox(height: 120),
-                const Center(child: Text("Couldn't load workflows.")),
-                const SizedBox(height: 12),
-                Center(child: OutlinedButton(onPressed: () => ref.invalidate(workflowsProvider(null)), child: const Text('Retry'))),
-              ]),
+              loading: () => const LoadingState(label: 'Loading workflows…'),
+              error: (e, _) => EmptyState(
+                icon: Icons.cloud_off_outlined,
+                title: 'Workflows unavailable',
+                message: 'Check the connection and try again.',
+                actionLabel: 'Retry',
+                onAction: () => ref.invalidate(workflowsProvider(null)),
+              ),
               data: (all) {
-                final list = _filter == 'All' ? all : all.where((w) => w.status == _filter).toList();
+                final list = _filter == 'All'
+                    ? all
+                    : all.where((w) => w.status == _filter).toList();
                 if (list.isEmpty) {
-                  return ListView(children: [
-                    const SizedBox(height: 120),
-                    Center(child: Text(_filter == 'All' ? 'No workflows yet.' : 'No $_filter workflows.',
-                        style: const TextStyle(color: Colors.black54))),
-                  ]);
+                  return EmptyState(
+                    icon: Icons.timeline_outlined,
+                    title: _filter == 'All'
+                        ? 'No workflows yet'
+                        : 'No $_filter workflows',
+                    message:
+                        'Workflows will appear here as orders move through planning.',
+                  );
                 }
                 return ListView.separated(
                   padding: const EdgeInsets.all(16),
@@ -94,7 +109,9 @@ class _WorkflowRow extends ConsumerWidget {
       child: InkWell(
         onTap: () async {
           await Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => ApprovalDetailPage(workflowId: workflow.id, readOnly: true)),
+            MaterialPageRoute(
+                builder: (_) => ApprovalDetailPage(
+                    workflowId: workflow.id, readOnly: true)),
           );
           ref.invalidate(workflowsProvider(null));
         },
@@ -104,20 +121,30 @@ class _WorkflowRow extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(children: [
-                Expanded(child: Text(workflow.workflowKey, style: const TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(
+                    child: Text(workflow.workflowKey,
+                        style: const TextStyle(fontWeight: FontWeight.bold))),
                 WorkflowStatusChip(workflow.status),
               ]),
               if ((workflow.objective ?? '').isNotEmpty) ...[
                 const SizedBox(height: 6),
-                Text(workflow.objective!, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.black87)),
+                Text(workflow.objective!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.black87)),
               ],
               const SizedBox(height: 6),
               Row(children: [
-                const Icon(Icons.place_outlined, size: 15, color: Colors.black45),
+                const Icon(Icons.place_outlined,
+                    size: 15, color: Colors.black45),
                 const SizedBox(width: 4),
-                Text('${workflow.stopCount} stops', style: const TextStyle(color: Colors.black54, fontSize: 12)),
+                Text('${workflow.stopCount} stops',
+                    style:
+                        const TextStyle(color: Colors.black54, fontSize: 12)),
                 const Spacer(),
-                Text(DateFormat('d MMM, h:mm a').format(when), style: const TextStyle(color: Colors.black45, fontSize: 12)),
+                Text(DateFormat('d MMM, h:mm a').format(when),
+                    style:
+                        const TextStyle(color: Colors.black45, fontSize: 12)),
               ]),
             ],
           ),

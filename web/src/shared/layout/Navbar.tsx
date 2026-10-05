@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../app/store';
@@ -7,17 +7,21 @@ import { NotificationBell } from '../../features/notifications/NotificationBell'
 import './Navbar.css';
 
 export const Navbar: React.FC = () => {
+    const [menuOpen, setMenuOpen] = useState(false);
     const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
 
+    const close = () => setMenuOpen(false);
+
     const handleLogout = () => {
+        close();
         dispatch(logout());
         navigate('/login');
     };
 
     return (
-        <header className="navbar">
+        <header className={`navbar${menuOpen ? ' navbar--menu-open' : ''}`}>
             <div className="navbar-container">
                 <div className="navbar-brand">
                     <Link to="/">
@@ -25,36 +29,49 @@ export const Navbar: React.FC = () => {
                     </Link>
                 </div>
 
-                <nav className="navbar-nav">
+                <button
+                    type="button"
+                    className="navbar-menu-toggle"
+                    aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                    aria-expanded={menuOpen}
+                    aria-controls="primary-navigation"
+                    onClick={() => setMenuOpen((open) => !open)}
+                >
+                    <span />
+                    <span />
+                    <span />
+                </button>
+
+                <nav className="navbar-nav" id="primary-navigation">
                     <ul className="nav-links">
                         {!isAuthenticated && (
                             <>
-                                <li><a href="#home">Home</a></li>
-                                <li><a href="#services">Services</a></li>
-                                <li><a href="#how-it-works">How It Works</a></li>
-                                <li><a href="#about">About</a></li>
-                                <li><a href="#contact">Contact</a></li>
+                                <li><a onClick={close} href="#home">Home</a></li>
+                                <li><a onClick={close} href="#services">Services</a></li>
+                                <li><a onClick={close} href="#how-it-works">How It Works</a></li>
+                                <li><a onClick={close} href="#about">About</a></li>
+                                <li><a onClick={close} href="#contact">Contact</a></li>
                             </>
                         )}
                         {isAuthenticated && user?.role === 'CUSTOMER' && (
                             <>
-                                <li><Link to="/orders">My Orders</Link></li>
-                                <li><Link to="/orders/create">Create Order</Link></li>
+                                <li><Link onClick={close} to="/orders">My Orders</Link></li>
+                                <li><Link onClick={close} to="/orders/create">Create Order</Link></li>
                             </>
                         )}
                         {isAuthenticated && user?.role === 'ADMIN' && (
                             <>
-                                <li><Link to="/admin">Dashboard</Link></li>
-                                <li><Link to="/users">Users</Link></li>
+                                <li><Link onClick={close} to="/admin">Dashboard</Link></li>
+                                <li><Link onClick={close} to="/users">Users</Link></li>
                                 {/* Agent planning is an ops-manager tool; customers never see the agentic flow. */}
-                                <li><Link to="/ai-planning" style={{ color: 'var(--color-navy, #08006C)', fontWeight: 'bold' }}>AI Planning</Link></li>
+                                <li><Link onClick={close} to="/ai-planning" style={{ color: 'var(--color-navy, #08006C)', fontWeight: 'bold' }}>AI Planning</Link></li>
                             </>
                         )}
                         {isAuthenticated && user?.role === 'WAREHOUSE_STAFF' && (
-                            <li><Link to="/warehouse">Warehouse</Link></li>
+                            <li><Link onClick={close} to="/warehouse">Warehouse</Link></li>
                         )}
                         {isAuthenticated && user?.role === 'DRIVER' && (
-                            <li><Link to="/driver">My Runs</Link></li>
+                            <li><Link onClick={close} to="/driver">My Runs</Link></li>
                         )}
                     </ul>
                 </nav>
@@ -64,9 +81,9 @@ export const Navbar: React.FC = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
                             <NotificationBell />
                             {(user.role === 'CUSTOMER' || user.role === 'DRIVER') && (
-                                <Link to="/messages" className="btn-login">Messages</Link>
+                                <Link onClick={close} to="/messages" className="btn-login">Messages</Link>
                             )}
-                            <Link to="/track" className="btn-login">Track</Link>
+                            <Link onClick={close} to="/track" className="btn-login">Track</Link>
                             <span style={{ fontWeight: '500', color: 'var(--color-navy, #08006C)' }}>
                                 Welcome, {user.name}
                             </span>
@@ -80,8 +97,8 @@ export const Navbar: React.FC = () => {
                         </div>
                     ) : (
                         <>
-                            <Link to="/login" className="btn-login">Login</Link>
-                            <Link to="/register" className="btn-primary">Register</Link>
+                            <Link onClick={close} to="/login" className="btn-login">Login</Link>
+                            <Link onClick={close} to="/register" className="btn-primary">Register</Link>
                         </>
                     )}
                 </div>

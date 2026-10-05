@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/loading_state.dart';
 import '../../data/models/order.dart';
 import '../controllers/orders_controller.dart';
 import '../widgets/order_status_badge.dart';
@@ -18,10 +20,22 @@ class CustomerOrdersTab extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: () => ref.read(ordersControllerProvider.notifier).refresh(),
       child: ordersAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => _ErrorState(onRetry: () => ref.read(ordersControllerProvider.notifier).refresh()),
+        loading: () => const LoadingState(label: 'Loading your orders…'),
+        error: (e, _) => EmptyState(
+          icon: Icons.cloud_off_outlined,
+          title: 'Orders unavailable',
+          message: 'Check your connection and try again.',
+          actionLabel: 'Retry',
+          onAction: () => ref.read(ordersControllerProvider.notifier).refresh(),
+        ),
         data: (orders) {
-          if (orders.isEmpty) return const _EmptyState();
+          if (orders.isEmpty) {
+            return const EmptyState(
+              icon: Icons.inventory_2_outlined,
+              title: 'No orders yet',
+              message: 'Create an order from the New tab to get started.',
+            );
+          }
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: orders.length,
@@ -53,10 +67,13 @@ class _OrderCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      order.packageDescription.isEmpty ? 'Delivery order' : order.packageDescription,
+                      order.packageDescription.isEmpty
+                          ? 'Delivery order'
+                          : order.packageDescription,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 15),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -83,11 +100,14 @@ class _OrderCard extends StatelessWidget {
                 children: [
                   const Icon(Icons.event, size: 16, color: Colors.black45),
                   const SizedBox(width: 6),
-                  Text('${DateFormat('d MMM yyyy').format(order.preferredPickupDate)} · ${order.pickupTimeLabel}',
-                      style: const TextStyle(color: Colors.black54, fontSize: 13)),
+                  Text(
+                      '${DateFormat('d MMM yyyy').format(order.preferredPickupDate)} · ${order.pickupTimeLabel}',
+                      style:
+                          const TextStyle(color: Colors.black54, fontSize: 13)),
                   const Spacer(),
                   if (order.pricing != null)
-                    Text('Rs. ${order.pricing!.totalDeliveryFee.toStringAsFixed(2)}',
+                    Text(
+                        'Rs. ${order.pricing!.totalDeliveryFee.toStringAsFixed(2)}',
                         style: const TextStyle(fontWeight: FontWeight.w600)),
                 ],
               ),
@@ -95,42 +115,6 @@ class _OrderCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
-  @override
-  Widget build(BuildContext context) {
-    // ListView so pull-to-refresh still works when empty.
-    return ListView(
-      children: const [
-        SizedBox(height: 120),
-        Icon(Icons.inbox_outlined, size: 64, color: Colors.black26),
-        SizedBox(height: 12),
-        Center(child: Text('No orders yet', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
-        SizedBox(height: 4),
-        Center(child: Text('Create one from the New tab.', style: TextStyle(color: Colors.black45))),
-      ],
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  const _ErrorState({required this.onRetry});
-  final VoidCallback onRetry;
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      children: [
-        const SizedBox(height: 120),
-        const Icon(Icons.error_outline, size: 56, color: Colors.redAccent),
-        const SizedBox(height: 12),
-        const Center(child: Text("Couldn't load your orders.")),
-        const SizedBox(height: 12),
-        Center(child: OutlinedButton(onPressed: onRetry, child: const Text('Retry'))),
-      ],
     );
   }
 }

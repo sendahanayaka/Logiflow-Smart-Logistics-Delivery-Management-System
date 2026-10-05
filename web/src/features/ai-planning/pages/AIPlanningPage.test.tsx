@@ -1,20 +1,17 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { Provider } from 'react-redux';
-import { describe, it, expect } from 'vitest';
-import { store } from '../../../app/store';
+import { describe, it, expect, vi } from 'vitest';
 import { AIPlanningPage } from './AIPlanningPage';
 
-// The page is now backend-backed (RTK Query) and admin-only; it no longer calls the
-// internal agent directly from the browser. We render it inside the real store and
-// assert the header + workflow picker are present (the workflow fetch is async).
+const hooks = vi.hoisted(() => ({ useGetWorkflowsQuery: vi.fn() }));
+
+vi.mock('../../delivery/deliveryApi', () => hooks);
+
+// This is a page-rendering test; workflow fetching is covered by delivery API
+// tests and should not make a real request to the backend here.
 describe('AIPlanningPage', () => {
     it('renders the planning header and workflow picker', () => {
-        render(
-            <Provider store={store}>
-                <AIPlanningPage />
-            </Provider>,
-        );
+        hooks.useGetWorkflowsQuery.mockReturnValue({ data: [], isLoading: false, isError: false });
+        render(<AIPlanningPage />);
         expect(screen.getByText('🤖 AI Delivery Planning')).toBeInTheDocument();
         expect(screen.getByLabelText('Workflow')).toBeInTheDocument();
     });

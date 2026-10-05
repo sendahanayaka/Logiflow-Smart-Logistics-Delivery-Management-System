@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth/session_controller.dart';
+import 'sign_out_button.dart';
 
 /// Standard shell for each role's home screen: title, sign-out, and (until the
 /// owner builds the screens) a checklist of what belongs here.
@@ -31,11 +32,7 @@ class RoleScaffold extends ConsumerWidget {
         title: Text(title),
         actions: [
           ...?actions,
-          IconButton(
-            tooltip: 'Sign out',
-            icon: const Icon(Icons.logout),
-            onPressed: () => ref.read(sessionControllerProvider.notifier).signOut(),
-          ),
+          const SignOutButton(),
         ],
       ),
       body: child ??
