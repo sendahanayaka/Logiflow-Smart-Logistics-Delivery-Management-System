@@ -5,7 +5,19 @@ import { MemoryRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '../../features/auth/authSlice';
+import { baseApi } from '../../app/api';
 import { Navbar } from './Navbar';
+
+// The Navbar renders <NotificationBell/>, which uses RTK-Query hooks, so the
+// test store must register the api slice (reducer + middleware).
+const makeStore = (preloadedAuth: Record<string, unknown>) =>
+    // Cast the whole config to sidestep RTK's deep middleware generic inference
+    // in the test; at runtime this registers the api reducer + middleware.
+    configureStore({
+        reducer: { auth: authReducer, [baseApi.reducerPath]: baseApi.reducer },
+        middleware: (getDefaultMiddleware: any) => getDefaultMiddleware().concat(baseApi.middleware),
+        preloadedState: { auth: preloadedAuth },
+    } as any);
 
 const renderWithRouterAndStore = (store: any, component: React.ReactNode) => {
     return render(
@@ -23,17 +35,12 @@ describe('Navbar.tsx Logout Behaviors', () => {
     });
 
     it('renders Logout button securely for authenticated users', () => {
-        const store = configureStore({
-            reducer: { auth: authReducer },
-            preloadedState: {
-                auth: {
-                    isAuthenticated: true,
-                    user: { name: 'Test User', id: '1', email: 'a@a.com', role: 'CUSTOMER', isActive: true },
-                    token: 'mock-token',
-                    status: 'idle' as const,
-                    error: null
-                }
-            }
+        const store = makeStore({
+            isAuthenticated: true,
+            user: { name: 'Test User', id: '1', email: 'a@a.com', role: 'CUSTOMER', isActive: true },
+            token: 'mock-token',
+            status: 'idle' as const,
+            error: null
         });
 
         renderWithRouterAndStore(store, <Navbar />);
@@ -44,17 +51,12 @@ describe('Navbar.tsx Logout Behaviors', () => {
     });
 
     it('clears session and returns pure Login/Register paths globally upon Logout execution', () => {
-        const store = configureStore({
-            reducer: { auth: authReducer },
-            preloadedState: {
-                auth: {
-                    isAuthenticated: true,
-                    user: { name: 'Test User', id: '1', email: 'a@a.com', role: 'CUSTOMER', isActive: true },
-                    token: 'mock-token',
-                    status: 'idle' as const,
-                    error: null
-                }
-            }
+        const store = makeStore({
+            isAuthenticated: true,
+            user: { name: 'Test User', id: '1', email: 'a@a.com', role: 'CUSTOMER', isActive: true },
+            token: 'mock-token',
+            status: 'idle' as const,
+            error: null
         });
 
         renderWithRouterAndStore(store, <Navbar />);
