@@ -102,6 +102,19 @@ builder.Services.AddHttpClient<IAgentValidationClient, S3AgentValidationClient>(
     }
 });
 
+// Browser-facing passthrough (AgentProxyController) to the internal agent. Longer
+// timeout than the typed clients because the agent sandbox tools kick off a full
+// workflow run and the first call after a free-tier cold start can be slow.
+builder.Services.AddHttpClient(LogiFlow.Api.Controllers.AgentProxyController.HttpClientName, client =>
+{
+    client.BaseAddress = new Uri(agentBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(60);
+    if (!string.IsNullOrWhiteSpace(agentApiKey))
+    {
+        client.DefaultRequestHeaders.Add("X-Internal-Api-Key", agentApiKey);
+    }
+});
+
 // Configure JWT Authentication
 var jwtKeyFromConfig = builder.Configuration["Jwt:Key"];
 var jwtSecret = !string.IsNullOrWhiteSpace(jwtKeyFromConfig)
