@@ -29,29 +29,16 @@ export const AgenticAIDrawer: React.FC<AgenticAIDrawerProps> = ({ isOpen, onClos
   const [directHealth, setDirectHealth] = useState<{ status: string; model: string } | null>(null);
   const [isLocalRunning, setIsLocalRunning] = useState(false);
 
+  // Health goes through the backend passthrough (/api/agent/health) via RTK, which
+  // adds the JWT + internal key server-side. No direct browser->agent call.
   const checkHealth = React.useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:8000/health');
-      if (res.ok) {
-        const json = await res.json();
-        setDirectHealth(json);
-        return;
-      }
+      const result = await refetchHealth().unwrap();
+      setDirectHealth(result?.status === 'ok' ? result : null);
     } catch {
-      // Fallback
+      setDirectHealth(null);
     }
-    try {
-      const res = await fetch('/agent-api/health');
-      if (res.ok) {
-        const json = await res.json();
-        setDirectHealth(json);
-        return;
-      }
-    } catch {
-      // Offline
-    }
-    setDirectHealth(null);
-  }, []);
+  }, [refetchHealth]);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -83,23 +70,7 @@ export const AgenticAIDrawer: React.FC<AgenticAIDrawerProps> = ({ isOpen, onClos
     };
 
     try {
-      // Try direct fetch first
-      const directRes = await fetch('http://localhost:8000/workflow/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payload: samplePayload }),
-      });
-      if (directRes.ok) {
-        const json = await directRes.json();
-        setActiveWorkflow(json);
-        setIsLocalRunning(false);
-        return;
-      }
-    } catch {
-      // Fallback to RTK query
-    }
-
-    try {
+      // Routed through the backend passthrough (/api/agent/workflow/run).
       const res = await runWorkflow({ payload: samplePayload }).unwrap();
       setActiveWorkflow(res);
     } catch {
@@ -149,22 +120,7 @@ export const AgenticAIDrawer: React.FC<AgenticAIDrawerProps> = ({ isOpen, onClos
     }
 
     try {
-      const directRes = await fetch(`http://localhost:8000/workflow/${activeWorkflow.workflow_id}/approval`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, decided_by: 'ops-manager-s2' }),
-      });
-      if (directRes.ok) {
-        const res = await directRes.json();
-        setApprovalOutcome(res.outcome || (action === 'APPROVE' ? 'Dispatched to Fleet' : 'Rejected'));
-        setActiveWorkflow((prev: WorkflowRunResponse | null) => (prev ? { ...prev, status: res.status } : null));
-        return;
-      }
-    } catch {
-      // Fallback
-    }
-
-    try {
+      // Routed through the backend passthrough (/api/agent/workflow/{id}/approval).
       const res = await approveWorkflow({
         workflow_id: activeWorkflow.workflow_id,
         action,
@@ -470,7 +426,7 @@ export const AgenticAIDrawer: React.FC<AgenticAIDrawerProps> = ({ isOpen, onClos
 
           {!isAgentOnline && (
             <div style={{ padding: '0.85rem', borderRadius: '6px', backgroundColor: '#fef2f2', border: '1px solid #fca5a5', color: '#991b1b', fontSize: '0.85rem' }}>
-              <strong>Agent Service Offline:</strong> Unable to connect to http://localhost:8000. Running in local deterministic fallback mode.
+              <strong>Agent Service Offline:</strong> The agent service could not be reached. Running in local deterministic fallback mode.
             </div>
           )}
 
