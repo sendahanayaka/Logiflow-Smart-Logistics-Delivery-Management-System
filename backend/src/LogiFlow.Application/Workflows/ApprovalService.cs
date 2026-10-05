@@ -118,23 +118,14 @@ public class ApprovalService : IApprovalService
             ShipmentCode = $"SHP-{Guid.NewGuid():N}"[..16],
             DriverId = driverId.Value,
             VehicleId = vehicleId.Value,
-            Status = ShipmentStatus.Dispatched,
+            // Approval assigns the run to the driver but does not dispatch it. The
+            // driver moves it to Dispatched ("picked up") via POST /shipments/{id}/start.
+            Status = ShipmentStatus.Created,
             TotalDistanceKm = stops.Sum(stop => stop.DistanceFromPrevKm),
             TotalDurationMin = (decimal)totalDuration,
             PlannedStartAt = plannedStart,
-            DispatchedAt = DateTime.UtcNow,
             CreatedAt = DateTime.UtcNow
         };
-
-        shipment.TrackingEvents.Add(new TrackingEvent
-        {
-            Id = Guid.NewGuid(),
-            ShipmentId = shipment.Id,
-            EventType = TrackingEventType.Dispatched,
-            OccurredAt = DateTime.UtcNow,
-            Note = $"Run dispatched to driver by {command.DecidedBy}.",
-            CreatedAt = DateTime.UtcNow
-        });
 
         _context.Shipments.Add(shipment);
         workflow.Status = WorkflowStatus.Completed;

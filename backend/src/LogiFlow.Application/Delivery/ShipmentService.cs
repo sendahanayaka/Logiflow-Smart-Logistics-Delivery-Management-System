@@ -130,10 +130,22 @@ public class ShipmentService : IShipmentService
             .OrderBy(e => e.OccurredAt)
             .FirstOrDefault();
 
+        // Customer-facing stage derived from the shipment lifecycle.
+        var stage = shipment.Status switch
+        {
+            ShipmentStatus.Created => "Driver assigned",
+            ShipmentStatus.Dispatched => "Picked up",
+            ShipmentStatus.InTransit => "In transit",
+            ShipmentStatus.Delivered => "Delivered",
+            ShipmentStatus.Failed => "Failed",
+            ShipmentStatus.Cancelled => "Cancelled",
+            _ => "Dispatched"
+        };
+
         return new CustomerOrderTrackingView(
             orderId,
             true,
-            "Dispatched",
+            stage,
             shipment.ShipmentCode,
             shipment.Status.ToString(),
             driver?.FullName,
@@ -213,6 +225,46 @@ public class ShipmentService : IShipmentService
             shipment.DriverId, shipment.VehicleId, enriched);
     }
 
+    public async Task<DriverRunView> StartRunAsync(
+        Guid shipmentId, CancellationToken cancellationToken = default)
+    {
+        var shipment = await LoadAsync(shipmentId, track: true, cancellationToken)
+            ?? throw new KeyNotFoundException($"Shipment '{shipmentId}' was not found.");
+
+        if (shipment.Status is ShipmentStatus.Delivered
+            or ShipmentStatus.Cancelled
+            or ShipmentStatus.Failed)
+        {
+            throw new InvalidOperationException("This run can no longer be started.");
+        }
+
+        // Only the first transition does work; starting an already-dispatched run is a no-op.
+        if (shipment.Status == ShipmentStatus.Created)
+        {
+            var now = DateTime.UtcNow;
+            shipment.Status = ShipmentStatus.Dispatched;
+            shipment.DispatchedAt = now;
+            shipment.UpdatedAt = now;
+
+            var firstStop = shipment.AgentWorkflow.RouteStops
+                .OrderBy(stop => stop.Sequence)
+                .FirstOrDefault();
+            if (firstStop is not null && firstStop.Status == RouteStopStatus.Pending)
+            {
+                firstStop.Status = RouteStopStatus.EnRoute;
+                firstStop.UpdatedAt = now;
+            }
+
+            AddEvent(shipment.Id, null, TrackingEventType.Dispatched, now,
+                "Run started — parcels picked up by the driver.", null, null);
+
+            await _context.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Shipment {Code}: run started (picked up).", shipment.ShipmentCode);
+        }
+
+        return (await GetDriverRunAsync(shipmentId, cancellationToken))!;
+    }
+
     public async Task<TrackingView> RecordStopEventAsync(
         Guid shipmentId, RecordStopEventCommand command, CancellationToken cancellationToken = default)
     {
@@ -262,9 +314,11 @@ public class ShipmentService : IShipmentService
             }
         }
 
-        if (shipment.Status == ShipmentStatus.Dispatched)
+        // Any progress at a stop moves an assigned/picked-up run into transit.
+        if (shipment.Status is ShipmentStatus.Created or ShipmentStatus.Dispatched)
         {
             shipment.Status = ShipmentStatus.InTransit;
+            shipment.DispatchedAt ??= DateTime.UtcNow;
         }
         shipment.UpdatedAt = DateTime.UtcNow;
 
@@ -313,9 +367,10 @@ public class ShipmentService : IShipmentService
             shipment.Status = ShipmentStatus.Delivered;
             shipment.CompletedAt = DateTime.UtcNow;
         }
-        else if (shipment.Status == ShipmentStatus.Dispatched)
+        else if (shipment.Status is ShipmentStatus.Created or ShipmentStatus.Dispatched)
         {
             shipment.Status = ShipmentStatus.InTransit;
+            shipment.DispatchedAt ??= DateTime.UtcNow;
         }
         shipment.UpdatedAt = DateTime.UtcNow;
 

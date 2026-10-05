@@ -149,6 +149,30 @@ public sealed class ShipmentServiceTests : IAsyncLifetime
         Assert.Empty(mine);
     }
 
+    [Fact]
+    public async Task StartRun_MovesCreatedToDispatched_AndSetsFirstStopEnRoute()
+    {
+        var shipmentId = await SeedShipmentAsync();
+        // Put the shipment in the post-approval state (assigned, not yet dispatched).
+        var seeded = await _context.Shipments.SingleAsync(s => s.Id == shipmentId);
+        seeded.Status = ShipmentStatus.Created;
+        seeded.DispatchedAt = null;
+        await _context.SaveChangesAsync();
+
+        var run = await _service.StartRunAsync(shipmentId);
+        Assert.Equal(nameof(ShipmentStatus.Dispatched), run.Status);
+
+        var after = await _context.Shipments
+            .Include(s => s.TrackingEvents)
+            .Include(s => s.AgentWorkflow).ThenInclude(w => w.RouteStops)
+            .SingleAsync(s => s.Id == shipmentId);
+        Assert.Equal(ShipmentStatus.Dispatched, after.Status);
+        Assert.NotNull(after.DispatchedAt);
+        Assert.Contains(after.TrackingEvents, e => e.EventType == TrackingEventType.Dispatched);
+        var firstStop = after.AgentWorkflow.RouteStops.OrderBy(s => s.Sequence).First();
+        Assert.Equal(RouteStopStatus.EnRoute, firstStop.Status);
+    }
+
     // --- seed -----------------------------------------------------------------
 
     private async Task<Guid> SeedShipmentAsync(Guid? driverId = null, string shipmentCode = "SHP-TEST-0001")
