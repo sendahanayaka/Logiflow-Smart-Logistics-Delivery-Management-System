@@ -1,23 +1,96 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/widgets/role_scaffold.dart';
+import '../../../core/auth/session_controller.dart';
+import '../../../core/theme/app_theme.dart';
+import 'tabs/approvals_tab.dart';
+import 'tabs/fleet_tab.dart';
+import 'tabs/monitor_tab.dart';
+import 'tabs/overview_tab.dart';
+import 'tabs/shipments_tab.dart';
+import 'tabs/users_tab.dart';
 
-/// ADMIN (ops manager) home. Build the admin screens under features/admin/.
-class AdminDashboardPage extends StatelessWidget {
+class _Section {
+  const _Section(this.title, this.icon, this.page);
+  final String title;
+  final IconData icon;
+  final Widget page;
+}
+
+/// ADMIN/ops home: a navigation drawer across the six ops sections, with the
+/// Overview dashboard as the landing. Each section is built in its own phase.
+class AdminDashboardPage extends ConsumerStatefulWidget {
   const AdminDashboardPage({super.key});
 
   @override
+  ConsumerState<AdminDashboardPage> createState() => _AdminDashboardPageState();
+}
+
+class _AdminDashboardPageState extends ConsumerState<AdminDashboardPage> {
+  int _index = 0;
+
+  static const _sections = [
+    _Section('Overview', Icons.dashboard_outlined, OverviewTab()),
+    _Section('Approvals', Icons.verified_outlined, ApprovalsTab()),
+    _Section('Agent Monitor', Icons.insights_outlined, MonitorTab()),
+    _Section('Shipments', Icons.local_shipping_outlined, ShipmentsTab()),
+    _Section('Fleet', Icons.directions_car_outlined, FleetTab()),
+    _Section('Users', Icons.people_outline, UsersTab()),
+  ];
+
+  @override
   Widget build(BuildContext context) {
-    return const RoleScaffold(
-      title: 'Ops Dashboard',
-      owner: 'Admin slice',
-      todo: [
-        'Approvals queue: review agent plan + Approve/Reject (POST /workflows/{id}/approval)',
-        'Agent monitor: workflows + stages (GET /workflows)',
-        'Shipments list (GET /shipments)',
-        'Fleet: drivers & vehicles (GET/POST /drivers, /vehicles)',
-        'User management (GET/POST /users, roles)',
-      ],
+    final user = ref.watch(sessionControllerProvider).user;
+
+    return Scaffold(
+      appBar: AppBar(title: Text(_sections[_index].title)),
+      drawer: Drawer(
+        child: SafeArea(
+          child: Column(
+            children: [
+              DrawerHeader(
+                decoration: const BoxDecoration(color: AppTheme.navy),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    const Text('LogiFlow Ops',
+                        style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(user?.name ?? 'Admin', style: const TextStyle(color: Colors.white70)),
+                    Text(user?.email ?? '', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    for (var i = 0; i < _sections.length; i++)
+                      ListTile(
+                        leading: Icon(_sections[i].icon),
+                        title: Text(_sections[i].title),
+                        selected: i == _index,
+                        selectedColor: AppTheme.navy,
+                        onTap: () {
+                          setState(() => _index = i);
+                          Navigator.pop(context);
+                        },
+                      ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.logout, color: Colors.red),
+                title: const Text('Sign out', style: TextStyle(color: Colors.red)),
+                onTap: () => ref.read(sessionControllerProvider.notifier).signOut(),
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: IndexedStack(index: _index, children: [for (final s in _sections) s.page]),
     );
   }
 }

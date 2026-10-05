@@ -19,14 +19,15 @@ dependencies:
   go_router: ^14.2.0
   # Date/number formatting
   intl: ^0.19.0
-
-  # --- Driver-feature deps (uncomment when building those screens; each needs
-  #     platform permissions in android/app/src/main/AndroidManifest.xml) ---
-  # mobile_scanner: ^5.1.1      # QR scan at pickup/handover
-  # image_picker: ^1.1.2        # POD photo
-  # geolocator: ^12.0.0         # GPS for live location
-  # flutter_map: ^7.0.2         # route map (OSM tiles, free)
-  # latlong2: ^0.9.1
+  # Click-to-call the driver (tel:) + external links
+  url_launcher: ^6.3.0
+  # Warehouse package intake QR/barcode scanner
+  mobile_scanner: ^5.1.1
+  # --- Driver-feature deps ---
+  image_picker: ^1.1.2        # POD photo
+  geolocator: ^12.0.0         # GPS for live location
+  flutter_map: ^7.0.2         # route map (OSM tiles, free)
+  latlong2: ^0.9.1
 
 dev_dependencies:
   flutter_test:
