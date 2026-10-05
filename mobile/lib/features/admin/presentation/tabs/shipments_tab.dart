@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/loading_state.dart';
+import '../../../../core/widgets/status_badge.dart';
 import '../../data/models/admin_shipment.dart';
 import '../controllers/admin_providers.dart';
 import '../shipment_detail_page.dart';
@@ -33,7 +36,10 @@ class _ShipmentsTabState extends ConsumerState<ShipmentsTab> {
               for (final f in _filters)
                 Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(label: Text(f), selected: _filter == f, onSelected: (_) => setState(() => _filter = f)),
+                  child: ChoiceChip(
+                      label: Text(f),
+                      selected: _filter == f,
+                      onSelected: (_) => setState(() => _filter = f)),
                 ),
             ],
           ),
@@ -43,25 +49,29 @@ class _ShipmentsTabState extends ConsumerState<ShipmentsTab> {
           child: RefreshIndicator(
             onRefresh: () async => ref.invalidate(shipmentsProvider),
             child: async.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => ListView(children: [
-                const SizedBox(height: 120),
-                const Center(child: Text("Couldn't load shipments.")),
-                const SizedBox(height: 12),
-                Center(child: OutlinedButton(onPressed: () => ref.invalidate(shipmentsProvider), child: const Text('Retry'))),
-              ]),
+              loading: () => const LoadingState(label: 'Loading shipments…'),
+              error: (e, _) => EmptyState(
+                icon: Icons.cloud_off_outlined,
+                title: 'Shipments unavailable',
+                message: 'Check the connection and try again.',
+                actionLabel: 'Retry',
+                onAction: () => ref.invalidate(shipmentsProvider),
+              ),
               data: (all) {
                 final list = switch (_filter) {
                   'Active' => all.where((s) => s.isActive).toList(),
-                  'Delivered' => all.where((s) => s.status == 'Delivered').toList(),
+                  'Delivered' =>
+                    all.where((s) => s.status == 'Delivered').toList(),
                   _ => all,
                 };
                 if (list.isEmpty) {
-                  return ListView(children: [
-                    const SizedBox(height: 120),
-                    Center(child: Text(_filter == 'All' ? 'No shipments yet.' : 'No $_filter shipments.',
-                        style: const TextStyle(color: Colors.black54))),
-                  ]);
+                  return EmptyState(
+                    icon: Icons.local_shipping_outlined,
+                    title: _filter == 'All'
+                        ? 'No shipments yet'
+                        : 'No $_filter shipments',
+                    message: 'Dispatched shipments will appear here.',
+                  );
                 }
                 return ListView.separated(
                   padding: const EdgeInsets.all(16),
@@ -84,12 +94,14 @@ class _ShipmentRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final delivered = shipment.status == 'Delivered';
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => ShipmentDetailPage(shipmentId: shipment.id, shipmentCode: shipment.shipmentCode)),
+          MaterialPageRoute(
+              builder: (_) => ShipmentDetailPage(
+                  shipmentId: shipment.id,
+                  shipmentCode: shipment.shipmentCode)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(14),
@@ -97,33 +109,31 @@ class _ShipmentRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(children: [
-                Expanded(child: Text(shipment.shipmentCode, style: const TextStyle(fontWeight: FontWeight.bold))),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: delivered ? const Color(0xFFDCFCE7) : const Color(0xFFE0E7FF),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(shipment.status,
-                      style: TextStyle(
-                          color: delivered ? const Color(0xFF166534) : const Color(0xFF3730A3),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600)),
-                ),
+                Expanded(
+                    child: Text(shipment.shipmentCode,
+                        style: const TextStyle(fontWeight: FontWeight.bold))),
+                StatusBadge(shipment.status),
               ]),
               const SizedBox(height: 8),
               Row(children: [
-                const Icon(Icons.check_circle_outline, size: 15, color: Colors.black45),
+                const Icon(Icons.check_circle_outline,
+                    size: 15, color: Colors.black45),
                 const SizedBox(width: 4),
-                Text('${shipment.deliveredCount}/${shipment.stopCount} delivered',
-                    style: const TextStyle(color: Colors.black54, fontSize: 13)),
+                Text(
+                    '${shipment.deliveredCount}/${shipment.stopCount} delivered',
+                    style:
+                        const TextStyle(color: Colors.black54, fontSize: 13)),
                 const SizedBox(width: 12),
                 const Icon(Icons.route, size: 15, color: Colors.black45),
                 const SizedBox(width: 4),
-                Text('${shipment.totalDistanceKm.toStringAsFixed(1)} km', style: const TextStyle(color: Colors.black54, fontSize: 13)),
+                Text('${shipment.totalDistanceKm.toStringAsFixed(1)} km',
+                    style:
+                        const TextStyle(color: Colors.black54, fontSize: 13)),
                 const Spacer(),
                 if (shipment.dispatchedAt != null)
-                  Text(DateFormat('d MMM').format(shipment.dispatchedAt!), style: const TextStyle(color: Colors.black45, fontSize: 12)),
+                  Text(DateFormat('d MMM').format(shipment.dispatchedAt!),
+                      style:
+                          const TextStyle(color: Colors.black45, fontSize: 12)),
               ]),
             ],
           ),

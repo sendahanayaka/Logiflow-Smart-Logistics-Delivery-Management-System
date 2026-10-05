@@ -4,6 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/widgets/role_scaffold.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/loading_state.dart';
+import '../../../core/widgets/status_badge.dart';
+import '../../../core/theme/app_theme.dart';
 import '../data/driver_repository.dart';
 import '../data/models/driver_models.dart';
 
@@ -21,52 +25,21 @@ class DriverRunsPage extends ConsumerWidget {
       child: RefreshIndicator(
         onRefresh: () async => ref.invalidate(driverRunsProvider),
         child: runsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, stack) => ListView(
-            padding: const EdgeInsets.all(24),
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 12),
-              Center(
-                child: Text(
-                  'Failed to load runs: $err',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.red),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Center(
-                child: ElevatedButton.icon(
-                  onPressed: () => ref.invalidate(driverRunsProvider),
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Retry'),
-                ),
-              ),
-            ],
+          loading: () => const LoadingState(label: 'Loading delivery runs…'),
+          error: (err, stack) => EmptyState(
+            icon: Icons.cloud_off_outlined,
+            title: 'Runs are unavailable',
+            message: 'Check your connection and try again.',
+            actionLabel: 'Retry',
+            onAction: () => ref.invalidate(driverRunsProvider),
           ),
           data: (runs) {
             if (runs.isEmpty) {
-              return ListView(
-                padding: const EdgeInsets.all(32),
-                children: const [
-                  SizedBox(height: 60),
-                  Icon(Icons.local_shipping_outlined, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Center(
-                    child: Text(
-                      'No delivery runs assigned.',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Center(
-                    child: Text(
-                      'Pull down to refresh when new dispatches are assigned.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                ],
+              return const EmptyState(
+                icon: Icons.local_shipping_outlined,
+                title: 'No delivery runs yet',
+                message:
+                    'Pull down to refresh when a new dispatch is assigned.',
               );
             }
 
@@ -89,32 +62,13 @@ class _RunCard extends StatelessWidget {
   const _RunCard({required this.run});
   final ShipmentSummary run;
 
-  Color _statusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'dispatched':
-      case 'in_transit':
-      case 'intransit':
-        return Colors.blue;
-      case 'completed':
-      case 'delivered':
-        return Colors.green;
-      case 'created':
-      case 'pending':
-        return Colors.orange;
-      default:
-        return Colors.grey;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final progress = run.stopCount > 0 ? (run.deliveredCount / run.stopCount) : 0.0;
-    final statusColor = _statusColor(run.status);
+    final progress =
+        run.stopCount > 0 ? (run.deliveredCount / run.stopCount) : 0.0;
 
     return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.only(bottom: 14),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () => context.push('/driver/run/${run.id}'),
@@ -126,32 +80,24 @@ class _RunCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
+                  Expanded(
+                      child: Row(
                     children: [
-                      const Icon(Icons.route, color: Colors.indigo),
+                      const Icon(Icons.route, color: AppTheme.navy),
                       const SizedBox(width: 8),
-                      Text(
-                        run.shipmentCode.isNotEmpty ? run.shipmentCode : 'Run #${run.id.substring(0, 8)}',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
+                      Expanded(
+                          child: Text(
+                        run.shipmentCode.isNotEmpty
+                            ? run.shipmentCode
+                            : 'Run #${run.id.substring(0, 8)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      )),
                     ],
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: statusColor.withValues(alpha: 0.4)),
-                    ),
-                    child: Text(
-                      run.status.toUpperCase(),
-                      style: TextStyle(
-                        color: statusColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                  )),
+                  const SizedBox(width: 8),
+                  StatusBadge(run.status, label: run.status.toUpperCase()),
                 ],
               ),
               const SizedBox(height: 12),
@@ -163,7 +109,8 @@ class _RunCard extends StatelessWidget {
                       children: [
                         Text(
                           'Stops: ${run.deliveredCount} / ${run.stopCount} Delivered',
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 6),
                         ClipRRect(
@@ -173,7 +120,9 @@ class _RunCard extends StatelessWidget {
                             minHeight: 6,
                             backgroundColor: Colors.grey.shade200,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              progress == 1.0 ? Colors.green : Colors.indigo,
+                              progress == 1.0
+                                  ? AppTheme.success
+                                  : AppTheme.orange,
                             ),
                           ),
                         ),
@@ -189,11 +138,12 @@ class _RunCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.straighten, size: 16, color: Colors.grey),
+                      const Icon(Icons.straighten,
+                          size: 16, color: AppTheme.muted),
                       const SizedBox(width: 4),
                       Text(
                         '${run.totalDistanceKm.toStringAsFixed(1)} km total',
-                        style: const TextStyle(fontSize: 13, color: Colors.black87),
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
                   ),

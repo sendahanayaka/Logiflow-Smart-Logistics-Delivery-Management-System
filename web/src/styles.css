@@ -153,3 +153,49 @@ tr:last-child td { border-bottom: 0; }
   .action-nav { grid-template-columns: 1fr; }
   .pagination-row { align-items: flex-start; flex-direction: column; gap: 10px; }
 }
+
+/* Shared mobile-first visual language for operational screens */
+main { min-width: 0; }
+.users-page, .warehouse-page, .warehouse-list-page, .orders-page-container, .app-content {
+  width: min(100%, 1440px);
+  margin-inline: auto;
+  padding: clamp(1rem, 3.5vw, 2.25rem);
+}
+.users-page__header, .orders-header, .portal-header, .surface, .orders-panel, .details-card, .warehouse-card,
+.create-warehouse-card, .empty-state, .metric-card, .card, .input-section, .run-card, .admin-link-card {
+  border: 1px solid rgba(8, 0, 108, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 12px 34px rgba(8, 0, 108, 0.055);
+}
+.users-page__header { background: rgba(255, 255, 255, 0.94); }
+.users-page__header h1, .orders-page-title { letter-spacing: -0.045em; }
+.users-toolbar, .orders-toolbar { flex-wrap: wrap; }
+.button, .button-link, button, input, select, textarea { font-family: var(--font-main, inherit); }
+.button, .button-link, button {
+  min-height: 42px;
+  border-radius: 12px;
+  transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+button:not(:disabled):hover, .button:not(:disabled):hover, .button-link:hover { transform: translateY(-1px); }
+input, select, textarea { min-height: 44px; border-radius: 11px; border-color: #d9ddeb; }
+input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 4px rgba(255, 80, 0, 0.12); }
+table { border-radius: 16px; box-shadow: 0 8px 22px rgba(8, 0, 108, 0.035); }
+th { padding-block: 14px; background: #f5f5fb; }
+td { padding-block: 14px; }
+tbody tr { transition: background-color 140ms ease; }
+tbody tr:hover { background: #fafaff; }
+.details-card:hover, .warehouse-card:hover, .metric-card:hover { box-shadow: 0 16px 38px rgba(8, 0, 108, 0.09); }
+
+@media (max-width: 640px) {
+  .users-page, .warehouse-page, .warehouse-list-page, .orders-page-container, .app-content { padding: 1rem; }
+  .users-page__header { padding: 1.1rem; border-radius: 18px; }
+  .users-page__header h1, .page-heading h1, .orders-page-title { font-size: clamp(1.65rem, 8vw, 2.15rem); }
+  .surface, .orders-panel, .details-card, .warehouse-card, .create-warehouse-card, .metric-card { padding: 1rem; border-radius: 17px; }
+  .pagination-row { gap: 0.75rem; }
+  .pagination-row button { min-width: 42px; }
+  .users-toolbar > *, .orders-toolbar > * { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}

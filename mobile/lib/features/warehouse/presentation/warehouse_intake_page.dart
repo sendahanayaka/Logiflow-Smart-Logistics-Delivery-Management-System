@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets/sign_out_button.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/loading_state.dart';
+import '../../../core/widgets/status_badge.dart';
+import '../../../core/theme/app_theme.dart';
 import '../data/models/warehouse_models.dart';
 import '../data/tracking_code.dart';
 import '../data/warehouse_repository.dart';
@@ -139,16 +144,24 @@ class _WarehouseIntakePageState extends ConsumerState<WarehouseIntakePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.warehouse.name} intake')),
+      appBar: AppBar(
+        title: Text('${widget.warehouse.name} intake'),
+        actions: const [SignOutButton()],
+      ),
       body: FutureBuilder<_IntakeOptions>(
         future: _options,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
+            return const LoadingState(label: 'Loading intake options…');
           }
           if (snapshot.hasError) {
-            return _IntakeLoadError(
-                onRetry: () => setState(() => _options = _loadOptions()));
+            return EmptyState(
+              icon: Icons.cloud_off_outlined,
+              title: 'Intake options unavailable',
+              message: 'Orders or storage zones could not be loaded.',
+              actionLabel: 'Retry',
+              onAction: () => setState(() => _options = _loadOptions()),
+            );
           }
           return _buildForm(context, snapshot.data!);
         },
@@ -167,15 +180,22 @@ class _WarehouseIntakePageState extends ConsumerState<WarehouseIntakePage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.check_circle_outline,
-                      color: Colors.green, size: 52),
+                  Container(
+                      width: 68,
+                      height: 68,
+                      decoration: BoxDecoration(
+                          color: AppTheme.success.withValues(alpha: 0.1),
+                          shape: BoxShape.circle),
+                      child: const Icon(Icons.check_circle_outline,
+                          color: AppTheme.success, size: 38)),
                   const SizedBox(height: 12),
-                  const Text('Package received',
-                      style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  Text('Package received',
+                      style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 8),
-                  Text('Tracking code: ${_receipt!.trackingCode}'),
-                  Text('Status: ${_receipt!.status}'),
+                  SelectableText('Tracking code: ${_receipt!.trackingCode}',
+                      style: Theme.of(context).textTheme.bodyMedium),
+                  const SizedBox(height: 8),
+                  StatusBadge(_receipt!.status),
                   const SizedBox(height: 20),
                   FilledButton.icon(
                     onPressed: _resetForNextPackage,
@@ -193,11 +213,38 @@ class _WarehouseIntakePageState extends ConsumerState<WarehouseIntakePage> {
     return Form(
       key: _formKey,
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
         children: [
-          Text(widget.warehouse.location,
-              style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(height: 20),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(children: [
+                Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                        color: AppTheme.navy.withValues(alpha: 0.07),
+                        borderRadius: BorderRadius.circular(12)),
+                    child: const Icon(Icons.warehouse_outlined,
+                        color: AppTheme.navy)),
+                const SizedBox(width: 12),
+                Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      Text('Receive a package',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 3),
+                      Text(widget.warehouse.location,
+                          style: Theme.of(context).textTheme.bodySmall),
+                    ])),
+              ]),
+            ),
+          ),
+          const SizedBox(height: 22),
+          Text('Package information',
+              style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -216,7 +263,7 @@ class _WarehouseIntakePageState extends ConsumerState<WarehouseIntakePage> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           DropdownButtonFormField<IntakeOrder>(
             initialValue: _selectedOrder,
             isExpanded: true,
@@ -232,7 +279,7 @@ class _WarehouseIntakePageState extends ConsumerState<WarehouseIntakePage> {
                 : (value) => setState(() => _selectedOrder = value),
             validator: (value) => value == null ? 'Select an order.' : null,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           DropdownButtonFormField<StorageZone>(
             initialValue: _selectedZone,
             isExpanded: true,
@@ -247,7 +294,7 @@ class _WarehouseIntakePageState extends ConsumerState<WarehouseIntakePage> {
             validator: (value) =>
                 value == null ? 'Select a storage zone.' : null,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           TextFormField(
             controller: _weight,
             decoration: const InputDecoration(labelText: 'Weight (kg)'),
@@ -256,7 +303,7 @@ class _WarehouseIntakePageState extends ConsumerState<WarehouseIntakePage> {
                 ? 'Enter a weight greater than zero.'
                 : null,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           TextFormField(
             controller: _volume,
             decoration: const InputDecoration(labelText: 'Volume (m³)'),
@@ -265,14 +312,22 @@ class _WarehouseIntakePageState extends ConsumerState<WarehouseIntakePage> {
                 ? 'Enter a volume greater than zero.'
                 : null,
           ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Fragile package'),
-            value: _isFragile,
-            onChanged: _submitting
-                ? null
-                : (value) => setState(() => _isFragile = value),
+          Card(
+            child: SwitchListTile(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+              secondary: const Icon(Icons.warning_amber_rounded,
+                  color: AppTheme.warning),
+              title: const Text('Fragile package',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: const Text('Handle with extra care'),
+              value: _isFragile,
+              onChanged: _submitting
+                  ? null
+                  : (value) => setState(() => _isFragile = value),
+            ),
           ),
+          const SizedBox(height: 14),
           TextFormField(
             controller: _specialHandling,
             decoration:
@@ -285,10 +340,17 @@ class _WarehouseIntakePageState extends ConsumerState<WarehouseIntakePage> {
             Text(_submitError!,
                 style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ],
-          const SizedBox(height: 12),
-          FilledButton(
+          const SizedBox(height: 18),
+          FilledButton.icon(
             onPressed: _submitting ? null : _submit,
-            child: Text(_submitting ? 'Receiving package…' : 'Receive package'),
+            icon: _submitting
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white))
+                : const Icon(Icons.move_to_inbox_outlined),
+            label: Text(_submitting ? 'Receiving package…' : 'Receive package'),
           ),
         ],
       ),
@@ -300,25 +362,4 @@ class _IntakeOptions {
   const _IntakeOptions({required this.zones, required this.orders});
   final List<StorageZone> zones;
   final List<IntakeOrder> orders;
-}
-
-class _IntakeLoadError extends StatelessWidget {
-  const _IntakeLoadError({required this.onRetry});
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Unable to load orders or storage zones.',
-                  textAlign: TextAlign.center),
-              const SizedBox(height: 12),
-              OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
-            ],
-          ),
-        ),
-      );
 }

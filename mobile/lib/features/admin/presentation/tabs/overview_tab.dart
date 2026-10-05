@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/loading_state.dart';
 import '../controllers/admin_providers.dart';
 
 /// Ops overview: headline counts across workflows, shipments and fleet.
@@ -24,17 +26,18 @@ class OverviewTab extends ConsumerWidget {
 
     // Workflows + shipments drive the primary tiles; fleet is a best-effort snapshot.
     if (workflows.isLoading || shipments.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const LoadingState(label: 'Loading operations overview…');
     }
     if (workflows.hasError || shipments.hasError) {
       return RefreshIndicator(
         onRefresh: refresh,
-        child: ListView(children: [
-          const SizedBox(height: 120),
-          const Center(child: Text("Couldn't load the dashboard. Is the API running?")),
-          const SizedBox(height: 12),
-          Center(child: OutlinedButton(onPressed: refresh, child: const Text('Retry'))),
-        ]),
+        child: EmptyState(
+          icon: Icons.cloud_off_outlined,
+          title: "Couldn't load the dashboard",
+          message: 'Check your connection and try again.',
+          actionLabel: 'Retry',
+          onAction: refresh,
+        ),
       );
     }
 
@@ -45,12 +48,15 @@ class OverviewTab extends ConsumerWidget {
     final delivered = shs.where((s) => s.status == 'Delivered').length;
 
     final tiles = <Widget>[
-      _StatTile(label: 'Pending approvals', value: '$pendingApprovals', accent: true),
+      _StatTile(
+          label: 'Pending approvals', value: '$pendingApprovals', accent: true),
       _StatTile(label: 'Workflows total', value: '${wfs.length}'),
       _StatTile(label: 'Active shipments', value: '$activeShipments'),
       _StatTile(label: 'Delivered', value: '$delivered'),
-      _StatTile(label: 'Drivers', value: '${drivers.valueOrNull?.length ?? '—'}'),
-      _StatTile(label: 'Vehicles', value: '${vehicles.valueOrNull?.length ?? '—'}'),
+      _StatTile(
+          label: 'Drivers', value: '${drivers.valueOrNull?.length ?? '—'}'),
+      _StatTile(
+          label: 'Vehicles', value: '${vehicles.valueOrNull?.length ?? '—'}'),
     ];
 
     return RefreshIndicator(
@@ -68,7 +74,8 @@ class OverviewTab extends ConsumerWidget {
 }
 
 class _StatTile extends StatelessWidget {
-  const _StatTile({required this.label, required this.value, this.accent = false});
+  const _StatTile(
+      {required this.label, required this.value, this.accent = false});
   final String label;
   final String value;
   final bool accent;
@@ -76,7 +83,7 @@ class _StatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: accent ? AppTheme.orange : null,
+      color: accent ? AppTheme.navy : null,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -85,9 +92,13 @@ class _StatTile extends StatelessWidget {
           children: [
             Text(value,
                 style: TextStyle(
-                    fontSize: 32, fontWeight: FontWeight.bold, color: accent ? Colors.white : AppTheme.navy)),
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: accent ? Colors.white : AppTheme.navy)),
             const SizedBox(height: 4),
-            Text(label, style: TextStyle(color: accent ? Colors.white : Colors.black54)),
+            Text(label,
+                style:
+                    TextStyle(color: accent ? Colors.white : Colors.black54)),
           ],
         ),
       ),

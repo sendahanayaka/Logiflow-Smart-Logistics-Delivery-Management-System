@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/loading_state.dart';
+import '../../../../core/widgets/status_badge.dart';
 import '../../data/admin_repository.dart';
 import '../../data/models/app_user.dart';
 import '../controllers/admin_providers.dart';
@@ -18,16 +21,18 @@ class UsersTab extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(usersProvider),
         child: async.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => ListView(children: [
-            const SizedBox(height: 120),
-            const Center(child: Text("Couldn't load users.")),
-            const SizedBox(height: 12),
-            Center(child: OutlinedButton(onPressed: () => ref.invalidate(usersProvider), child: const Text('Retry'))),
-          ]),
+          loading: () => const LoadingState(label: 'Loading users…'),
+          error: (e, _) => EmptyState(
+            icon: Icons.cloud_off_outlined,
+            title: 'Users unavailable',
+            message: 'Check the connection and try again.',
+            actionLabel: 'Retry',
+            onAction: () => ref.invalidate(usersProvider),
+          ),
           data: (users) {
             if (users.isEmpty) {
-              return ListView(children: const [SizedBox(height: 120), Center(child: Text('No users yet.'))]);
+              return const EmptyState(
+                  icon: Icons.people_outline, title: 'No users yet');
             }
             return ListView.separated(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
@@ -39,8 +44,10 @@ class UsersTab extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'admin-users-add',
         onPressed: () async {
-          final ok = await Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => const UserFormPage()));
+          final ok = await Navigator.of(context).push<bool>(
+              MaterialPageRoute(builder: (_) => const UserFormPage()));
           if (ok == true) ref.invalidate(usersProvider);
         },
         icon: const Icon(Icons.person_add),
@@ -57,7 +64,8 @@ class _UserCard extends ConsumerWidget {
   Future<void> _changeRole(BuildContext context, WidgetRef ref) async {
     final roles = ref.read(rolesProvider).valueOrNull;
     if (roles == null || roles.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Roles still loading — try again.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Roles still loading — try again.')));
       return;
     }
     var selected = user.roleId;
@@ -69,13 +77,19 @@ class _UserCard extends ConsumerWidget {
           builder: (ctx, setLocal) => DropdownButton<String>(
             isExpanded: true,
             value: roles.any((r) => r.id == selected) ? selected : null,
-            items: [for (final r in roles) DropdownMenuItem(value: r.id, child: Text(r.name))],
+            items: [
+              for (final r in roles)
+                DropdownMenuItem(value: r.id, child: Text(r.name))
+            ],
             onChanged: (v) => setLocal(() => selected = v ?? selected),
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, selected), child: const Text('Save')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, selected),
+              child: const Text('Save')),
         ],
       ),
     );
@@ -85,18 +99,22 @@ class _UserCard extends ConsumerWidget {
       ref.invalidate(usersProvider);
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not change role.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not change role.')));
       }
     }
   }
 
   Future<void> _toggleStatus(BuildContext context, WidgetRef ref) async {
     try {
-      await ref.read(adminRepositoryProvider).setStatus(user.id, !user.isActive);
+      await ref
+          .read(adminRepositoryProvider)
+          .setStatus(user.id, !user.isActive);
       ref.invalidate(usersProvider);
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not update status.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not update status.')));
       }
     }
   }
@@ -106,23 +124,14 @@ class _UserCard extends ConsumerWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: ListTile(
-        leading: CircleAvatar(child: Text(user.name.isNotEmpty ? user.name[0].toUpperCase() : '?')),
+        leading: CircleAvatar(
+            child:
+                Text(user.name.isNotEmpty ? user.name[0].toUpperCase() : '?')),
         title: Text(user.name),
         subtitle: Text('${user.email}\n${user.role}'),
         isThreeLine: true,
         trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: user.isActive ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text(user.isActive ? 'Active' : 'Inactive',
-                style: TextStyle(
-                    color: user.isActive ? const Color(0xFF166534) : const Color(0xFF991B1B),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600)),
-          ),
+          StatusBadge(user.isActive ? 'Active' : 'Inactive'),
           PopupMenuButton<String>(
             onSelected: (c) {
               if (c == 'role') _changeRole(context, ref);
@@ -130,7 +139,9 @@ class _UserCard extends ConsumerWidget {
             },
             itemBuilder: (_) => [
               const PopupMenuItem(value: 'role', child: Text('Change role')),
-              PopupMenuItem(value: 'status', child: Text(user.isActive ? 'Deactivate' : 'Activate')),
+              PopupMenuItem(
+                  value: 'status',
+                  child: Text(user.isActive ? 'Deactivate' : 'Activate')),
             ],
           ),
         ]),

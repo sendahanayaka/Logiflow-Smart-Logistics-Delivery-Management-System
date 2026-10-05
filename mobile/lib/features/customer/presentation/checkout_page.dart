@@ -6,15 +6,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/loading_state.dart';
 import '../../auth/presentation/login_page.dart' show friendlyError;
 import '../data/customer_repository.dart';
 import '../data/models/order.dart';
 import 'controllers/orders_controller.dart';
 
 const _methods = <_PayMethod>[
-  _PayMethod('Cash on Pickup', Icons.payments_outlined, 'Pay in cash when your package is collected.'),
-  _PayMethod('Card Payment', Icons.credit_card, 'Pay using your debit or credit card.'),
-  _PayMethod('Online Bank Transfer', Icons.account_balance, 'Transfer the amount and keep your receipt.'),
+  _PayMethod('Cash on Pickup', Icons.payments_outlined,
+      'Pay in cash when your package is collected.'),
+  _PayMethod('Card Payment', Icons.credit_card,
+      'Pay using your debit or credit card.'),
+  _PayMethod('Online Bank Transfer', Icons.account_balance,
+      'Transfer the amount and keep your receipt.'),
 ];
 
 /// Review the delivery fee (polled briefly until the backend computes it) and
@@ -72,7 +77,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
 
   Future<void> _fetch() async {
     try {
-      final o = await ref.read(customerRepositoryProvider).orderById(widget.orderId);
+      final o =
+          await ref.read(customerRepositoryProvider).orderById(widget.orderId);
       if (!mounted) return;
       setState(() {
         _order = o;
@@ -111,13 +117,16 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       _error = null;
     });
     try {
-      await ref.read(customerRepositoryProvider).checkout(widget.orderId, _method);
+      await ref
+          .read(customerRepositoryProvider)
+          .checkout(widget.orderId, _method);
       ref.invalidate(orderByIdProvider(widget.orderId));
       await ref.read(ordersControllerProvider.notifier).refresh();
       if (!mounted) return;
       context.pushReplacement('/customer/order/${widget.orderId}/success');
     } catch (e) {
-      setState(() => _error = friendlyError(e, 'Checkout failed. Please try again.'));
+      setState(() =>
+          _error = friendlyError(e, 'Checkout failed. Please try again.'));
     } finally {
       if (mounted) setState(() => _confirming = false);
     }
@@ -128,9 +137,15 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Checkout')),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const LoadingState(label: 'Loading checkout…')
           : _order == null
-              ? Center(child: Text(_loadError ?? 'Order not found.'))
+              ? EmptyState(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Checkout unavailable',
+                  message: _loadError ?? 'Order not found.',
+                  actionLabel: 'Retry',
+                  onAction: _fetch,
+                )
               : _order!.isConfirmed
                   ? _alreadyConfirmed()
                   : _content(_order!),
@@ -146,7 +161,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             const Text('This order is already confirmed.'),
             const SizedBox(height: 16),
             FilledButton(
-              onPressed: () => context.pushReplacement('/customer/order/${widget.orderId}'),
+              onPressed: () =>
+                  context.pushReplacement('/customer/order/${widget.orderId}'),
               child: const Text('View order'),
             ),
           ]),
@@ -162,7 +178,11 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         _pricingCard(order),
         const SizedBox(height: 16),
         const Text('PAYMENT METHOD',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54, letterSpacing: 0.5)),
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.black54,
+                letterSpacing: 0.5)),
         const SizedBox(height: 8),
         RadioGroup<String>(
           groupValue: _method,
@@ -192,12 +212,19 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   Widget _summaryCard(Order order) => Card(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(order.packageDescription.isEmpty ? 'Delivery order' : order.packageDescription,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(
+                order.packageDescription.isEmpty
+                    ? 'Delivery order'
+                    : order.packageDescription,
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             const SizedBox(height: 6),
-            Text('${order.pickupCity} → ${order.deliveryCity}', style: const TextStyle(color: Colors.black87)),
-            Text('${order.weightKg} kg · ${order.priority}', style: const TextStyle(color: Colors.black54, fontSize: 13)),
+            Text('${order.pickupCity} → ${order.deliveryCity}',
+                style: const TextStyle(color: Colors.black87)),
+            Text('${order.weightKg} kg · ${order.priority}',
+                style: const TextStyle(color: Colors.black54, fontSize: 13)),
           ]),
         ),
       );
@@ -209,16 +236,26 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('DELIVERY FEE',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54, letterSpacing: 0.5)),
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black54,
+                  letterSpacing: 0.5)),
           const SizedBox(height: 12),
           if (p == null && _retries < 3)
             const Row(children: [
-              SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+              SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2)),
               SizedBox(width: 10),
-              Text('Calculating delivery fee…', style: TextStyle(fontStyle: FontStyle.italic, color: Colors.black54)),
+              Text('Calculating delivery fee…',
+                  style: TextStyle(
+                      fontStyle: FontStyle.italic, color: Colors.black54)),
             ])
           else if (p == null)
-            const Text('Fee will be settled before dispatch / on delivery.', style: TextStyle(color: Colors.black54))
+            const Text('Fee will be settled before dispatch / on delivery.',
+                style: TextStyle(color: Colors.black54))
           else ...[
             _line('Base fee', p.baseFee),
             _line('Distance', p.distanceCharge),
@@ -228,9 +265,13 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             _line('Handling', p.handlingCharge),
             const Divider(),
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              const Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Total',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               Text('Rs. ${p.totalDeliveryFee.toStringAsFixed(2)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.navy)),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: AppTheme.navy)),
             ]),
           ],
         ]),
@@ -240,7 +281,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
 
   Widget _line(String l, double v) => Padding(
         padding: const EdgeInsets.only(bottom: 6),
-        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        child:
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Text(l, style: const TextStyle(color: Colors.black54)),
           Text('Rs. ${v.toStringAsFixed(2)}'),
         ]),
@@ -251,12 +293,18 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        side: BorderSide(color: selected ? AppTheme.navy : Colors.black12, width: selected ? 2 : 1),
+        side: BorderSide(
+            color: selected ? AppTheme.navy : Colors.black12,
+            width: selected ? 2 : 1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: RadioListTile<String>(
         value: m.id,
-        title: Row(children: [Icon(m.icon, size: 20), const SizedBox(width: 8), Text(m.id)]),
+        title: Row(children: [
+          Icon(m.icon, size: 20),
+          const SizedBox(width: 8),
+          Text(m.id)
+        ]),
         subtitle: Text(m.desc),
         activeColor: AppTheme.navy,
       ),
@@ -280,7 +328,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                 controller: _cardNumber,
                 keyboardType: TextInputType.number,
                 inputFormatters: [_CardNumberFormatter()],
-                decoration: const InputDecoration(labelText: 'Card number', hintText: '1234 5678 9012 3456'),
+                decoration: const InputDecoration(
+                    labelText: 'Card number', hintText: '1234 5678 9012 3456'),
                 onChanged: (_) => setState(() {}),
               ),
               const SizedBox(height: 10),
@@ -290,7 +339,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                     controller: _cardExpiry,
                     keyboardType: TextInputType.number,
                     inputFormatters: [_ExpiryFormatter()],
-                    decoration: const InputDecoration(labelText: 'Expiry (MM/YY)', hintText: '12/27'),
+                    decoration: const InputDecoration(
+                        labelText: 'Expiry (MM/YY)', hintText: '12/27'),
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
@@ -302,7 +352,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                     obscureText: true,
                     maxLength: 4,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: const InputDecoration(labelText: 'CVV', counterText: ''),
+                    decoration: const InputDecoration(
+                        labelText: 'CVV', counterText: ''),
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
@@ -314,17 +365,23 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         return Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Bank account details', style: TextStyle(fontWeight: FontWeight.w600)),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('Bank account details',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
-              const Text('Bank: [Company Bank]\nAccount: [LogiFlow Account]\nNumber: [Account Number]\nBranch: [Branch]',
+              const Text(
+                  'Bank: [Company Bank]\nAccount: [LogiFlow Account]\nNumber: [Account Number]\nBranch: [Branch]',
                   style: TextStyle(color: Colors.black54, height: 1.5)),
               const SizedBox(height: 8),
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
                 value: _bankAck,
-                onChanged: _confirming ? null : (v) => setState(() => _bankAck = v ?? false),
-                title: const Text('I have completed the transfer and kept my receipt.'),
+                onChanged: _confirming
+                    ? null
+                    : (v) => setState(() => _bankAck = v ?? false),
+                title: const Text(
+                    'I have completed the transfer and kept my receipt.'),
                 controlAffinity: ListTileControlAffinity.leading,
               ),
             ]),
@@ -333,7 +390,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       case 'Cash on Pickup':
         return const Padding(
           padding: EdgeInsets.all(8),
-          child: Text('No further details required — pay in cash at pickup.', style: TextStyle(color: Colors.black54)),
+          child: Text('No further details required — pay in cash at pickup.',
+              style: TextStyle(color: Colors.black54)),
         );
       default:
         return const SizedBox.shrink();
@@ -351,7 +409,8 @@ class _PayMethod {
 /// Groups card digits as "#### #### #### ####" (max 16 digits).
 class _CardNumberFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
     final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
     final capped = digits.length > 16 ? digits.substring(0, 16) : digits;
     final buf = StringBuffer();
@@ -360,17 +419,22 @@ class _CardNumberFormatter extends TextInputFormatter {
       buf.write(capped[i]);
     }
     final text = buf.toString();
-    return TextEditingValue(text: text, selection: TextSelection.collapsed(offset: text.length));
+    return TextEditingValue(
+        text: text, selection: TextSelection.collapsed(offset: text.length));
   }
 }
 
 /// Formats expiry as "MM/YY".
 class _ExpiryFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
     final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
     final capped = digits.length > 4 ? digits.substring(0, 4) : digits;
-    final text = capped.length >= 3 ? '${capped.substring(0, 2)}/${capped.substring(2)}' : capped;
-    return TextEditingValue(text: text, selection: TextSelection.collapsed(offset: text.length));
+    final text = capped.length >= 3
+        ? '${capped.substring(0, 2)}/${capped.substring(2)}'
+        : capped;
+    return TextEditingValue(
+        text: text, selection: TextSelection.collapsed(offset: text.length));
   }
 }

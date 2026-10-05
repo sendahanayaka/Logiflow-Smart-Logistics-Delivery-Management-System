@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../auth/session_controller.dart';
 import '../auth/user_role.dart';
+import '../widgets/loading_state.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/auth/presentation/register_page.dart';
 import '../../features/admin/presentation/admin_dashboard_page.dart';
@@ -75,21 +76,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/customer', builder: (_, __) => const CustomerHomePage()),
       GoRoute(
         path: '/customer/order/:id',
-        builder: (_, state) => OrderDetailsPage(orderId: state.pathParameters['id']!),
+        builder: (_, state) =>
+            OrderDetailsPage(orderId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/customer/order/:id/checkout',
-        builder: (_, state) => CheckoutPage(orderId: state.pathParameters['id']!),
+        builder: (_, state) =>
+            CheckoutPage(orderId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/customer/order/:id/success',
-        builder: (_, state) => CheckoutSuccessPage(orderId: state.pathParameters['id']!),
+        builder: (_, state) =>
+            CheckoutSuccessPage(orderId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/customer/order/:id/track',
-        builder: (_, state) => TrackingPage(orderId: state.pathParameters['id']!),
+        builder: (_, state) =>
+            TrackingPage(orderId: state.pathParameters['id']!),
       ),
-      GoRoute(path: '/warehouse', builder: (_, __) => const WarehouseHomePage()),
+      GoRoute(
+          path: '/warehouse', builder: (_, __) => const WarehouseHomePage()),
       GoRoute(
         path: '/warehouse/:warehouseId/intake',
         builder: (_, state) {
@@ -117,5 +123,5 @@ class _SplashPage extends StatelessWidget {
   const _SplashPage();
   @override
   Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: CircularProgressIndicator()));
+      const Scaffold(body: LoadingState(label: 'Starting LogiFlow…'));
 }

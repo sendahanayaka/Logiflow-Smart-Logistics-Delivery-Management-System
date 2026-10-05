@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/loading_state.dart';
+import '../../../../core/widgets/status_badge.dart';
 import '../../data/admin_repository.dart';
 import '../../data/models/fleet.dart';
 import '../controllers/admin_providers.dart';
@@ -16,7 +19,8 @@ class FleetTab extends ConsumerStatefulWidget {
   ConsumerState<FleetTab> createState() => _FleetTabState();
 }
 
-class _FleetTabState extends ConsumerState<FleetTab> with SingleTickerProviderStateMixin {
+class _FleetTabState extends ConsumerState<FleetTab>
+    with SingleTickerProviderStateMixin {
   late final TabController _tab = TabController(length: 2, vsync: this)
     ..addListener(() => setState(() {}));
 
@@ -27,12 +31,14 @@ class _FleetTabState extends ConsumerState<FleetTab> with SingleTickerProviderSt
   }
 
   Future<void> _addDriver() async {
-    final ok = await Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => const DriverFormPage()));
+    final ok = await Navigator.of(context)
+        .push<bool>(MaterialPageRoute(builder: (_) => const DriverFormPage()));
     if (ok == true) ref.invalidate(driversProvider);
   }
 
   Future<void> _addVehicle() async {
-    final ok = await Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => const VehicleFormPage()));
+    final ok = await Navigator.of(context)
+        .push<bool>(MaterialPageRoute(builder: (_) => const VehicleFormPage()));
     if (ok == true) ref.invalidate(vehiclesProvider);
   }
 
@@ -41,7 +47,9 @@ class _FleetTabState extends ConsumerState<FleetTab> with SingleTickerProviderSt
     return Scaffold(
       body: Column(
         children: [
-          TabBar(controller: _tab, tabs: const [Tab(text: 'Drivers'), Tab(text: 'Vehicles')]),
+          TabBar(
+              controller: _tab,
+              tabs: const [Tab(text: 'Drivers'), Tab(text: 'Vehicles')]),
           Expanded(
             child: TabBarView(
               controller: _tab,
@@ -51,6 +59,7 @@ class _FleetTabState extends ConsumerState<FleetTab> with SingleTickerProviderSt
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'admin-fleet-add',
         onPressed: _tab.index == 0 ? _addDriver : _addVehicle,
         icon: const Icon(Icons.add),
         label: Text(_tab.index == 0 ? 'Add driver' : 'Add vehicle'),
@@ -68,7 +77,7 @@ class _DriversList extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: () async => ref.invalidate(driversProvider),
       child: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const LoadingState(label: 'Loading drivers…'),
         error: (e, _) => _error(() => ref.invalidate(driversProvider)),
         data: (drivers) {
           if (drivers.isEmpty) return _empty('No drivers yet.');
@@ -81,13 +90,18 @@ class _DriversList extends ConsumerWidget {
               return Card(
                 clipBehavior: Clip.antiAlias,
                 child: ListTile(
-                  leading: CircleAvatar(child: Text(d.fullName.isNotEmpty ? d.fullName[0].toUpperCase() : '?')),
+                  leading: CircleAvatar(
+                      child: Text(d.fullName.isNotEmpty
+                          ? d.fullName[0].toUpperCase()
+                          : '?')),
                   title: Text(d.fullName),
-                  subtitle: Text('${d.licenseNumber}${d.phoneNumber != null ? ' · ${d.phoneNumber}' : ''}'),
+                  subtitle: Text(
+                      '${d.licenseNumber}${d.phoneNumber != null ? ' · ${d.phoneNumber}' : ''}'),
                   trailing: _statusPill(d.statusLabel),
                   onTap: () async {
                     final ok = await Navigator.of(context).push<bool>(
-                      MaterialPageRoute(builder: (_) => DriverFormPage(driver: d)),
+                      MaterialPageRoute(
+                          builder: (_) => DriverFormPage(driver: d)),
                     );
                     if (ok == true) ref.invalidate(driversProvider);
                   },
@@ -110,7 +124,7 @@ class _VehiclesList extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: () async => ref.invalidate(vehiclesProvider),
       child: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const LoadingState(label: 'Loading vehicles…'),
         error: (e, _) => _error(() => ref.invalidate(vehiclesProvider)),
         data: (vehicles) {
           if (vehicles.isEmpty) return _empty('No vehicles yet.');
@@ -123,16 +137,19 @@ class _VehiclesList extends ConsumerWidget {
               return Card(
                 clipBehavior: Clip.antiAlias,
                 child: ListTile(
-                  leading: const CircleAvatar(child: Icon(Icons.local_shipping)),
+                  leading:
+                      const CircleAvatar(child: Icon(Icons.local_shipping)),
                   title: Text('${v.registrationNumber} · ${v.vehicleType}'),
-                  subtitle: Text('${v.make} ${v.model} · ${v.capacity.toStringAsFixed(0)} kg'),
+                  subtitle: Text(
+                      '${v.make} ${v.model} · ${v.capacity.toStringAsFixed(0)} kg'),
                   trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                     _statusPill(v.statusLabel),
                     PopupMenuButton<String>(
                       onSelected: (choice) async {
                         if (choice == 'edit') {
                           final ok = await Navigator.of(context).push<bool>(
-                            MaterialPageRoute(builder: (_) => VehicleFormPage(vehicle: v)),
+                            MaterialPageRoute(
+                                builder: (_) => VehicleFormPage(vehicle: v)),
                           );
                           if (ok == true) ref.invalidate(vehiclesProvider);
                         } else if (choice == 'delete') {
@@ -141,13 +158,17 @@ class _VehiclesList extends ConsumerWidget {
                       },
                       itemBuilder: (_) => const [
                         PopupMenuItem(value: 'edit', child: Text('Edit')),
-                        PopupMenuItem(value: 'delete', child: Text('Delete', style: TextStyle(color: Colors.red))),
+                        PopupMenuItem(
+                            value: 'delete',
+                            child: Text('Delete',
+                                style: TextStyle(color: Colors.red))),
                       ],
                     ),
                   ]),
                   onTap: () async {
                     final ok = await Navigator.of(context).push<bool>(
-                      MaterialPageRoute(builder: (_) => VehicleFormPage(vehicle: v)),
+                      MaterialPageRoute(
+                          builder: (_) => VehicleFormPage(vehicle: v)),
                     );
                     if (ok == true) ref.invalidate(vehiclesProvider);
                   },
@@ -160,14 +181,17 @@ class _VehiclesList extends ConsumerWidget {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref, Vehicle v) async {
+  Future<void> _confirmDelete(
+      BuildContext context, WidgetRef ref, Vehicle v) async {
     final yes = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete vehicle?'),
         content: Text('Remove ${v.registrationNumber}? This cannot be undone.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(ctx, true),
@@ -181,32 +205,30 @@ class _VehiclesList extends ConsumerWidget {
       await ref.read(adminRepositoryProvider).deleteVehicle(v.id);
       ref.invalidate(vehiclesProvider);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vehicle deleted.')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Vehicle deleted.')));
       }
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not delete — it may be assigned to a shipment.')),
+          const SnackBar(
+              content:
+                  Text('Could not delete — it may be assigned to a shipment.')),
         );
       }
     }
   }
 }
 
-Widget _statusPill(String label) => Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: const Color(0xFFE0E7FF), borderRadius: BorderRadius.circular(999)),
-      child: Text(label, style: const TextStyle(color: Color(0xFF3730A3), fontSize: 11, fontWeight: FontWeight.w600)),
+Widget _statusPill(String label) => StatusBadge(label);
+
+Widget _empty(String msg) =>
+    EmptyState(icon: Icons.directions_car_outlined, title: msg);
+
+Widget _error(VoidCallback retry) => EmptyState(
+      icon: Icons.cloud_off_outlined,
+      title: 'Fleet data unavailable',
+      message: 'Check the connection and try again.',
+      actionLabel: 'Retry',
+      onAction: retry,
     );
-
-Widget _empty(String msg) => ListView(children: [
-      const SizedBox(height: 120),
-      Center(child: Text(msg, style: const TextStyle(color: Colors.black54))),
-    ]);
-
-Widget _error(VoidCallback retry) => ListView(children: [
-      const SizedBox(height: 120),
-      const Center(child: Text("Couldn't load. Is the API running?")),
-      const SizedBox(height: 12),
-      Center(child: OutlinedButton(onPressed: retry, child: const Text('Retry'))),
-    ]);
