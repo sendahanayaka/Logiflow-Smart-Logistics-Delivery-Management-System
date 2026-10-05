@@ -562,6 +562,7 @@ public class FleetService : IFleetService
             .AsNoTracking()
             .Where(s => s.DriverId == driverId &&
                         s.Status != DutyScheduleStatus.Cancelled &&
+                        s.Status != DutyScheduleStatus.Completed &&
                         utcStart < s.EndTime && utcEnd > s.StartTime)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -758,6 +759,7 @@ public class FleetService : IFleetService
             .AsNoTracking()
             .AnyAsync(s => s.DriverId == driverId &&
                            s.Status != DutyScheduleStatus.Cancelled &&
+                           s.Status != DutyScheduleStatus.Completed &&
                            (excludeScheduleId == null || s.Id != excludeScheduleId.Value) &&
                            (utcStart < s.EndTime && utcEnd > s.StartTime), cancellationToken);
 
