@@ -6,6 +6,11 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '../../features/auth/authSlice';
 import { Navbar } from './Navbar';
+import { vi } from 'vitest';
+
+vi.mock('../../features/notifications/NotificationBell', () => ({
+    NotificationBell: () => <div data-testid="mock-notification-bell" />
+}));
 
 const renderWithRouterAndStore = (store: any, component: React.ReactNode) => {
     return render(

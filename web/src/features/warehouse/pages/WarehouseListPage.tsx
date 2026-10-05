@@ -30,6 +30,6 @@ export function WarehouseListPage() {
       )}
       {!!data?.length && <WarehouseTable warehouses={data} />}
       {!isLoading && !error && <CreateWarehouseForm />}
-    </div>
+    </section>
   )
 }

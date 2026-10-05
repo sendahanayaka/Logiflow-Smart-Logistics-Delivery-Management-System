@@ -55,8 +55,8 @@ export function InventoryPage() {
           <label>Status <select value={status} onChange={(event) => updateFilter(() => setStatus(event.target.value as PackageStatus | ''))}><option value="">All statuses</option>{statuses.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
           <label>Storage zone <select value={storageZoneId} onChange={(event) => updateFilter(() => setStorageZoneId(event.target.value))}><option value="">All zones</option>{zones.data?.map((zone) => <option key={zone.id} value={zone.id}>{zone.code} — {zone.name}</option>)}</select></label>
           <label>Tracking code <input value={trackingCode} onChange={(event) => updateFilter(() => setTrackingCode(event.target.value))} placeholder="Search tracking code" /></label>
-        </div>
-      </fieldset>
+        </fieldset>
+      </div>
       {availabilityError && <ApiMessage kind="error">{availabilityError}</ApiMessage>}
       {inventory.isLoading ? <ApiMessage>Loading inventory…</ApiMessage> : inventory.error ? <ApiMessage kind="error">{userFacingApiError(inventory.error, 'Inventory could not be loaded.')}</ApiMessage> : !inventory.data?.items.length ? <ApiMessage>No packages match the current server-side filters.</ApiMessage> : (
         <>
@@ -70,6 +70,6 @@ export function InventoryPage() {
       {editingPackage && (
         <EditPackageForm pkg={editingPackage} zones={zones.data ?? []} onClose={() => setEditingPackage(null)} />
       )}
-    </section>
+    </div>
   )
 }
