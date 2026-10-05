@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetDispatchOrdersQuery } from '../ordersApi';
 import { DispatchOrder } from '../types';
-import { MultiOrderTripPanel } from '../../fleet/components/MultiOrderTripPanel';
+
 import { FleetHeader } from '../../fleet/components/FleetHeader';
 
 export const OrderListPage: React.FC = () => {
