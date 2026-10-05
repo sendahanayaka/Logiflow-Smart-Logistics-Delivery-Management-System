@@ -46,11 +46,10 @@ class SessionController extends Notifier<SessionState> {
     required String name,
     required String email,
     required String password,
-    required String roleId,
   }) async {
     final res = await ref
         .read(authRepositoryProvider)
-        .register(name: name, email: email, password: password, roleId: roleId);
+        .register(name: name, email: email, password: password);
     await ref.read(tokenStoreProvider).write(res.token);
     state = SessionState(user: res.user, loading: false);
   }

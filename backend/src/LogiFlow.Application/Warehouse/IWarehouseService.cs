@@ -25,6 +25,22 @@ public interface IWarehouseService
         CreateStorageZoneCommand command,
         CancellationToken cancellationToken = default);
 
+    Task<WarehouseResponse> UpdateWarehouseAsync(
+        Guid warehouseId,
+        UpdateWarehouseCommand command,
+        CancellationToken cancellationToken = default);
+
+    Task<StorageZoneResponse> UpdateStorageZoneAsync(
+        Guid warehouseId,
+        Guid zoneId,
+        UpdateStorageZoneCommand command,
+        CancellationToken cancellationToken = default);
+
+    Task<PackageResponse> UpdatePackageAsync(
+        Guid packageId,
+        UpdatePackageCommand command,
+        CancellationToken cancellationToken = default);
+
     Task<PackageResponse> ReceivePackageAsync(
         ReceivePackageCommand command,
         CancellationToken cancellationToken = default);

@@ -111,3 +111,7 @@
 /* customer track-by-code */
 .track-form { display: flex; gap: 0.6rem; max-width: 480px; }
 .track-form input { flex: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border, #e3e6f0); border-radius: 6px; font-size: 0.95rem; }
+
+/* Phase 3 — driver "open run" banner */
+.run-detail__start { background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 10px; margin: 12px 0; padding: 16px; text-align: center; }
+.run-detail__start p { margin: 0 0 12px; color: #3730a3; }

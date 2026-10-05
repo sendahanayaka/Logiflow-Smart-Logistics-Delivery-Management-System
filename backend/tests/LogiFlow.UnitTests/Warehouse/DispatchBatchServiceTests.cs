@@ -652,6 +652,8 @@ public sealed class DispatchBatchServiceTests : IAsyncLifetime
         public DbSet<ApprovalDecision> ApprovalDecisions => _context.ApprovalDecisions;
         public DbSet<TrackingEvent> TrackingEvents => _context.TrackingEvents;
         public DbSet<ProofOfDelivery> ProofOfDeliveries => _context.ProofOfDeliveries;
+        public DbSet<Notification> Notifications => _context.Notifications;
+        public DbSet<Message> Messages => _context.Messages;
         public void ClearChangeTracker() => _context.ClearChangeTracker();
 
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>

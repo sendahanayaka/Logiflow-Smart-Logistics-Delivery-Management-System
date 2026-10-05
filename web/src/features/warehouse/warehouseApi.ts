@@ -60,6 +60,14 @@ export interface CreateStorageZoneRequest {
   totalVolumeM3: number
 }
 
+export interface UpdatePackageRequest {
+  storageZoneId: Id
+  weightKg: number
+  volumeM3: number
+  isFragile: boolean
+  specialHandling?: string | null
+}
+
 export interface PackageIntakeRequest {
   orderId: Id
   warehouseId: Id
@@ -249,6 +257,38 @@ export const warehouseApi = baseApi.injectEndpoints({
         { type: 'WarehouseZones', id: warehouseId },
       ],
     }),
+    updateWarehouse: build.mutation<Warehouse, { warehouseId: Id; body: CreateWarehouseRequest }>({
+      query: ({ warehouseId, body }) => ({ url: `/warehouse/${warehouseId}`, method: 'PUT', body }),
+      invalidatesTags: (_result, _error, { warehouseId }) => [
+        { type: 'Warehouse', id: 'LIST' },
+        { type: 'Warehouse', id: warehouseId },
+      ],
+    }),
+    updateStorageZone: build.mutation<
+      StorageZone,
+      { warehouseId: Id; zoneId: Id; body: CreateStorageZoneRequest }
+    >({
+      query: ({ warehouseId, zoneId, body }) => ({
+        url: `/warehouse/${warehouseId}/zones/${zoneId}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: (_result, _error, { warehouseId }) => [
+        { type: 'Warehouse', id: warehouseId },
+        { type: 'WarehouseZones', id: warehouseId },
+      ],
+    }),
+    updatePackage: build.mutation<WarehousePackage, { packageId: Id; body: UpdatePackageRequest }>({
+      query: ({ packageId, body }) => ({
+        url: `/warehouse/packages/${packageId}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: (result, _error, { packageId }) => [
+        { type: 'Package', id: packageId },
+        ...(result ? [{ type: 'WarehouseInventory' as const, id: result.warehouseId }] : []),
+      ],
+    }),
     receivePackage: build.mutation<WarehousePackage, PackageIntakeRequest>({
       query: (body) => ({ url: '/warehouse/intake', method: 'POST', body }),
       invalidatesTags: (_result, _error, request) => [
@@ -348,6 +388,9 @@ export const {
   useGetStorageZonesQuery,
   useCreateWarehouseMutation,
   useCreateStorageZoneMutation,
+  useUpdateWarehouseMutation,
+  useUpdateStorageZoneMutation,
+  useUpdatePackageMutation,
   useReceivePackageMutation,
   useGetPackagesQuery,
   useMakePackageAvailableMutation,

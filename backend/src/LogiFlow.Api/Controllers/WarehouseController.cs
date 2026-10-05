@@ -19,6 +19,9 @@ public class WarehouseController : ControllerBase
     private readonly IValidator<CreateWarehouseRequest> _warehouseValidator;
     private readonly IValidator<CreateStorageZoneRequest> _storageZoneValidator;
     private readonly IValidator<CreatePackageRequest> _packageValidator;
+    private readonly IValidator<UpdateWarehouseRequest> _updateWarehouseValidator;
+    private readonly IValidator<UpdateStorageZoneRequest> _updateStorageZoneValidator;
+    private readonly IValidator<UpdatePackageRequest> _updatePackageValidator;
     private readonly IDispatchBatchService _dispatchBatchService;
 
     public WarehouseController(
@@ -26,12 +29,18 @@ public class WarehouseController : ControllerBase
         IValidator<CreateWarehouseRequest> warehouseValidator,
         IValidator<CreateStorageZoneRequest> storageZoneValidator,
         IValidator<CreatePackageRequest> packageValidator,
+        IValidator<UpdateWarehouseRequest> updateWarehouseValidator,
+        IValidator<UpdateStorageZoneRequest> updateStorageZoneValidator,
+        IValidator<UpdatePackageRequest> updatePackageValidator,
         IDispatchBatchService dispatchBatchService)
     {
         _warehouseService = warehouseService;
         _warehouseValidator = warehouseValidator;
         _storageZoneValidator = storageZoneValidator;
         _packageValidator = packageValidator;
+        _updateWarehouseValidator = updateWarehouseValidator;
+        _updateStorageZoneValidator = updateStorageZoneValidator;
+        _updatePackageValidator = updatePackageValidator;
         _dispatchBatchService = dispatchBatchService;
     }
 
@@ -114,6 +123,45 @@ public class WarehouseController : ControllerBase
         }
     }
 
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(typeof(WarehouseResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<WarehouseResponse>> UpdateWarehouse(
+        Guid id,
+        [FromBody] UpdateWarehouseRequest request,
+        CancellationToken cancellationToken)
+    {
+        var validationResult = await _updateWarehouseValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return ValidationFailure(validationResult);
+        }
+
+        try
+        {
+            var warehouse = await _warehouseService.UpdateWarehouseAsync(
+                id,
+                new UpdateWarehouseCommand(request.Name, request.Location, request.TotalVolumeM3),
+                cancellationToken);
+
+            return Ok(warehouse);
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+    }
+
     [HttpPost("{id:guid}/zones")]
     [ProducesResponseType(typeof(StorageZoneResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -138,6 +186,47 @@ public class WarehouseController : ControllerBase
                 cancellationToken);
 
             return StatusCode(StatusCodes.Status201Created, zone);
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+    }
+
+    [HttpPut("{id:guid}/zones/{zoneId:guid}")]
+    [ProducesResponseType(typeof(StorageZoneResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<StorageZoneResponse>> UpdateStorageZone(
+        Guid id,
+        Guid zoneId,
+        [FromBody] UpdateStorageZoneRequest request,
+        CancellationToken cancellationToken)
+    {
+        var validationResult = await _updateStorageZoneValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return ValidationFailure(validationResult);
+        }
+
+        try
+        {
+            var zone = await _warehouseService.UpdateStorageZoneAsync(
+                id,
+                zoneId,
+                new UpdateStorageZoneCommand(request.Name, request.Code, request.TotalVolumeM3),
+                cancellationToken);
+
+            return Ok(zone);
         }
         catch (KeyNotFoundException exception)
         {
@@ -242,6 +331,50 @@ public class WarehouseController : ControllerBase
         try
         {
             return Ok(await _warehouseService.MakePackageAvailableAsync(id, cancellationToken));
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+    }
+
+    [HttpPut("packages/{id:guid}")]
+    [ProducesResponseType(typeof(PackageResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<PackageResponse>> UpdatePackage(
+        Guid id,
+        [FromBody] UpdatePackageRequest request,
+        CancellationToken cancellationToken)
+    {
+        var validationResult = await _updatePackageValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return ValidationFailure(validationResult);
+        }
+
+        try
+        {
+            var package = await _warehouseService.UpdatePackageAsync(
+                id,
+                new UpdatePackageCommand(
+                    request.StorageZoneId,
+                    request.WeightKg,
+                    request.VolumeM3,
+                    request.IsFragile,
+                    request.SpecialHandling),
+                cancellationToken);
+
+            return Ok(package);
         }
         catch (KeyNotFoundException exception)
         {

@@ -16,18 +16,18 @@ class AuthRepository {
     return (token: data['token'] as String, user: AuthUser.fromJson(data['user'] as Map<String, dynamic>));
   }
 
-  /// POST /api/auth/register -> { token, user }
+  /// POST /api/auth/register -> { token, user }.
+  /// Public registration is CUSTOMER-only; the backend assigns the role, so no
+  /// roleId is sent. Admins create drivers / warehouse staff via the Users API.
   Future<({String token, AuthUser user})> register({
     required String name,
     required String email,
     required String password,
-    required String roleId,
   }) async {
     final res = await _dio.post('/auth/register', data: {
       'name': name,
       'email': email,
       'password': password,
-      'roleId': roleId,
     });
     final data = res.data as Map<String, dynamic>;
     return (token: data['token'] as String, user: AuthUser.fromJson(data['user'] as Map<String, dynamic>));

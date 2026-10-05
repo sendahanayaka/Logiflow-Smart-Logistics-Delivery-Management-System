@@ -1,0 +1,20 @@
+.back-bar {
+  padding: 0.6rem 1.5rem 0;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.back-bar__btn {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #08006C;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  transition: border-color 0.15s, background 0.15s;
+}
+.back-bar__btn:hover {
+  border-color: #FD5901;
+  background: #f8fafc;
+}

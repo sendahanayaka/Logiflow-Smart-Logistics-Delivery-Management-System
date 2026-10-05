@@ -34,6 +34,8 @@ public interface IAppDbContext
     DbSet<ApprovalDecision> ApprovalDecisions { get; }
     DbSet<TrackingEvent> TrackingEvents { get; }
     DbSet<ProofOfDelivery> ProofOfDeliveries { get; }
+    DbSet<Notification> Notifications { get; }
+    DbSet<Message> Messages { get; }
 
     void ClearChangeTracker();
 

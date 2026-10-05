@@ -73,6 +73,26 @@ def validate_dispatch(request: ValidationInput) -> ValidationOutput:
     return run_dispatch_validation(request)
 
 
+class DriverMessageRequest(BaseModel):
+    stage: str
+    delivery_city: str | None = None
+    customer_name: str | None = None
+
+
+class DriverMessageResponse(BaseModel):
+    message: str
+
+
+@app.post("/message/driver-update", dependencies=[Depends(require_internal_key)])
+def driver_message(req: DriverMessageRequest) -> DriverMessageResponse:
+    """Generate a short driver→customer delivery message (Ollama + fallback)."""
+    from app.llm import generate_driver_message
+
+    return DriverMessageResponse(
+        message=generate_driver_message(req.stage, req.delivery_city, req.customer_name)
+    )
+
+
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok", "model": config.OLLAMA_MODEL}

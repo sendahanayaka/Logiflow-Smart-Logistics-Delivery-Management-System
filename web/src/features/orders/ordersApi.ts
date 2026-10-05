@@ -56,7 +56,20 @@ export const ordersApi = baseApi.injectEndpoints({
                 return { data: INITIAL_DISPATCH_ORDERS };
             },
         }),
+        // Customer "My Orders" — cached + tagged so it refetches on every visit and
+        // after create/cancel, instead of needing a re-login to see new orders (item 13).
+        getMyOrders: builder.query<DeliveryOrderResponse[], void>({
+            query: () => '/orders/my-orders',
+            providesTags: (result) =>
+                result
+                    ? [...result.map(({ id }) => ({ type: 'Order' as const, id })), { type: 'Order', id: 'LIST' }]
+                    : [{ type: 'Order', id: 'LIST' }],
+        }),
+        cancelOrderMut: builder.mutation<DeliveryOrderResponse, string>({
+            query: (id) => ({ url: `/orders/${id}/cancel`, method: 'PATCH' }),
+            invalidatesTags: (_r, _e, id) => [{ type: 'Order', id }, { type: 'Order', id: 'LIST' }],
+        }),
     }),
 });
 
-export const { useGetDispatchOrdersQuery } = ordersApi;
+export const { useGetDispatchOrdersQuery, useGetMyOrdersQuery, useCancelOrderMutMutation } = ordersApi;

@@ -91,6 +91,15 @@ button:disabled { cursor: wait; opacity: .65; }
 input, select, textarea { background: #fff; border: 1px solid #c9c7dd; border-radius: 8px; color: var(--ink); padding: 10px; }
 input:focus, select:focus, textarea:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgb(253 89 1 / 18%); outline: 0; }
 .warehouse-form button { align-self: end; white-space: nowrap; }
+.form-actions { align-self: end; display: flex; gap: 10px; }
+.row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+button.secondary, .secondary { background: #fff; border: 1px solid #c9c7dd; color: var(--ink); }
+button.secondary:hover, .secondary:hover { border-color: var(--orange); }
+.zone-card button.secondary { margin-top: 12px; }
+.checkbox-row { align-items: center; flex-direction: row; gap: 8px; }
+.modal-backdrop { align-items: center; background: rgb(8 0 108 / 45%); display: flex; inset: 0; justify-content: center; padding: 20px; position: fixed; z-index: 1000; }
+.modal-card { max-height: 90vh; max-width: 520px; overflow-y: auto; width: 100%; }
+.modal-card .warehouse-form { grid-template-columns: 1fr; }
 .stacked-form { display: grid; gap: 18px; }
 .stacked-form > label, .form-grid label { color: var(--ink); display: grid; font-size: .9rem; font-weight: 700; gap: 6px; }
 .form-grid { display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0, 1fr)); }

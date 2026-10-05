@@ -34,6 +34,8 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<ApprovalDecision> ApprovalDecisions => Set<ApprovalDecision>();
     public DbSet<TrackingEvent> TrackingEvents => Set<TrackingEvent>();
     public DbSet<ProofOfDelivery> ProofOfDeliveries => Set<ProofOfDelivery>();
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<Message> Messages => Set<Message>();
 
     public void ClearChangeTracker() => ChangeTracker.Clear();
 

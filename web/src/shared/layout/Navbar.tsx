@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../app/store';
 import { logout } from '../../features/auth/authSlice';
+import { NotificationBell } from '../../features/notifications/NotificationBell';
 import './Navbar.css';
 
 export const Navbar: React.FC = () => {
@@ -26,13 +27,7 @@ export const Navbar: React.FC = () => {
 
                 <nav className="navbar-nav">
                     <ul className="nav-links">
-                        {isAuthenticated && user?.role === 'CUSTOMER' ? (
-                            <>
-                                <li><Link to="/orders">Dashboard</Link></li>
-                                <li><Link to="/orders">My Orders</Link></li>
-                                <li><Link to="/orders/create">Create Order</Link></li>
-                            </>
-                        ) : (
+                        {!isAuthenticated && (
                             <>
                                 <li><a href="#home">Home</a></li>
                                 <li><a href="#services">Services</a></li>
@@ -41,9 +36,25 @@ export const Navbar: React.FC = () => {
                                 <li><a href="#contact">Contact</a></li>
                             </>
                         )}
-                        {/* Agent planning is an ops-manager tool; customers never see the agentic flow. */}
+                        {isAuthenticated && user?.role === 'CUSTOMER' && (
+                            <>
+                                <li><Link to="/orders">My Orders</Link></li>
+                                <li><Link to="/orders/create">Create Order</Link></li>
+                            </>
+                        )}
                         {isAuthenticated && user?.role === 'ADMIN' && (
-                            <li><Link to="/ai-planning" style={{ color: 'var(--color-navy, #08006C)', fontWeight: 'bold' }}>AI Planning</Link></li>
+                            <>
+                                <li><Link to="/admin">Dashboard</Link></li>
+                                <li><Link to="/users">Users</Link></li>
+                                {/* Agent planning is an ops-manager tool; customers never see the agentic flow. */}
+                                <li><Link to="/ai-planning" style={{ color: 'var(--color-navy, #08006C)', fontWeight: 'bold' }}>AI Planning</Link></li>
+                            </>
+                        )}
+                        {isAuthenticated && user?.role === 'WAREHOUSE_STAFF' && (
+                            <li><Link to="/warehouse">Warehouse</Link></li>
+                        )}
+                        {isAuthenticated && user?.role === 'DRIVER' && (
+                            <li><Link to="/driver">My Runs</Link></li>
                         )}
                     </ul>
                 </nav>
@@ -51,6 +62,10 @@ export const Navbar: React.FC = () => {
                 <div className="navbar-actions">
                     {isAuthenticated && user ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
+                            <NotificationBell />
+                            {(user.role === 'CUSTOMER' || user.role === 'DRIVER') && (
+                                <Link to="/messages" className="btn-login">Messages</Link>
+                            )}
                             <Link to="/track" className="btn-login">Track</Link>
                             <span style={{ fontWeight: '500', color: 'var(--color-navy, #08006C)' }}>
                                 Welcome, {user.name}

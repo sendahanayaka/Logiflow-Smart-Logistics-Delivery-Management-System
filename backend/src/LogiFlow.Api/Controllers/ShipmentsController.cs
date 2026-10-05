@@ -55,6 +55,27 @@ public class ShipmentsController : ControllerBase
         return Ok(await _shipments.ListShipmentsAsync(cancellationToken));
     }
 
+    /// <summary>Driver opens the assigned run → moves it to "picked up" (Dispatched).</summary>
+    [HttpPost("{id:guid}/start")]
+    [ProducesResponseType(typeof(DriverRunView), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<DriverRunView>> StartRun(Guid id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await _shipments.StartRunAsync(id, cancellationToken));
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
+    }
+
     /// <summary>Driver reports progress at a stop (ARRIVED recomputes downstream ETAs).</summary>
     [HttpPost("{id:guid}/events")]
     [ProducesResponseType(typeof(TrackingView), StatusCodes.Status200OK)]

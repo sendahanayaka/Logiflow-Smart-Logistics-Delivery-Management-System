@@ -30,6 +30,8 @@ import AssignmentPage from '../features/fleet/pages/AssignmentPage';
 import DutySchedulePage from '../features/fleet/pages/DutySchedulePage';
 import MaintenancePage from '../features/fleet/pages/MaintenancePage';
 import { AIPlanningPage } from '../features/ai-planning/pages/AIPlanningPage';
+import { MessagesPage } from '../features/messaging/MessagesPage';
+import { ConversationPage } from '../features/messaging/ConversationPage';
 import { DispatchPage } from '../features/warehouse/pages/DispatchPage';
 import { InventoryPage } from '../features/warehouse/pages/InventoryPage';
 import { PackageIntakePage } from '../features/warehouse/pages/PackageIntakePage';
@@ -68,6 +70,14 @@ export const routes = [
         path: 'track',
         element: <ProtectedRoute />,
         children: [{ index: true, element: <TrackingPage /> }],
+      },
+      {
+        path: 'messages',
+        element: <ProtectedRoute allowedRoles={['CUSTOMER', 'DRIVER']} />,
+        children: [
+          { index: true, element: <MessagesPage /> },
+          { path: ':orderId', element: <ConversationPage /> },
+        ],
       },
       {
         path: 'orders',
