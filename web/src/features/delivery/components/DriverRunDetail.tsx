@@ -1,18 +1,27 @@
 // [S4]  driver run detail — ordered stops + arrive/depart progress.
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useGetDriverRunQuery, useRecordStopEventMutation } from '../deliveryApi';
+import { useGetDriverRunQuery, useRecordStopEventMutation, useStartRunMutation } from '../deliveryApi';
 import { shipmentBadgeClass, stopBadgeClass } from '../statusBadge';
 import { activeStopSequence, deliveredCount } from '../driverRun';
 import { PodForm } from './PodForm';
-import { TrackingMap } from './TrackingMap';
-import '../delivery.css'; // map-sketch styles
+import { RouteMap, type MapMarker } from './RouteMap';
+import '../delivery.css';
+
+const STOP_COLOR: Record<string, string> = {
+  Delivered: '#16a34a',
+  Arrived: '#f59e0b',
+  EnRoute: '#2563eb',
+  Departed: '#2563eb',
+  Pending: '#94a3b8',
+};
 
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : '—');
 
 export const DriverRunDetail: React.FC<{ shipmentId: string }> = ({ shipmentId }) => {
   const { data: run, isLoading, isError, refetch } = useGetDriverRunQuery(shipmentId);
   const [recordEvent, { isLoading: saving }] = useRecordStopEventMutation();
+  const [startRun, { isLoading: starting }] = useStartRunMutation();
   const [error, setError] = useState<string | null>(null);
 
   if (isLoading) {
@@ -47,6 +56,20 @@ export const DriverRunDetail: React.FC<{ shipmentId: string }> = ({ shipmentId }
     }
   };
 
+  const openRun = async () => {
+    setError(null);
+    try {
+      await startRun(shipmentId).unwrap();
+    } catch (err) {
+      const message =
+        (err as { data?: { message?: string } })?.data?.message ??
+        'Could not start the run. Please try again.';
+      setError(message);
+    }
+  };
+
+  const notStarted = run.status === 'Created';
+
   return (
     <>
       <div className="run-detail__top">
@@ -62,10 +85,31 @@ export const DriverRunDetail: React.FC<{ shipmentId: string }> = ({ shipmentId }
       </header>
 
       <div className="run-detail__map">
-        <TrackingMap stops={stops} />
+        <RouteMap
+          markers={stops
+            .filter((s) => s.latitude !== 0 || s.longitude !== 0)
+            .map<MapMarker>((s) => ({
+              lat: s.latitude,
+              lng: s.longitude,
+              color: STOP_COLOR[s.status] ?? '#4338ca',
+              label: `#${s.sequence} · ${s.address} (${s.status})`,
+            }))}
+          path={stops
+            .filter((s) => s.latitude !== 0 || s.longitude !== 0)
+            .map((s) => [s.latitude, s.longitude] as [number, number])}
+        />
       </div>
 
       {error && <div className="run-detail__error">{error}</div>}
+
+      {notStarted && (
+        <div className="run-detail__start">
+          <p>This run is assigned to you and ready for pickup.</p>
+          <button type="button" className="stop__btn stop__btn--primary" disabled={starting} onClick={openRun}>
+            {starting ? 'Opening…' : 'Open run — confirm pickup'}
+          </button>
+        </div>
+      )}
 
       {activeSeq === null && (
         <div className="run-detail__done">✓ Run complete — all stops delivered.</div>
@@ -103,7 +147,7 @@ export const DriverRunDetail: React.FC<{ shipmentId: string }> = ({ shipmentId }
                   )}
                 </div>
 
-                {active && (
+                {active && !notStarted && (
                   <div className="stop__actions">
                     {s.status === 'Pending' && (
                       <button

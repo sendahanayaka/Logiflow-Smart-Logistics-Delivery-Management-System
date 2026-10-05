@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 import { ApiMessage, userFacingApiError } from '../components/ApiMessage'
 import { CreateWarehouseForm } from '../components/CreateWarehouseForm'
 import { WarehouseTable } from '../components/WarehouseTable'
@@ -8,6 +10,7 @@ export function WarehouseListPage() {
 
   return (
     <section className="warehouse-list-page">
+      <Link className="back-link" to="/warehouse">← Warehouse workspace</Link>
       <div className="page-heading">
         <div>
           <p className="eyebrow">Operations workspace</p>

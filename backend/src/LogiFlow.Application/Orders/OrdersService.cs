@@ -78,6 +78,8 @@ public class OrdersService : IOrdersService
         };
 
         _context.DeliveryOrders.Add(order);
+        _context.Notifications.Add(
+            Notifications.NotificationFactory.OrderPlaced(customerId, order.Id));
         await _context.SaveChangesAsync(cancellationToken);
 
         return MapOrder(order);

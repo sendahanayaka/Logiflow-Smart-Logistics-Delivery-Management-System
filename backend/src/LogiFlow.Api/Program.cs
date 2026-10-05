@@ -70,6 +70,8 @@ builder.Services.AddScoped<IDeliveryPricingService, DeliveryPricingService>();
 builder.Services.AddScoped<IAgentWorkflowService, AgentWorkflowService>();
 builder.Services.AddScoped<IApprovalService, ApprovalService>();
 builder.Services.AddScoped<IShipmentService, ShipmentService>();
+builder.Services.AddScoped<LogiFlow.Application.Notifications.INotificationService, LogiFlow.Application.Notifications.NotificationService>();
+builder.Services.AddScoped<LogiFlow.Application.Messaging.IMessagingService, LogiFlow.Application.Messaging.MessagingService>();
 
 var agentBaseUrl = builder.Configuration["AgentService:BaseUrl"] ?? "http://localhost:8000";
 // Shared internal key for both directions. Defaults to the dev value (matches the

@@ -81,6 +81,15 @@ export const deliveryApi = baseApi.injectEndpoints({
       query: (code) => `/tracking/code/${encodeURIComponent(code)}`,
       providesTags: (_r, _e, code) => [{ type: 'Tracking', id: code }],
     }),
+    // Driver opens/starts the assigned run → "picked up" (Dispatched).
+    startRun: builder.mutation<DriverRunView, string>({
+      query: (id) => ({ url: `/shipments/${id}/start`, method: 'POST' }),
+      invalidatesTags: (_r, _e, id) => [
+        { type: 'Shipment', id },
+        { type: 'Shipment', id: 'LIST' },
+        { type: 'Tracking', id },
+      ],
+    }),
     recordStopEvent: builder.mutation<TrackingView, { id: string; body: RecordStopEventRequest }>({
       query: ({ id, body }) => ({ url: `/shipments/${id}/events`, method: 'POST', body }),
       invalidatesTags: (_r, _e, { id }) => [
@@ -113,6 +122,7 @@ export const {
   useGetTrackingQuery,
   useGetOrderTrackingQuery,
   useLazyGetTrackingByCodeQuery,
+  useStartRunMutation,
   useRecordStopEventMutation,
   useRecordPodMutation,
 } = deliveryApi;

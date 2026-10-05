@@ -28,6 +28,31 @@ class DriverRunDetailPage extends ConsumerStatefulWidget {
 class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
   bool _isSubmitting = false;
 
+  Future<void> _handleStartRun() async {
+    setState(() => _isSubmitting = true);
+    try {
+      await ref.read(driverRepositoryProvider).startRun(widget.shipmentId);
+      ref.invalidate(driverRunDetailProvider(widget.shipmentId));
+      ref.invalidate(driverRunsProvider);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Run opened — parcels picked up.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to open run: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
   Future<void> _handleRecordEvent(String stopKey, String kind) async {
     setState(() => _isSubmitting = true);
     try {
@@ -152,6 +177,7 @@ class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
           final activeStop = runView.activeStop;
           final deliveredCount =
               stops.where((s) => s.status.toLowerCase() == 'delivered').length;
+          final notStarted = runView.status.toLowerCase() == 'created';
 
           // Compute valid lat/lng points for the flutter_map
           final mapPoints = stops
@@ -277,6 +303,36 @@ class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
                           ),
                   ),
 
+                  // Open Run banner (driver assigned, not yet picked up)
+                  if (notStarted)
+                    Container(
+                      width: double.infinity,
+                      color: Colors.indigo.shade50,
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'This run is assigned to you and ready for pickup.',
+                            style: TextStyle(color: Colors.indigo, fontSize: 13),
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.local_shipping),
+                              label: const Text('Open run — confirm pickup'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.indigo,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                              onPressed: _handleStartRun,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                   // Run Complete Banner
                   if (runView.isCompleted)
                     Container(
@@ -339,6 +395,7 @@ class _DriverRunDetailPageState extends ConsumerState<DriverRunDetailPage> {
                         return _StopCard(
                           stop: stop,
                           isActive: isActive,
+                          canAct: !notStarted,
                           onRecordEvent: (kind) =>
                               _handleRecordEvent(stop.stopKey, kind),
                           onOpenPod: () => _openPodSheet(stop),
@@ -366,6 +423,7 @@ class _StopCard extends StatelessWidget {
   const _StopCard({
     required this.stop,
     required this.isActive,
+    required this.canAct,
     required this.onRecordEvent,
     required this.onOpenPod,
     required this.onMakeCall,
@@ -373,6 +431,7 @@ class _StopCard extends StatelessWidget {
 
   final TimelineEntry stop;
   final bool isActive;
+  final bool canAct;
   final Function(String kind) onRecordEvent;
   final VoidCallback onOpenPod;
   final Function(String phone) onMakeCall;
@@ -560,8 +619,8 @@ class _StopCard extends StatelessWidget {
               ],
             ),
 
-            // Active Stop Action Buttons
-            if (isActive) ...[
+            // Active Stop Action Buttons (hidden until the run is started)
+            if (isActive && canAct) ...[
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 8),

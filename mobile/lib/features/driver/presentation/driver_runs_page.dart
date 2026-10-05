@@ -8,6 +8,7 @@ import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/loading_state.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../messaging/presentation/messages_page.dart';
 import '../data/driver_repository.dart';
 import '../data/models/driver_models.dart';
 
@@ -22,6 +23,15 @@ class DriverRunsPage extends ConsumerWidget {
       title: 'My Delivery Runs',
       owner: 'Driver Team',
       todo: const ['My Runs List', 'Run Detail Timeline', 'POD Submission'],
+      actions: [
+        IconButton(
+          tooltip: 'Messages',
+          icon: const Icon(Icons.chat_bubble_outline),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const MessagesPage()),
+          ),
+        ),
+      ],
       child: RefreshIndicator(
         onRefresh: () async => ref.invalidate(driverRunsProvider),
         child: runsAsync.when(

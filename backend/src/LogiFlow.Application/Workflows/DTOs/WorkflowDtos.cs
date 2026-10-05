@@ -33,7 +33,19 @@ public sealed record WorkflowResponse(
     IReadOnlyList<RouteStopResponse> Stops,
     Guid? AllocatedDriverId = null,
     Guid? AllocatedVehicleId = null,
-    string? AllocationSummary = null);
+    string? AllocationSummary = null,
+    // The agent's per-step audit trail (Plan → Allocate → Validate → Route →
+    // Execute), parsed from the stored AuditJson for the viva/monitor views.
+    IReadOnlyList<AgentStepResponse>? AgentSteps = null);
+
+/// <summary>One agent step in the workflow's audit trail (items 9 & 10).</summary>
+public sealed record AgentStepResponse(
+    string Step,
+    string Agent,
+    string Summary,
+    IReadOnlyList<string> ToolCalls,
+    int? DurationMs,
+    bool Ok);
 
 public sealed record RouteStopResponse(
     Guid Id,

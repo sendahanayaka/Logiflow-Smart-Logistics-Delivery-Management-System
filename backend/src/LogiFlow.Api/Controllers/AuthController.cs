@@ -1,8 +1,11 @@
+using FluentValidation;
+using FluentValidation.Results;
 using LogiFlow.Application.Auth.DTOs;
 using LogiFlow.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -13,15 +16,26 @@ namespace LogiFlow.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IValidator<RegisterRequest> _registerValidator;
+    private readonly IValidator<LoginRequest> _loginValidator;
 
-    public AuthController(IAuthService authService)
+    public AuthController(
+        IAuthService authService,
+        IValidator<RegisterRequest> registerValidator,
+        IValidator<LoginRequest> loginValidator)
     {
         _authService = authService;
+        _registerValidator = registerValidator;
+        _loginValidator = loginValidator;
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
+        var validation = await _registerValidator.ValidateAsync(request);
+        if (!validation.IsValid)
+            return ValidationFailure(validation);
+
         try
         {
             var response = await _authService.RegisterAsync(request);
@@ -44,6 +58,10 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
+        var validation = await _loginValidator.ValidateAsync(request);
+        if (!validation.IsValid)
+            return ValidationFailure(validation);
+
         try
         {
             var response = await _authService.LoginAsync(request);
@@ -85,5 +103,13 @@ public class AuthController : ControllerBase
         {
             return StatusCode(500, new { Message = "An unexpected error occurred." });
         }
+    }
+
+    private ActionResult ValidationFailure(ValidationResult validationResult)
+    {
+        var errors = validationResult.Errors
+            .GroupBy(error => error.PropertyName)
+            .ToDictionary(group => group.Key, group => group.Select(error => error.ErrorMessage).ToArray());
+        return BadRequest(new ValidationProblemDetails(errors));
     }
 }

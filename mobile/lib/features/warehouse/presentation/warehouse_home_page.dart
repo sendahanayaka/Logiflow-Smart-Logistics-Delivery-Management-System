@@ -36,7 +36,7 @@ class _WarehouseHomePageState extends ConsumerState<WarehouseHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Warehouse intake'),
+        title: const Text('Warehouses'),
         actions: const [SignOutButton()],
       ),
       body: FutureBuilder<List<Warehouse>>(
@@ -95,7 +95,7 @@ class _WarehouseHomePageState extends ConsumerState<WarehouseHomePage> {
                 return Card(
                   child: InkWell(
                     onTap: () => context.push(
-                        '/warehouse/${warehouse.id}/intake',
+                        '/warehouse/${warehouse.id}/manage',
                         extra: warehouse),
                     child: Padding(
                       padding: const EdgeInsets.all(16),

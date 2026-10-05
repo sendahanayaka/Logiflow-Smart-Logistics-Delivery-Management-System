@@ -47,6 +47,16 @@ export interface WorkflowResponse {
   allocatedDriverId: string | null;
   allocatedVehicleId: string | null;
   allocationSummary: string | null;
+  agentSteps: AgentStep[] | null;
+}
+
+export interface AgentStep {
+  step: string;
+  agent: string;
+  summary: string;
+  toolCalls: string[];
+  durationMs: number | null;
+  ok: boolean;
 }
 
 export interface ApprovalResult {
@@ -109,6 +119,10 @@ export interface CustomerOrderTracking {
   arrivedAt: string | null;
   deliveredAt: string | null;
   receivedByName: string | null;
+  originLat: number | null;
+  originLng: number | null;
+  destinationLat: number | null;
+  destinationLng: number | null;
 }
 
 export interface DriverRunView {

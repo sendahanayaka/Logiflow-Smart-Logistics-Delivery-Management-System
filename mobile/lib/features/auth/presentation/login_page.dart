@@ -15,6 +15,7 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _loading = false;
@@ -28,6 +29,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
     setState(() {
       _loading = true;
       _error = null;
@@ -91,69 +93,75 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(22),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text('Welcome back',
-                                style: Theme.of(context).textTheme.titleLarge),
-                            const SizedBox(height: 4),
-                            Text('Sign in to continue to your workspace.',
-                                style: Theme.of(context).textTheme.bodySmall),
-                            const SizedBox(height: 22),
-                            TextField(
-                                controller: _email,
-                                decoration: const InputDecoration(
-                                    labelText: 'Email',
-                                    prefixIcon: Icon(Icons.mail_outline)),
-                                keyboardType: TextInputType.emailAddress,
-                                textInputAction: TextInputAction.next),
-                            const SizedBox(height: 14),
-                            TextField(
-                                controller: _password,
-                                decoration: const InputDecoration(
-                                    labelText: 'Password',
-                                    prefixIcon: Icon(Icons.lock_outline)),
-                                obscureText: true,
-                                textInputAction: TextInputAction.done,
-                                onSubmitted: (_) {
-                                  if (!_loading) _submit();
-                                }),
-                            if (_error != null) ...[
+                        child: Form(
+                          key: _formKey,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text('Welcome back',
+                                  style: Theme.of(context).textTheme.titleLarge),
+                              const SizedBox(height: 4),
+                              Text('Sign in to continue to your workspace.',
+                                  style: Theme.of(context).textTheme.bodySmall),
+                              const SizedBox(height: 22),
+                              TextFormField(
+                                  controller: _email,
+                                  decoration: const InputDecoration(
+                                      labelText: 'Email',
+                                      prefixIcon: Icon(Icons.mail_outline)),
+                                  keyboardType: TextInputType.emailAddress,
+                                  textInputAction: TextInputAction.next,
+                                  validator: emailError),
                               const SizedBox(height: 14),
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                    color: const Color(0xFFFCE8EC),
-                                    borderRadius: BorderRadius.circular(10)),
-                                child: Row(children: [
-                                  const Icon(Icons.error_outline,
-                                      color: AppTheme.danger, size: 19),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                      child: Text(_error!,
-                                          style: const TextStyle(
-                                              color: AppTheme.danger,
-                                              fontWeight: FontWeight.w600)))
-                                ]),
-                              ),
+                              TextFormField(
+                                  controller: _password,
+                                  decoration: const InputDecoration(
+                                      labelText: 'Password',
+                                      prefixIcon: Icon(Icons.lock_outline)),
+                                  obscureText: true,
+                                  textInputAction: TextInputAction.done,
+                                  validator: (v) => requiredError(v, 'Password'),
+                                  onFieldSubmitted: (_) {
+                                    if (!_loading) _submit();
+                                  }),
+                              if (_error != null) ...[
+                                const SizedBox(height: 14),
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                      color: const Color(0xFFFCE8EC),
+                                      borderRadius: BorderRadius.circular(10)),
+                                  child: Row(children: [
+                                    const Icon(Icons.error_outline,
+                                        color: AppTheme.danger, size: 19),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                        child: Text(_error!,
+                                            style: const TextStyle(
+                                                color: AppTheme.danger,
+                                                fontWeight: FontWeight.w600)))
+                                  ]),
+                                ),
+                              ],
+                              const SizedBox(height: 20),
+                              FilledButton(
+                                  onPressed: _loading ? null : _submit,
+                                  child: _loading
+                                      ? const SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white))
+                                      : const Text('Sign in')),
+                              const SizedBox(height: 8),
+                              TextButton(
+                                  onPressed: () => context.push('/register'),
+                                  child: const Text(
+                                      "Don't have an account? Register")),
                             ],
-                            const SizedBox(height: 20),
-                            FilledButton(
-                                onPressed: _loading ? null : _submit,
-                                child: _loading
-                                    ? const SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: Colors.white))
-                                    : const Text('Sign in')),
-                            const SizedBox(height: 8),
-                            TextButton(
-                                onPressed: () => context.push('/register'),
-                                child: const Text(
-                                    "Don't have an account? Register")),
-                          ],
+                          ),
                         ),
                       ),
                     ),
@@ -166,6 +174,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       ),
     );
   }
+}
+
+/// Shared form validators (used by login + register).
+final _emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+
+String? emailError(String? value) {
+  final v = (value ?? '').trim();
+  if (v.isEmpty) return 'Email is required.';
+  if (!_emailRegex.hasMatch(v)) return 'Enter a valid email address.';
+  return null;
+}
+
+String? requiredError(String? value, String field) {
+  if ((value ?? '').trim().isEmpty) return '$field is required.';
+  return null;
 }
 
 /// Pull a readable message out of a Dio error ({message}/{title}/validation).

@@ -358,7 +358,46 @@ public class AgentWorkflowService : IAgentWorkflowService
             stops,
             workflow.AllocatedDriverId,
             workflow.AllocatedVehicleId,
-            workflow.AllocationSummary);
+            workflow.AllocationSummary,
+            ParseAuditSteps(workflow.AuditJson));
+    }
+
+    private static readonly JsonSerializerOptions AuditJsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
+    // The audit trail was stored via JsonSerializer.Serialize(response.Audit) using
+    // default (PascalCase) names; parse it back into step rows for the monitor UIs.
+    private static IReadOnlyList<AgentStepResponse> ParseAuditSteps(string? auditJson)
+    {
+        if (string.IsNullOrWhiteSpace(auditJson))
+        {
+            return Array.Empty<AgentStepResponse>();
+        }
+
+        try
+        {
+            var entries = JsonSerializer.Deserialize<List<AgentAuditEntry>>(auditJson, AuditJsonOptions);
+            if (entries is null)
+            {
+                return Array.Empty<AgentStepResponse>();
+            }
+
+            return entries
+                .Select(entry => new AgentStepResponse(
+                    entry.Step,
+                    entry.Agent,
+                    entry.Summary,
+                    entry.ToolCalls ?? Array.Empty<string>(),
+                    entry.DurationMs,
+                    entry.Ok))
+                .ToList();
+        }
+        catch (JsonException)
+        {
+            return Array.Empty<AgentStepResponse>();
+        }
     }
 
     private static WorkflowStatus MapStatus(string? agentStatus) => agentStatus switch

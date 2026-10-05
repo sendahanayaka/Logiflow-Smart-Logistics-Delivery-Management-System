@@ -87,6 +87,17 @@
     font-size: 0.9rem;
 }
 
+.auth-field-error {
+    display: block;
+    color: #d9534f;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.auth-input[aria-invalid="true"] {
+    border-color: #d9534f;
+}
+
 .auth-links {
     text-align: center;
     margin-top: 1.5rem;

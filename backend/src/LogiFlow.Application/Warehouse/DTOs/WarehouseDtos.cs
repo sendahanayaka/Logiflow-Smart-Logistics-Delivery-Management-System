@@ -12,6 +12,23 @@ public sealed record CreateStorageZoneCommand(
     string Code,
     decimal TotalVolumeM3);
 
+public sealed record UpdateWarehouseCommand(
+    string Name,
+    string Location,
+    decimal TotalVolumeM3);
+
+public sealed record UpdateStorageZoneCommand(
+    string Name,
+    string Code,
+    decimal TotalVolumeM3);
+
+public sealed record UpdatePackageCommand(
+    Guid StorageZoneId,
+    decimal WeightKg,
+    decimal VolumeM3,
+    bool IsFragile,
+    string? SpecialHandling);
+
 public sealed record ReceivePackageCommand(
     Guid OrderId,
     Guid WarehouseId,

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../app/store';
 import { logout } from '../../features/auth/authSlice';
+import { NotificationBell } from '../../features/notifications/NotificationBell';
 import './Navbar.css';
 
 export const Navbar: React.FC = () => {
@@ -11,8 +12,10 @@ export const Navbar: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
 
+    const close = () => setMenuOpen(false);
+
     const handleLogout = () => {
-        setMenuOpen(false);
+        close();
         dispatch(logout());
         navigate('/login');
     };
@@ -41,24 +44,34 @@ export const Navbar: React.FC = () => {
 
                 <nav className="navbar-nav" id="primary-navigation">
                     <ul className="nav-links">
-                        {isAuthenticated && user?.role === 'CUSTOMER' ? (
+                        {!isAuthenticated && (
                             <>
-                                <li><Link onClick={() => setMenuOpen(false)} to="/orders">Dashboard</Link></li>
-                                <li><Link onClick={() => setMenuOpen(false)} to="/orders">My Orders</Link></li>
-                                <li><Link onClick={() => setMenuOpen(false)} to="/orders/create">Create Order</Link></li>
-                            </>
-                        ) : (
-                            <>
-                                <li><a onClick={() => setMenuOpen(false)} href="#home">Home</a></li>
-                                <li><a onClick={() => setMenuOpen(false)} href="#services">Services</a></li>
-                                <li><a onClick={() => setMenuOpen(false)} href="#how-it-works">How It Works</a></li>
-                                <li><a onClick={() => setMenuOpen(false)} href="#about">About</a></li>
-                                <li><a onClick={() => setMenuOpen(false)} href="#contact">Contact</a></li>
+                                <li><a onClick={close} href="#home">Home</a></li>
+                                <li><a onClick={close} href="#services">Services</a></li>
+                                <li><a onClick={close} href="#how-it-works">How It Works</a></li>
+                                <li><a onClick={close} href="#about">About</a></li>
+                                <li><a onClick={close} href="#contact">Contact</a></li>
                             </>
                         )}
-                        {/* Agent planning is an ops-manager tool; customers never see the agentic flow. */}
+                        {isAuthenticated && user?.role === 'CUSTOMER' && (
+                            <>
+                                <li><Link onClick={close} to="/orders">My Orders</Link></li>
+                                <li><Link onClick={close} to="/orders/create">Create Order</Link></li>
+                            </>
+                        )}
                         {isAuthenticated && user?.role === 'ADMIN' && (
-                            <li><Link onClick={() => setMenuOpen(false)} to="/ai-planning" style={{ color: 'var(--color-navy, #08006C)', fontWeight: 'bold' }}>AI Planning</Link></li>
+                            <>
+                                <li><Link onClick={close} to="/admin">Dashboard</Link></li>
+                                <li><Link onClick={close} to="/users">Users</Link></li>
+                                {/* Agent planning is an ops-manager tool; customers never see the agentic flow. */}
+                                <li><Link onClick={close} to="/ai-planning" style={{ color: 'var(--color-navy, #08006C)', fontWeight: 'bold' }}>AI Planning</Link></li>
+                            </>
+                        )}
+                        {isAuthenticated && user?.role === 'WAREHOUSE_STAFF' && (
+                            <li><Link onClick={close} to="/warehouse">Warehouse</Link></li>
+                        )}
+                        {isAuthenticated && user?.role === 'DRIVER' && (
+                            <li><Link onClick={close} to="/driver">My Runs</Link></li>
                         )}
                     </ul>
                 </nav>
@@ -66,7 +79,11 @@ export const Navbar: React.FC = () => {
                 <div className="navbar-actions">
                     {isAuthenticated && user ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
-                            <Link onClick={() => setMenuOpen(false)} to="/track" className="btn-login">Track</Link>
+                            <NotificationBell />
+                            {(user.role === 'CUSTOMER' || user.role === 'DRIVER') && (
+                                <Link onClick={close} to="/messages" className="btn-login">Messages</Link>
+                            )}
+                            <Link onClick={close} to="/track" className="btn-login">Track</Link>
                             <span style={{ fontWeight: '500', color: 'var(--color-navy, #08006C)' }}>
                                 Welcome, {user.name}
                             </span>
@@ -80,8 +97,8 @@ export const Navbar: React.FC = () => {
                         </div>
                     ) : (
                         <>
-                            <Link onClick={() => setMenuOpen(false)} to="/login" className="btn-login">Login</Link>
-                            <Link onClick={() => setMenuOpen(false)} to="/register" className="btn-primary">Register</Link>
+                            <Link onClick={close} to="/login" className="btn-login">Login</Link>
+                            <Link onClick={close} to="/register" className="btn-primary">Register</Link>
                         </>
                     )}
                 </div>

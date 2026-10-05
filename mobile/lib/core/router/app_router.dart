@@ -14,6 +14,8 @@ import '../../features/customer/presentation/checkout_page.dart';
 import '../../features/customer/presentation/checkout_success_page.dart';
 import '../../features/customer/presentation/tracking_page.dart';
 import '../../features/warehouse/presentation/warehouse_home_page.dart';
+import '../../features/warehouse/presentation/warehouse_manage_page.dart';
+import '../../features/warehouse/presentation/warehouse_inventory_page.dart';
 import '../../features/warehouse/presentation/warehouse_intake_page.dart';
 import '../../features/warehouse/presentation/warehouse_qr_scanner_page.dart';
 import '../../features/warehouse/data/models/warehouse_models.dart';
@@ -96,6 +98,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
           path: '/warehouse', builder: (_, __) => const WarehouseHomePage()),
+      GoRoute(
+        path: '/warehouse/:warehouseId/manage',
+        builder: (_, state) {
+          final warehouse = state.extra;
+          if (warehouse is! Warehouse) return const WarehouseHomePage();
+          return WarehouseManagePage(warehouse: warehouse);
+        },
+      ),
+      GoRoute(
+        path: '/warehouse/:warehouseId/inventory',
+        builder: (_, state) {
+          final warehouse = state.extra;
+          if (warehouse is! Warehouse) return const WarehouseHomePage();
+          return WarehouseInventoryPage(warehouse: warehouse);
+        },
+      ),
       GoRoute(
         path: '/warehouse/:warehouseId/intake',
         builder: (_, state) {

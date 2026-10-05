@@ -31,6 +31,13 @@ public interface IShipmentService
     Task<DriverRunView?> GetDriverRunAsync(Guid shipmentId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Driver opens/starts an assigned run: moves it from Created ("driver assigned")
+    /// to Dispatched ("picked up"), stamps DispatchedAt, and sets the first stop en route.
+    /// Idempotent for an already-started run.
+    /// </summary>
+    Task<DriverRunView> StartRunAsync(Guid shipmentId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Record driver progress at a stop. An ARRIVED event recomputes the downstream ETAs
     /// from the actual arrival time (the tracking-timeline recompute).
     /// </summary>
