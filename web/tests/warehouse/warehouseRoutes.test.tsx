@@ -8,6 +8,7 @@ vi.mock('../../src/shared/layout/MainLayout', async () => {
 })
 
 vi.mock('../../src/features/warehouse/pages/WarehouseListPage', () => ({ WarehouseListPage: () => <h1>Warehouse list route</h1> }))
+vi.mock('../../src/features/portals/pages/WarehousePortalPage', () => ({ WarehousePortalPage: () => <h1>Warehouse portal route</h1> }))
 vi.mock('../../src/features/warehouse/pages/WarehouseDetailsPage', () => ({ WarehouseDetailsPage: () => <h1>Warehouse details route</h1> }))
 vi.mock('../../src/features/warehouse/pages/InventoryPage', () => ({ InventoryPage: () => <h1>Warehouse inventory route</h1> }))
 vi.mock('../../src/features/warehouse/pages/PackageIntakePage', () => ({ PackageIntakePage: () => <h1>Warehouse intake route</h1> }))
@@ -19,7 +20,8 @@ import { renderWithStore } from './testUtils'
 
 describe('S3 warehouse routes', () => {
   it.each([
-    ['/warehouse', 'Warehouse list route'],
+    ['/warehouse', 'Warehouse portal route'],
+    ['/warehouse/manage', 'Warehouse list route'],
     ['/warehouse/warehouse-001', 'Warehouse details route'],
     ['/warehouse/warehouse-001/inventory', 'Warehouse inventory route'],
     ['/warehouse/warehouse-001/intake', 'Warehouse intake route'],
