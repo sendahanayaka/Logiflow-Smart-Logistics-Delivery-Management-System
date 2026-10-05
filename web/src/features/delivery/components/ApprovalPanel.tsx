@@ -5,6 +5,7 @@ import { RootState } from '../../../app/store';
 import { useGetWorkflowQuery, useApproveWorkflowMutation } from '../deliveryApi';
 import { useGetDriversQuery, useGetVehiclesQuery } from '../../fleet/api/fleetApi';
 import { WorkflowPipeline } from './WorkflowPipeline';
+import { AgentStepsPanel } from './AgentStepsPanel';
 
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : '—');
 
@@ -77,6 +78,8 @@ export const ApprovalPanel: React.FC<{ workflowId: string; readOnly?: boolean }>
             <WorkflowPipeline status={workflow.status} />
 
             {workflow.summary && <p className="wf-summary">“{workflow.summary}”</p>}
+
+            <AgentStepsPanel steps={workflow.agentSteps} />
 
             <table className="wf-table">
                 <thead>
