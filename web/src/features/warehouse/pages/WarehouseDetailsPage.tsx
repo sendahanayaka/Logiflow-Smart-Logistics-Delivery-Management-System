@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { ApiMessage, userFacingApiError } from '../components/ApiMessage'
 import { CapacityIndicator } from '../components/CapacityIndicator'
 import { CreateStorageZoneForm } from '../components/CreateStorageZoneForm'
+import { EditWarehouseForm } from '../components/EditWarehouseForm'
+import { EditStorageZoneForm } from '../components/EditStorageZoneForm'
 import { useGetStorageZonesQuery, useGetWarehouseQuery } from '../warehouseApi'
 import '../../portals/Portal.css'
 
@@ -11,6 +14,8 @@ export function WarehouseDetailsPage() {
   const skip = !warehouseId
   const warehouse = useGetWarehouseQuery(warehouseId ?? '', { skip })
   const zones = useGetStorageZonesQuery(warehouseId ?? '', { skip })
+  const [editingWarehouse, setEditingWarehouse] = useState(false)
+  const [editingZoneId, setEditingZoneId] = useState<string | null>(null)
 
   if (skip) return <ApiMessage kind="error">A warehouse identifier is required.</ApiMessage>
   if (warehouse.isLoading || zones.isLoading) return <ApiMessage>Loading warehouse details…</ApiMessage>
@@ -18,25 +23,30 @@ export function WarehouseDetailsPage() {
   if (zones.error) return <ApiMessage kind="error">{userFacingApiError(zones.error, 'Storage zones could not be loaded.')}</ApiMessage>
   if (!warehouse.data) return null
 
-  return (
-    <div className="portal-container">
-      <Link className="btn-primary-outline" to="/warehouse" style={{ display: 'inline-block', marginBottom: '2rem' }}>← All warehouses</Link>
+  const editingZone = zones.data?.find((zone) => zone.id === editingZoneId)
 
-      <header className="portal-header fade-in-up">
-        <span className="portal-role-badge">WAREHOUSE OVERVIEW</span>
-        <h1>{warehouse.data.name}</h1>
-        <div className="portal-divider"></div>
-        <p>{warehouse.data.location}</p>
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+  return (
+    <section className="warehouse-page">
+      <Link className="back-link" to="/warehouse">← All warehouses</Link>
+      <div className="detail-hero">
+        <div>
+          <p className="eyebrow">Warehouse operations</p>
+          <h1>{warehouse.data.name}</h1>
+          <p>{warehouse.data.location}</p>
+          <button type="button" className="secondary" onClick={() => setEditingWarehouse((value) => !value)}>
+            {editingWarehouse ? 'Close editor' : 'Edit warehouse'}
+          </button>
+        </div>
+        <div className="hero-capacity">
           <CapacityIndicator label="Warehouse volume" occupied={warehouse.data.occupiedVolumeM3} total={warehouse.data.totalVolumeM3} unit="m³" />
         </div>
-      </header>
-
-      <nav className="action-nav create-warehouse-card fade-in-up" aria-label="Warehouse actions" style={{ marginTop: 0, marginBottom: '3rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <Link className="action-btn" to={`/warehouse/${warehouseId}/inventory`} style={{ textDecoration: 'none' }}><strong>Inventory</strong><br /><span style={{ fontSize: '0.85rem', fontWeight: 400, color: 'rgba(255,255,255,0.85)' }}>Search and update package state</span></Link>
-        <Link className="action-btn" to={`/warehouse/${warehouseId}/intake`} style={{ textDecoration: 'none' }}><strong>Package intake</strong><br /><span style={{ fontSize: '0.85rem', fontWeight: 400, color: 'rgba(255,255,255,0.85)' }}>Receive packages into a zone</span></Link>
-        <Link className="action-btn" to={`/warehouse/${warehouseId}/dispatch`} style={{ textDecoration: 'none' }}><strong>Dispatch</strong><br /><span style={{ fontSize: '0.85rem', fontWeight: 400, color: 'rgba(255,255,255,0.85)' }}>Build and validate vehicle loads</span></Link>
-        <Link className="action-btn" to={`/warehouse/${warehouseId}/throughput`} style={{ textDecoration: 'none' }}><strong>Throughput</strong><br /><span style={{ fontSize: '0.85rem', fontWeight: 400, color: 'rgba(255,255,255,0.85)' }}>Review date-range metrics</span></Link>
+      </div>
+      {editingWarehouse && <EditWarehouseForm warehouse={warehouse.data} onClose={() => setEditingWarehouse(false)} />}
+      <nav className="action-nav" aria-label="Warehouse actions">
+        <Link to={`/warehouse/${warehouseId}/inventory`}><strong>Inventory</strong><span>Search and update package state</span></Link>
+        <Link to={`/warehouse/${warehouseId}/intake`}><strong>Package intake</strong><span>Receive packages into a zone</span></Link>
+        <Link to={`/warehouse/${warehouseId}/dispatch`}><strong>Dispatch</strong><span>Build and validate vehicle loads</span></Link>
+        <Link to={`/warehouse/${warehouseId}/throughput`}><strong>Throughput</strong><span>Review date-range metrics</span></Link>
       </nav>
 
       <div className="section-header-inline fade-in-up" style={{ animationDelay: '100ms' }}>
@@ -53,13 +63,15 @@ export function WarehouseDetailsPage() {
               </div>
               <p style={{ color: '#6B7280', fontWeight: 'bold', marginBottom: '1rem' }}>Zone Code: {zone.code}</p>
               <CapacityIndicator label="Zone volume" occupied={zone.occupiedVolumeM3} total={zone.totalVolumeM3} unit="m³" />
+              <button type="button" className="secondary" onClick={() => setEditingZoneId(zone.id)}>Edit zone</button>
             </article>
           ))}
         </div>
       )}
-      <div className="fade-in-up" style={{ animationDelay: '200ms' }}>
-        <CreateStorageZoneForm warehouseId={warehouseId} />
-      </div>
-    </div>
+      {editingZone && warehouseId && (
+        <EditStorageZoneForm warehouseId={warehouseId} zone={editingZone} onClose={() => setEditingZoneId(null)} />
+      )}
+      <CreateStorageZoneForm warehouseId={warehouseId} />
+    </section>
   )
 }

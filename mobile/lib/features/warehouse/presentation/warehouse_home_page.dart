@@ -31,7 +31,7 @@ class _WarehouseHomePageState extends ConsumerState<WarehouseHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Warehouse intake')),
+      appBar: AppBar(title: const Text('Warehouses')),
       body: FutureBuilder<List<Warehouse>>(
         future: _warehouses,
         builder: (context, snapshot) {
@@ -70,7 +70,7 @@ class _WarehouseHomePageState extends ConsumerState<WarehouseHomePage> {
                     isThreeLine: true,
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push(
-                        '/warehouse/${warehouse.id}/intake',
+                        '/warehouse/${warehouse.id}/manage',
                         extra: warehouse),
                   ),
                 );

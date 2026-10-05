@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_theme.dart';
@@ -62,11 +64,81 @@ class _TrackingPageState extends ConsumerState<TrackingPage> {
 
   int _currentStep(CustomerTracking t) {
     if (t.isDelivered) return 3;
-    final stage = t.stage.toUpperCase();
     final ship = (t.shipmentStatus ?? '').toUpperCase();
-    if (stage == 'DISPATCHED' || ship == 'DISPATCHED' || ship == 'INTRANSIT') return 2;
+    if (ship == 'DELIVERED') return 3;
+    // Picked up / in transit → "On the way".
+    if (ship == 'DISPATCHED' || ship == 'INTRANSIT') return 2;
+    // Driver assigned (Created) but not yet picked up.
+    if (ship == 'CREATED') return 1;
+    final stage = t.stage.toUpperCase();
     if (stage == 'AWAITINGDISPATCH') return 1;
     return 0;
+  }
+
+  double _driverFraction(CustomerTracking t) {
+    if (t.isDelivered) return 1;
+    switch ((t.shipmentStatus ?? '').toUpperCase()) {
+      case 'INTRANSIT':
+        return 0.6;
+      case 'DISPATCHED':
+        return 0.3;
+      default:
+        return 0; // driver assigned, not yet picked up
+    }
+  }
+
+  Marker _marker(LatLng p, Color color, IconData icon) =>
+      Marker(point: p, width: 40, height: 40, child: Icon(icon, color: color, size: 30));
+
+  /// A real OSM map of the run (item 11): pickup origin + the customer's delivery
+  /// point + an approximate driver marker. Null when coordinates aren't available.
+  Widget? _mapCard(CustomerTracking t) {
+    LatLng? pt(double? lat, double? lng) =>
+        (lat != null && lng != null && (lat != 0 || lng != 0)) ? LatLng(lat, lng) : null;
+    final o = pt(t.originLat, t.originLng);
+    final d = pt(t.destinationLat, t.destinationLng);
+    if (o == null && d == null) return null;
+
+    final markers = <Marker>[];
+    if (o != null) markers.add(_marker(o, Colors.blueGrey, Icons.store));
+    if (d != null) markers.add(_marker(d, Colors.green, Icons.home));
+
+    LatLng center;
+    double zoom;
+    if (o != null && d != null) {
+      center = LatLng((o.latitude + d.latitude) / 2, (o.longitude + d.longitude) / 2);
+      zoom = 10;
+      final f = _driverFraction(t);
+      markers.add(_marker(
+        LatLng(o.latitude + (d.latitude - o.latitude) * f, o.longitude + (d.longitude - o.longitude) * f),
+        const Color(0xFFFD5901),
+        Icons.local_shipping,
+      ));
+    } else {
+      center = (d ?? o)!;
+      zoom = 13;
+    }
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: SizedBox(
+        height: 220,
+        child: FlutterMap(
+          options: MapOptions(initialCenter: center, initialZoom: zoom),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.logiflow.mobile',
+            ),
+            if (o != null && d != null)
+              PolylineLayer(polylines: [
+                Polyline(points: [o, d], color: Colors.indigo, strokeWidth: 3),
+              ]),
+            MarkerLayer(markers: markers),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _callDriver(String contact) async {
@@ -98,6 +170,7 @@ class _TrackingPageState extends ConsumerState<TrackingPage> {
 
   List<Widget> _body(CustomerTracking t) {
     final step = _currentStep(t);
+    final mapCard = _mapCard(t);
     return [
       if (t.shipmentCode != null)
         Padding(
@@ -107,6 +180,10 @@ class _TrackingPageState extends ConsumerState<TrackingPage> {
         ),
       _stepper(step, t.isDelivered),
       const SizedBox(height: 16),
+      if (mapCard != null) ...[
+        mapCard,
+        const SizedBox(height: 16),
+      ],
       if (t.isDelivered)
         _deliveredCard(t)
       else if (t.hasShipment)
@@ -241,7 +318,8 @@ class _TrackingPageState extends ConsumerState<TrackingPage> {
             const Row(children: [
               Icon(Icons.check_circle, color: Colors.green),
               SizedBox(width: 8),
-              Text('Delivered', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF065F46))),
+              Text('Delivered — thanks for your order! 🎉',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF065F46))),
             ]),
             const SizedBox(height: 8),
             if (t.deliveredAt != null)

@@ -148,6 +148,11 @@ public sealed class AgentWorkflowServiceTests : IAsyncLifetime
         Assert.NotNull(found);
         Assert.Equal(2, found!.Stops.Count);
 
+        // Items 9 & 10: the agent audit trail is parsed into per-step rows.
+        Assert.NotNull(found.AgentSteps);
+        Assert.NotEmpty(found.AgentSteps!);
+        Assert.All(found.AgentSteps!, step => Assert.False(string.IsNullOrWhiteSpace(step.Agent)));
+
         Assert.Null(await _service.GetWorkflowAsync(Guid.NewGuid()));
     }
 
@@ -219,6 +224,10 @@ public sealed class AgentWorkflowServiceTests : IAsyncLifetime
         public Task<AgentApprovalResponse> ApproveAsync(
             string workflowKey, AgentApprovalRequest request, CancellationToken cancellationToken = default) =>
             Task.FromResult(new AgentApprovalResponse(workflowKey, "COMPLETED", "dispatched", null));
+
+        public Task<DriverMessageResponse> GenerateDriverMessageAsync(
+            DriverMessageRequest request, CancellationToken cancellationToken = default) =>
+            Task.FromResult(new DriverMessageResponse("On my way!"));
 
         // Mimics the real agent: echoes the stops in order with deterministic ETAs.
         internal static AgentRunResponse DefaultResponse(AgentRunPayload payload)

@@ -24,6 +24,12 @@ class DriverRepository {
     return DriverRunView.fromJson(response.data as Map<String, dynamic>);
   }
 
+  /// Open/start the assigned run → moves it to "picked up" (Dispatched).
+  Future<DriverRunView> startRun(String shipmentId) async {
+    final response = await _dio.post('/shipments/$shipmentId/start');
+    return DriverRunView.fromJson(response.data as Map<String, dynamic>);
+  }
+
   /// Report progress event at a stop: kind = 'ARRIVED' | 'DEPARTED'
   Future<void> recordEvent(
     String shipmentId, {

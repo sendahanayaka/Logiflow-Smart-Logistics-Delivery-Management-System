@@ -115,7 +115,13 @@ public sealed record CustomerOrderTrackingView(
     bool? OnTime,
     DateTime? ArrivedAt,
     DateTime? DeliveredAt,
-    string? ReceivedByName);
+    string? ReceivedByName,
+    // Map coordinates (item 11): the run origin (first stop) and this order's
+    // delivery point, for the customer's live tracking map. 0 when not geocoded.
+    double? OriginLat = null,
+    double? OriginLng = null,
+    double? DestinationLat = null,
+    double? DestinationLng = null);
 
 /// <summary>Lightweight shipment row for the admin shipments list.</summary>
 public sealed record ShipmentSummary(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../messaging/presentation/messages_page.dart';
+import '../../notifications/presentation/notification_bell.dart';
 import 'tabs/customer_orders_tab.dart';
 import 'tabs/customer_profile_tab.dart';
 import 'tabs/customer_track_tab.dart';
@@ -31,7 +33,19 @@ class _CustomerHomePageState extends ConsumerState<CustomerHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_titles[_index])),
+      appBar: AppBar(
+        title: Text(_titles[_index]),
+        actions: [
+          IconButton(
+            tooltip: 'Messages',
+            icon: const Icon(Icons.chat_bubble_outline),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const MessagesPage()),
+            ),
+          ),
+          const NotificationBell(),
+        ],
+      ),
       body: IndexedStack(index: _index, children: _tabs),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,

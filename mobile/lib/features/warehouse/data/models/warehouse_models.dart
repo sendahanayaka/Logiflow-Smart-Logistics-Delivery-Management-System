@@ -139,6 +139,66 @@ class ReceivePackageRequest {
       };
 }
 
+class UpdateWarehouseRequest {
+  const UpdateWarehouseRequest({
+    required this.name,
+    required this.location,
+    required this.totalVolumeM3,
+  });
+
+  final String name;
+  final String location;
+  final double totalVolumeM3;
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'location': location,
+        'totalVolumeM3': totalVolumeM3,
+      };
+}
+
+class UpdateStorageZoneRequest {
+  const UpdateStorageZoneRequest({
+    required this.name,
+    required this.code,
+    required this.totalVolumeM3,
+  });
+
+  final String name;
+  final String code;
+  final double totalVolumeM3;
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'code': code,
+        'totalVolumeM3': totalVolumeM3,
+      };
+}
+
+class UpdatePackageRequest {
+  const UpdatePackageRequest({
+    required this.storageZoneId,
+    required this.weightKg,
+    required this.volumeM3,
+    required this.isFragile,
+    this.specialHandling,
+  });
+
+  final String storageZoneId;
+  final double weightKg;
+  final double volumeM3;
+  final bool isFragile;
+  final String? specialHandling;
+
+  Map<String, dynamic> toJson() => {
+        'storageZoneId': storageZoneId,
+        'weightKg': weightKg,
+        'volumeM3': volumeM3,
+        'isFragile': isFragile,
+        'specialHandling': specialHandling,
+      };
+}
+
 class WarehousePackage {
   const WarehousePackage({
     required this.id,

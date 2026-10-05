@@ -8,6 +8,7 @@ import '../Auth.css';
 export const LoginPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
     const { status, error, user, isAuthenticated } = useSelector((state: RootState) => state.auth);
@@ -29,9 +30,20 @@ export const LoginPage: React.FC = () => {
         }
     }, [isAuthenticated, user, navigate]);
 
+    const validate = () => {
+        const next: typeof errors = {};
+        const trimmedEmail = email.trim();
+        if (!trimmedEmail) next.email = 'Email is required.';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) next.email = 'Enter a valid email address.';
+        if (!password) next.password = 'Password is required.';
+        setErrors(next);
+        return Object.keys(next).length === 0;
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch(loginUser({ email, password }));
+        if (!validate()) return;
+        dispatch(loginUser({ email: email.trim(), password }));
     };
 
     return (
@@ -39,7 +51,7 @@ export const LoginPage: React.FC = () => {
             <div className="auth-card">
                 <h2 className="auth-title">Log in to LogiFlow</h2>
                 {error && <div className="auth-error">{error}</div>}
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} noValidate>
                     <div className="auth-form-group">
                         <label htmlFor="email">Email</label>
                         <input
@@ -48,8 +60,9 @@ export const LoginPage: React.FC = () => {
                             className="auth-input"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            required
+                            aria-invalid={!!errors.email}
                         />
+                        {errors.email && <span className="auth-field-error">{errors.email}</span>}
                     </div>
                     <div className="auth-form-group">
                         <label htmlFor="password">Password</label>
@@ -59,8 +72,9 @@ export const LoginPage: React.FC = () => {
                             className="auth-input"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            required
+                            aria-invalid={!!errors.password}
                         />
+                        {errors.password && <span className="auth-field-error">{errors.password}</span>}
                     </div>
                     <button type="submit" className="auth-button" disabled={status === 'loading'}>
                         {status === 'loading' ? 'Logging in...' : 'Login'}

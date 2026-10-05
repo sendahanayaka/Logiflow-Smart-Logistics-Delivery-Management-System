@@ -18,9 +18,8 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Password is required.")
-            .MinimumLength(6).WithMessage("Password must be at least 6 characters.");
-
-        RuleFor(x => x.RoleId)
-            .NotEmpty().WithMessage("RoleId is required.");
+            .MinimumLength(6).WithMessage("Password must be at least 6 characters.")
+            .MaximumLength(128).WithMessage("Password cannot exceed 128 characters.");
+        // No RoleId: public registration is always CUSTOMER.
     }
 }

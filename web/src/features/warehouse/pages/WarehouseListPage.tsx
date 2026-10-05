@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 import { ApiMessage, userFacingApiError } from '../components/ApiMessage'
 import { CreateWarehouseForm } from '../components/CreateWarehouseForm'
 import { WarehouseTable } from '../components/WarehouseTable'
@@ -8,13 +10,15 @@ export function WarehouseListPage() {
   const { data, error, isLoading } = useGetWarehousesQuery()
 
   return (
-    <div className="portal-container">
-      <header className="portal-header fade-in-up">
-        <span className="portal-role-badge">OPERATIONS WORKSPACE</span>
-        <h1>Global Warehouses</h1>
-        <div className="portal-divider"></div>
-        <p>Monitor capacity, receive inventory, and prepare dispatch batches from a centralized view.</p>
-      </header>
+    <section className="warehouse-list-page">
+      <Link className="back-link" to="/warehouse">← Warehouse workspace</Link>
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">Operations workspace</p>
+          <h1>Warehouses</h1>
+          <p>Monitor capacity, receive inventory, and prepare dispatch batches from one place.</p>
+        </div>
+      </div>
 
       {isLoading && <ApiMessage>Loading warehouses…</ApiMessage>}
       {error && <ApiMessage kind="error">{userFacingApiError(error, 'Warehouses could not be loaded.')}</ApiMessage>}

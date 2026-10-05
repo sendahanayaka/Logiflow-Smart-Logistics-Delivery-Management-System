@@ -5,9 +5,12 @@ interface InventoryTableProps {
   zones: StorageZone[]
   availabilityPendingId?: string
   onMakeAvailable: (packageId: string) => void
+  onEdit: (pkg: WarehousePackage) => void
 }
 
-export function InventoryTable({ packages, zones, availabilityPendingId, onMakeAvailable }: InventoryTableProps) {
+const EDITABLE_STATUSES = new Set(['Received', 'Available'])
+
+export function InventoryTable({ packages, zones, availabilityPendingId, onMakeAvailable, onEdit }: InventoryTableProps) {
   const zonesById = new Map(zones.map((zone) => [zone.id, zone]))
 
   return (
@@ -30,15 +33,20 @@ export function InventoryTable({ packages, zones, availabilityPendingId, onMakeA
             <td><span className={`status-pill status-${item.status.toLowerCase()}`}>{item.status}</span></td>
             <td>{new Date(item.receivedAt).toLocaleString()}</td>
             <td>
-              {item.status === 'Received' && (
-                <button
-                  type="button"
-                  onClick={() => onMakeAvailable(item.id)}
-                  disabled={availabilityPendingId === item.id}
-                >
-                  {availabilityPendingId === item.id ? 'Updating…' : 'Make available'}
-                </button>
-              )}
+              <div className="row-actions">
+                {item.status === 'Received' && (
+                  <button
+                    type="button"
+                    onClick={() => onMakeAvailable(item.id)}
+                    disabled={availabilityPendingId === item.id}
+                  >
+                    {availabilityPendingId === item.id ? 'Updating…' : 'Make available'}
+                  </button>
+                )}
+                {EDITABLE_STATUSES.has(item.status) && (
+                  <button type="button" className="secondary" onClick={() => onEdit(item)}>Edit</button>
+                )}
+              </div>
             </td>
           </tr>
         ))}

@@ -18,6 +18,10 @@ class CustomerTracking {
     this.arrivedAt,
     this.deliveredAt,
     this.receivedByName,
+    this.originLat,
+    this.originLng,
+    this.destinationLat,
+    this.destinationLng,
   });
 
   final String orderId;
@@ -35,10 +39,15 @@ class CustomerTracking {
   final DateTime? arrivedAt;
   final DateTime? deliveredAt;
   final String? receivedByName;
+  final double? originLat;
+  final double? originLng;
+  final double? destinationLat;
+  final double? destinationLng;
 
   bool get isDelivered => deliveredAt != null || stage.toUpperCase() == 'DELIVERED';
 
   static DateTime? _date(dynamic v) => v == null ? null : DateTime.tryParse(v.toString());
+  static double? _num(dynamic v) => v == null ? null : (v as num).toDouble();
 
   factory CustomerTracking.fromJson(Map<String, dynamic> j) => CustomerTracking(
         orderId: (j['orderId'] ?? '').toString(),
@@ -56,5 +65,9 @@ class CustomerTracking {
         arrivedAt: _date(j['arrivedAt']),
         deliveredAt: _date(j['deliveredAt']),
         receivedByName: j['receivedByName'] as String?,
+        originLat: _num(j['originLat']),
+        originLng: _num(j['originLng']),
+        destinationLat: _num(j['destinationLat']),
+        destinationLng: _num(j['destinationLng']),
       );
 }

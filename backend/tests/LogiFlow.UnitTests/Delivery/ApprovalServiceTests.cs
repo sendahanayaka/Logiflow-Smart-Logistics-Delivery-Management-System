@@ -39,7 +39,7 @@ public sealed class ApprovalServiceTests : IAsyncLifetime
     // --- APPROVE --------------------------------------------------------------
 
     [Fact]
-    public async Task Approve_DispatchesShipment_WithTrackingEvent_AndCompletes()
+    public async Task Approve_AssignsShipmentToDriver_AndCompletes()
     {
         var workflow = await SeedAwaitingWorkflowAsync();
 
@@ -49,12 +49,13 @@ public sealed class ApprovalServiceTests : IAsyncLifetime
         Assert.NotNull(result.ShipmentId);
         Assert.Equal("APPROVE", _agent.LastApproval!.Action); // the agent was resumed
 
+        // Approval assigns the run to the driver (Created) but does NOT dispatch it;
+        // the driver dispatches it by starting the run. No tracking event yet.
         var shipment = await _context.Shipments.Include(s => s.TrackingEvents).SingleAsync();
-        Assert.Equal(ShipmentStatus.Dispatched, shipment.Status);
+        Assert.Equal(ShipmentStatus.Created, shipment.Status);
         Assert.Equal(2.5m, shipment.TotalDistanceKm);          // 0 + 2.5
-        Assert.NotNull(shipment.DispatchedAt);
-        var evt = Assert.Single(shipment.TrackingEvents);
-        Assert.Equal(TrackingEventType.Dispatched, evt.EventType);
+        Assert.Null(shipment.DispatchedAt);
+        Assert.Empty(shipment.TrackingEvents);
 
         var stored = await _context.AgentWorkflows.Include(w => w.ApprovalDecisions)
             .SingleAsync(w => w.Id == workflow.Id);
@@ -182,5 +183,9 @@ public sealed class ApprovalServiceTests : IAsyncLifetime
             var status = request.Action == "APPROVE" ? "COMPLETED" : "REJECTED";
             return Task.FromResult(new AgentApprovalResponse(workflowKey, status, "outcome", null));
         }
+
+        public Task<DriverMessageResponse> GenerateDriverMessageAsync(
+            DriverMessageRequest request, CancellationToken cancellationToken = default) =>
+            Task.FromResult(new DriverMessageResponse("On my way!"));
     }
 }
