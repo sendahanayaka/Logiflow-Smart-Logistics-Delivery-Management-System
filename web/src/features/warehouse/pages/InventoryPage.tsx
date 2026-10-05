@@ -3,11 +3,13 @@ import { Link, useParams } from 'react-router-dom'
 
 import { ApiMessage, userFacingApiError } from '../components/ApiMessage'
 import { InventoryTable } from '../components/InventoryTable'
+import { EditPackageForm } from '../components/EditPackageForm'
 import {
   useGetPackagesQuery,
   useGetStorageZonesQuery,
   useMakePackageAvailableMutation,
   type PackageStatus,
+  type WarehousePackage,
 } from '../warehouseApi'
 
 const statuses: PackageStatus[] = ['Received', 'Available', 'Reserved', 'Dispatched', 'OnHold']
@@ -19,6 +21,7 @@ export function InventoryPage() {
   const [storageZoneId, setStorageZoneId] = useState('')
   const [trackingCode, setTrackingCode] = useState('')
   const [availabilityError, setAvailabilityError] = useState<string>()
+  const [editingPackage, setEditingPackage] = useState<WarehousePackage | null>(null)
   const skip = !warehouseId
   const inventory = useGetPackagesQuery({
     warehouseId: warehouseId ?? '', page, pageSize: 20,
@@ -48,12 +51,15 @@ export function InventoryPage() {
       {availabilityError && <ApiMessage kind="error">{availabilityError}</ApiMessage>}
       {inventory.isLoading ? <ApiMessage>Loading inventory…</ApiMessage> : inventory.error ? <ApiMessage kind="error">{userFacingApiError(inventory.error, 'Inventory could not be loaded.')}</ApiMessage> : !inventory.data?.items.length ? <ApiMessage>No packages match the current server-side filters.</ApiMessage> : (
         <>
-          <InventoryTable packages={inventory.data.items} zones={zones.data ?? []} availabilityPendingId={availability.isLoading ? availability.originalArgs : undefined} onMakeAvailable={makePackageAvailable} />
+          <InventoryTable packages={inventory.data.items} zones={zones.data ?? []} availabilityPendingId={availability.isLoading ? availability.originalArgs : undefined} onMakeAvailable={makePackageAvailable} onEdit={setEditingPackage} />
           <div className="pagination-row">
             <p>Page {inventory.data.page} of {inventory.data.totalPages || 1} ({inventory.data.totalCount} packages)</p>
             <div><button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</button><button type="button" disabled={page >= inventory.data.totalPages} onClick={() => setPage(page + 1)}>Next</button></div>
           </div>
         </>
+      )}
+      {editingPackage && (
+        <EditPackageForm pkg={editingPackage} zones={zones.data ?? []} onClose={() => setEditingPackage(null)} />
       )}
     </section>
   )
