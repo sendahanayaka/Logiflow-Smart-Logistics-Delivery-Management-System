@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ApiMessage, userFacingApiError } from '../components/ApiMessage'
 import { ThroughputReport } from '../components/ThroughputReport'
 import { useGetWarehouseThroughputQuery } from '../warehouseApi'
+import '../../portals/Portal.css'
 
 const today = new Date().toISOString().slice(0, 10)
 const startOfMonth = `${today.slice(0, 8)}01`
@@ -32,20 +33,27 @@ export function ThroughputPage() {
 
   if (!warehouseId) return <ApiMessage kind="error">A warehouse identifier is required.</ApiMessage>
   return (
-    <section className="warehouse-page">
-      <Link className="back-link" to={`/warehouse/${warehouseId}`}>← Back to warehouse</Link>
-      <div className="page-heading"><div><p className="eyebrow">Operational reporting</p><h1>Warehouse throughput</h1><p>Review received, reserved, dispatched, and batched activity for a selected period.</p></div></div>
-      <form className="surface report-form" onSubmit={submit}>
-        <div className="form-grid">
+    <div className="portal-container">
+      <Link className="btn-primary-outline" to={`/warehouse/${warehouseId}`} style={{ display: 'inline-block', marginBottom: '2rem' }}>← Back to warehouse</Link>
+
+      <header className="portal-header fade-in-up">
+        <span className="portal-role-badge">OPERATIONAL REPORTING</span>
+        <h1>Warehouse Throughput</h1>
+        <div className="portal-divider"></div>
+        <p>Review received, reserved, dispatched, and batched activity for a selected period.</p>
+      </header>
+
+      <div className="create-warehouse-card fade-in-up" style={{ marginTop: 0 }}>
+        <form className="warehouse-form" onSubmit={submit}>
           <label>From <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} required /></label>
           <label>To <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} required /></label>
-        </div>
-        <button type="submit">Load report</button>
-      </form>
-      {validationError && <ApiMessage kind="error">{validationError}</ApiMessage>}
-      {report.isLoading && <ApiMessage>Loading throughput report…</ApiMessage>}
-      {report.error && <ApiMessage kind="error">{userFacingApiError(report.error, 'The throughput report could not be loaded.')}</ApiMessage>}
-      {report.data && <ThroughputReport report={report.data} />}
-    </section>
+          <button type="submit">Load report</button>
+        </form>
+        {validationError && <ApiMessage kind="error">{validationError}</ApiMessage>}
+        {report.isLoading && <div className="loading-state"><span className="spinner"></span><p>Loading throughput report…</p></div>}
+        {report.error && <ApiMessage kind="error">{userFacingApiError(report.error, 'The throughput report could not be loaded.')}</ApiMessage>}
+        {report.data && <ThroughputReport report={report.data} />}
+      </div>
+    </div>
   )
 }

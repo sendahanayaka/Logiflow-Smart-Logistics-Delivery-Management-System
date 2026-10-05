@@ -95,9 +95,9 @@ export function DispatchBatchBuilder({ warehouseId, packages, zones, onBatchCrea
       }
 
       const result = await replaceBatchItems({
-            batchId: activeBatch.id,
-            body: { packageIds: selectedIds },
-          }).unwrap()
+        batchId: activeBatch.id,
+        body: { packageIds: selectedIds },
+      }).unwrap()
       setResponse(result)
       if (result.result === 'PASS' && result.batch) {
         setActiveBatch(result.batch)
@@ -135,15 +135,15 @@ export function DispatchBatchBuilder({ warehouseId, packages, zones, onBatchCrea
   }
 
   return (
-    <section className="surface workflow-section">
-      <h2>Create dispatch batch</h2>
-      <p>Validate the proposed allocation through the S3 safety agent before reserving any package. Only Available packages are shown.</p>
+    <section className="batch-builder-wrapper">
+      <h2 style={{ color: 'var(--color-navy, #08006C)' }}>Create dispatch batch</h2>
+      <p style={{ color: '#6B7280', marginBottom: '1.5rem' }}>Validate the proposed allocation through the S3 safety agent before reserving any package. Only Available packages are shown.</p>
       {activeBatch && (
         <ApiMessage kind="info">
           Editing reserved batch {activeBatch.id}. Existing batch packages remain selectable while reserved.
         </ApiMessage>
       )}
-      <form className="stacked-form" onSubmit={validateOrUpdate} noValidate>
+      <form style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }} onSubmit={validateOrUpdate} noValidate>
         <fieldset>
           <legend>Vehicle for this batch</legend>
           <p><small>Pick the van; its capacity pre-fills below (you can adjust the limits used for validation).</small></p>
