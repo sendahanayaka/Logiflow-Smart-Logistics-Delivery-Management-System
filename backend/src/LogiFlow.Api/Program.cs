@@ -82,10 +82,14 @@ if (string.IsNullOrWhiteSpace(agentApiKey))
 {
     agentApiKey = "dev-internal-agent-key-change-me";
 }
+// Timeouts are sized for a free-tier (e.g. Render) cold start: when the agent
+// service has been idle it can take ~40s to answer the first request. A tighter
+// timeout here surfaces as a spurious "agent/validation service unavailable" on
+// the first dispatch/plan after idle, even though the agent is healthy.
 builder.Services.AddHttpClient<IAgentServiceClient, AgentServiceClient>(client =>
 {
     client.BaseAddress = new Uri(agentBaseUrl);
-    client.Timeout = TimeSpan.FromSeconds(30);
+    client.Timeout = TimeSpan.FromSeconds(60);
     if (!string.IsNullOrWhiteSpace(agentApiKey))
     {
         client.DefaultRequestHeaders.Add("X-Internal-Api-Key", agentApiKey);
@@ -95,7 +99,7 @@ builder.Services.AddHttpClient<IAgentServiceClient, AgentServiceClient>(client =
 builder.Services.AddHttpClient<IAgentValidationClient, S3AgentValidationClient>(client =>
 {
     client.BaseAddress = new Uri(agentBaseUrl);
-    client.Timeout = TimeSpan.FromSeconds(12);
+    client.Timeout = TimeSpan.FromSeconds(60);
     if (!string.IsNullOrWhiteSpace(agentApiKey))
     {
         client.DefaultRequestHeaders.Add("X-Internal-Api-Key", agentApiKey);
