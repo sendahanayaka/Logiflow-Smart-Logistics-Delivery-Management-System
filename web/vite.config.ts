@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vitest/config';
+import { defineConfig, configDefaults } from 'vitest/config';
 
 export default defineConfig({
   plugins: [react()],
@@ -21,6 +21,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    exclude: [...configDefaults.exclude, 'tests/e2e/**'],
     environmentOptions: {
       jsdom: { url: 'http://localhost/' },
     },

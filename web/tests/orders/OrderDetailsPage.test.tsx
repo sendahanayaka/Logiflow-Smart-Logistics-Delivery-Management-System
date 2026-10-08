@@ -96,4 +96,19 @@ describe('OrderDetailsPage', () => {
         expect(screen.getByText('Total Fee:')).toBeInTheDocument();
         expect(screen.getByText('Rs. 1,150')).toBeInTheDocument();
     });
+
+    it('renders error state on API failure (e.g., 404 Not Found)', async () => {
+        (getOrderById as any).mockRejectedValueOnce(new Error('Order not found or access denied.'));
+        render(
+            <MemoryRouter initialEntries={['/orders/ord-404']}>
+                <Routes>
+                    <Route path="/orders/:id" element={<OrderDetailsPage />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        // Verify that the UI absorbs the rejection gracefully and renders the error alert
+        expect(await screen.findByText('Order not found or access denied.')).toBeInTheDocument();
+        expect(screen.getByText('Order not found or access denied.').closest('div')).toHaveClass('orders-alert-danger');
+    });
 });

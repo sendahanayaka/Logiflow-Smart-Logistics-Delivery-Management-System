@@ -80,20 +80,20 @@ export const OrderForm: React.FC<Props> = ({ onSubmit, isLoading }) => {
                 </div>
                 <div className="orders-grid">
                     <div className="orders-form-group">
-                        <label>Pickup Address *</label>
-                        <input type="text" name="pickupAddress" value={formData.pickupAddress} onChange={handleChange} required className="orders-form-control" placeholder="123 Business Rd" disabled={isLoading} />
+                        <label htmlFor="pickupAddress">Pickup Address *</label>
+                        <input id="pickupAddress" type="text" name="pickupAddress" value={formData.pickupAddress} onChange={handleChange} required className="orders-form-control" placeholder="123 Business Rd" disabled={isLoading} />
                     </div>
                     <div className="orders-form-group">
-                        <label>Pickup City *</label>
-                        <input type="text" name="pickupCity" value={formData.pickupCity} onChange={handleChange} required className="orders-form-control" placeholder="Colombo" disabled={isLoading} />
+                        <label htmlFor="pickupCity">Pickup City *</label>
+                        <input id="pickupCity" type="text" name="pickupCity" value={formData.pickupCity} onChange={handleChange} required className="orders-form-control" placeholder="Colombo" disabled={isLoading} />
                     </div>
                     <div className="orders-form-group">
-                        <label>Delivery Address *</label>
-                        <input type="text" name="deliveryAddress" value={formData.deliveryAddress} onChange={handleChange} required className="orders-form-control" placeholder="456 Destination Ave" disabled={isLoading} />
+                        <label htmlFor="deliveryAddress">Delivery Address *</label>
+                        <input id="deliveryAddress" type="text" name="deliveryAddress" value={formData.deliveryAddress} onChange={handleChange} required className="orders-form-control" placeholder="456 Destination Ave" disabled={isLoading} />
                     </div>
                     <div className="orders-form-group">
-                        <label>Delivery City *</label>
-                        <input type="text" name="deliveryCity" value={formData.deliveryCity} onChange={handleChange} required className="orders-form-control" placeholder="Kandy" disabled={isLoading} />
+                        <label htmlFor="deliveryCity">Delivery City *</label>
+                        <input id="deliveryCity" type="text" name="deliveryCity" value={formData.deliveryCity} onChange={handleChange} required className="orders-form-control" placeholder="Kandy" disabled={isLoading} />
                     </div>
                 </div>
             </div>
@@ -109,26 +109,26 @@ export const OrderForm: React.FC<Props> = ({ onSubmit, isLoading }) => {
                         <input id="packageDescription" type="text" name="packageDescription" value={formData.packageDescription} onChange={handleChange} required className="orders-form-control" placeholder="e.g. Office Supplies" disabled={isLoading} />
                     </div>
                     <div className="orders-form-group">
-                        <label>Special Handling</label>
-                        <input type="text" name="specialHandling" value={formData.specialHandling} onChange={handleChange} className="orders-form-control" placeholder="e.g. Fragile, Keep Upright" disabled={isLoading} />
+                        <label htmlFor="specialHandling">Special Handling</label>
+                        <input id="specialHandling" type="text" name="specialHandling" value={formData.specialHandling} onChange={handleChange} className="orders-form-control" placeholder="e.g. Fragile, Keep Upright" disabled={isLoading} />
                     </div>
                 </div>
                 <div className="orders-grid" style={{ marginTop: '1rem' }}>
                     <div className="orders-form-group">
-                        <label>Weight (kg) *</label>
-                        <input type="number" step="0.1" name="weightKg" value={formData.weightKg} onChange={handleChange} required min="0.1" className="orders-form-control" disabled={isLoading} />
+                        <label htmlFor="weightKg">Weight (kg) *</label>
+                        <input id="weightKg" type="number" step="0.1" name="weightKg" value={formData.weightKg} onChange={handleChange} required min="0.1" className="orders-form-control" disabled={isLoading} />
                     </div>
                     <div className="orders-form-group">
-                        <label>Length (cm) *</label>
-                        <input type="number" step="0.1" name="lengthCm" value={formData.lengthCm} onChange={handleChange} required min="1" className="orders-form-control" disabled={isLoading} />
+                        <label htmlFor="lengthCm">Length (cm) *</label>
+                        <input id="lengthCm" type="number" step="0.1" name="lengthCm" value={formData.lengthCm} onChange={handleChange} required min="1" className="orders-form-control" disabled={isLoading} />
                     </div>
                     <div className="orders-form-group">
-                        <label>Width (cm) *</label>
-                        <input type="number" step="0.1" name="widthCm" value={formData.widthCm} onChange={handleChange} required min="1" className="orders-form-control" disabled={isLoading} />
+                        <label htmlFor="widthCm">Width (cm) *</label>
+                        <input id="widthCm" type="number" step="0.1" name="widthCm" value={formData.widthCm} onChange={handleChange} required min="1" className="orders-form-control" disabled={isLoading} />
                     </div>
                     <div className="orders-form-group">
-                        <label>Height (cm) *</label>
-                        <input type="number" step="0.1" name="heightCm" value={formData.heightCm} onChange={handleChange} required min="1" className="orders-form-control" disabled={isLoading} />
+                        <label htmlFor="heightCm">Height (cm) *</label>
+                        <input id="heightCm" type="number" step="0.1" name="heightCm" value={formData.heightCm} onChange={handleChange} required min="1" className="orders-form-control" disabled={isLoading} />
                     </div>
                 </div>
             </div>
@@ -140,12 +140,12 @@ export const OrderForm: React.FC<Props> = ({ onSubmit, isLoading }) => {
                 </div>
                 <div className="orders-grid">
                     <div className="orders-form-group">
-                        <label>Preferred Pickup Date *</label>
-                        <input type="date" name="preferredPickupDate" value={formData.preferredPickupDate} onChange={handleChange} required className="orders-form-control" disabled={isLoading} />
+                        <label htmlFor="preferredPickupDate">Preferred Pickup Date *</label>
+                        <input id="preferredPickupDate" type="date" name="preferredPickupDate" value={formData.preferredPickupDate} onChange={handleChange} required className="orders-form-control" disabled={isLoading} />
                     </div>
                     <div className="orders-form-group">
-                        <label>Preferred Pickup Time (HH:mm) *</label>
-                        <input type="time" name="preferredPickupTime" value={formData.preferredPickupTime} onChange={handleChange} required className="orders-form-control" step="1" disabled={isLoading} />
+                        <label htmlFor="preferredPickupTime">Preferred Pickup Time (HH:mm) *</label>
+                        <input id="preferredPickupTime" type="time" name="preferredPickupTime" value={formData.preferredPickupTime} onChange={handleChange} required className="orders-form-control" step="1" disabled={isLoading} />
                     </div>
                     <div className="orders-form-group">
                         <label htmlFor="priority">Priority *</label>
@@ -164,12 +164,12 @@ export const OrderForm: React.FC<Props> = ({ onSubmit, isLoading }) => {
                 </div>
                 <div className="orders-grid">
                     <div className="orders-form-group">
-                        <label>Recipient Name</label>
-                        <input type="text" name="recipientName" value={formData.recipientName} onChange={handleChange} className="orders-form-control" placeholder="Optional" disabled={isLoading} />
+                        <label htmlFor="recipientName">Recipient Name</label>
+                        <input id="recipientName" type="text" name="recipientName" value={formData.recipientName} onChange={handleChange} className="orders-form-control" placeholder="Optional" disabled={isLoading} />
                     </div>
                     <div className="orders-form-group">
-                        <label>Recipient Contact</label>
-                        <input type="text" name="recipientContact" value={formData.recipientContact} onChange={handleChange} className="orders-form-control" placeholder="Optional" disabled={isLoading} />
+                        <label htmlFor="recipientContact">Recipient Contact</label>
+                        <input id="recipientContact" type="text" name="recipientContact" value={formData.recipientContact} onChange={handleChange} className="orders-form-control" placeholder="Optional" disabled={isLoading} />
                     </div>
                 </div>
             </div>
