@@ -21,6 +21,9 @@ public interface IFleetService
     // Assignment operations
     Task<AssignmentResponse> AssignDriverToVehicleAsync(CreateAssignmentRequest request, CancellationToken cancellationToken = default);
     Task<AssignmentResponse> EndAssignmentAsync(Guid assignmentId, EndAssignmentRequest? request = null, CancellationToken cancellationToken = default);
+    // Driver self-service: ends the active assignment for the driver linked to the given
+    // user account, freeing the driver and vehicle (used after a driver completes a run).
+    Task<AssignmentResponse> EndActiveAssignmentForUserAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<IEnumerable<AssignmentResponse>> GetActiveAssignmentsAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<AssignmentResponse>> GetAssignmentHistoryAsync(CancellationToken cancellationToken = default);
 

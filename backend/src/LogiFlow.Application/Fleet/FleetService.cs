@@ -384,6 +384,31 @@ public class FleetService : IFleetService
         return MapToAssignmentResponse(assignment);
     }
 
+    public async Task<AssignmentResponse> EndActiveAssignmentForUserAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        if (userId == Guid.Empty)
+        {
+            throw new ArgumentException("A user id is required.", nameof(userId));
+        }
+
+        var driver = await _context.Drivers
+            .FirstOrDefaultAsync(d => d.UserId == userId, cancellationToken);
+        if (driver == null)
+        {
+            throw new KeyNotFoundException("No driver profile is linked to your account.");
+        }
+
+        var assignment = await _context.AssignmentHistories
+            .FirstOrDefaultAsync(a => a.DriverId == driver.Id && a.IsActive, cancellationToken);
+        if (assignment == null)
+        {
+            throw new InvalidOperationException("You have no active assignment to end.");
+        }
+
+        // Reuse the shared end logic so the driver and vehicle are freed consistently.
+        return await EndAssignmentAsync(assignment.Id, null, cancellationToken);
+    }
+
     public async Task<IEnumerable<AssignmentResponse>> GetActiveAssignmentsAsync(CancellationToken cancellationToken = default)
     {
         var activeAssignments = await _context.AssignmentHistories

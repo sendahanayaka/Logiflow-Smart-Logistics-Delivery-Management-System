@@ -106,6 +106,17 @@ export const deliveryApi = baseApi.injectEndpoints({
         { type: 'Shipment', id: 'LIST' },
       ],
     }),
+    // Driver self-service: end my active assignment after finishing a run (frees the
+    // driver + vehicle). The backend resolves the driver from the JWT; the shipment id
+    // is passed only to refresh that run's cache.
+    endMyAssignment: builder.mutation<unknown, string>({
+      query: () => ({ url: '/shipments/mine/end-assignment', method: 'POST' }),
+      invalidatesTags: (_r, _e, id) => [
+        { type: 'Shipment', id },
+        { type: 'Shipment', id: 'LIST' },
+        { type: 'Assignment', id: 'LIST' },
+      ],
+    }),
   }),
   overrideExisting: false,
 });
@@ -125,4 +136,5 @@ export const {
   useStartRunMutation,
   useRecordStopEventMutation,
   useRecordPodMutation,
+  useEndMyAssignmentMutation,
 } = deliveryApi;
