@@ -1,0 +1,35 @@
+
+The following sources were used:
+   https://api.nuget.org/v3/index.json
+
+The given project `LogiFlow.Domain` has no vulnerable packages given the current sources.
+Project `LogiFlow.Application` has the following vulnerable packages
+   [net8.0]: 
+   Transitive Package                         Resolved   Severity   Advisory URL                                     
+   > Microsoft.Extensions.Caching.Memory      8.0.0      High       https://github.com/advisories/GHSA-qj66-m88j-hmgj
+
+Project `LogiFlow.Infrastructure` has the following vulnerable packages
+   [net8.0]: 
+   Transitive Package                         Resolved   Severity   Advisory URL                                     
+   > Microsoft.Extensions.Caching.Memory      8.0.0      High       https://github.com/advisories/GHSA-qj66-m88j-hmgj
+   > System.Text.Json                         8.0.4      High       https://github.com/advisories/GHSA-8g4q-xg66-9fp4
+
+Project `LogiFlow.Api` has the following vulnerable packages
+   [net8.0]: 
+   Transitive Package                         Resolved   Severity   Advisory URL                                     
+   > Microsoft.Extensions.Caching.Memory      8.0.0      High       https://github.com/advisories/GHSA-qj66-m88j-hmgj
+   > System.Text.Json                         8.0.4      High       https://github.com/advisories/GHSA-8g4q-xg66-9fp4
+
+Project `LogiFlow.UnitTests` has the following vulnerable packages
+   [net8.0]: 
+   Transitive Package                         Resolved   Severity   Advisory URL                                     
+   > Microsoft.Extensions.Caching.Memory      8.0.0      High       https://github.com/advisories/GHSA-qj66-m88j-hmgj
+   > SQLitePCLRaw.lib.e_sqlite3               2.1.6      High       https://github.com/advisories/GHSA-2m69-gcr7-jv3q
+   > System.Text.Json                         8.0.4      High       https://github.com/advisories/GHSA-8g4q-xg66-9fp4
+
+Project `LogiFlow.IntegrationTests` has the following vulnerable packages
+   [net8.0]: 
+   Transitive Package                         Resolved   Severity   Advisory URL                                     
+   > Microsoft.Extensions.Caching.Memory      8.0.0      High       https://github.com/advisories/GHSA-qj66-m88j-hmgj
+   > System.Text.Json                         8.0.4      High       https://github.com/advisories/GHSA-8g4q-xg66-9fp4
+

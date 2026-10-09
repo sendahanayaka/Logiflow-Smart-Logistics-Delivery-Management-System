@@ -33,3 +33,6 @@ mobile/.flutter-plugins*
 # --- Local planning docs (not part of the repo) ---
 docs/*.pdf
 docs/*.docx
+backend/TestResults/
+agent-service/.coverage
+web/coverage/
