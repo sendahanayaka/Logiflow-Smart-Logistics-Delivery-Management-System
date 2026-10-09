@@ -2,8 +2,11 @@
 using FluentValidation;
 using FluentValidation.Results;
 using LogiFlow.Api.DTOs.Delivery;
+using LogiFlow.Application.Common.Interfaces;
 using LogiFlow.Application.Delivery;
 using LogiFlow.Application.Delivery.DTOs;
+using LogiFlow.Application.Fleet;
+using LogiFlow.Application.Fleet.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,15 +18,21 @@ namespace LogiFlow.Api.Controllers;
 public class ShipmentsController : ControllerBase
 {
     private readonly IShipmentService _shipments;
+    private readonly IFleetService _fleet;
+    private readonly ICurrentUserService _currentUser;
     private readonly IValidator<RecordStopEventRequest> _eventValidator;
     private readonly IValidator<RecordPodRequest> _podValidator;
 
     public ShipmentsController(
         IShipmentService shipments,
+        IFleetService fleet,
+        ICurrentUserService currentUser,
         IValidator<RecordStopEventRequest> eventValidator,
         IValidator<RecordPodRequest> podValidator)
     {
         _shipments = shipments;
+        _fleet = fleet;
+        _currentUser = currentUser;
         _eventValidator = eventValidator;
         _podValidator = podValidator;
     }
@@ -44,6 +53,36 @@ public class ShipmentsController : ControllerBase
     public async Task<ActionResult<IReadOnlyList<ShipmentSummary>>> Mine(CancellationToken cancellationToken)
     {
         return Ok(await _shipments.GetMyRunsAsync(cancellationToken));
+    }
+
+    /// <summary>
+    /// Driver self-service: ends the signed-in driver's active assignment after they
+    /// finish a run, freeing the driver and the vehicle for reassignment.
+    /// </summary>
+    [HttpPost("mine/end-assignment")]
+    [ProducesResponseType(typeof(AssignmentResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<AssignmentResponse>> EndMyAssignment(CancellationToken cancellationToken)
+    {
+        var userId = _currentUser.UserId;
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            return Ok(await _fleet.EndActiveAssignmentForUserAsync(userId.Value, cancellationToken));
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Conflict(new { message = exception.Message });
+        }
     }
 
     /// <summary>Admin/ops list of all dispatched shipments.</summary>

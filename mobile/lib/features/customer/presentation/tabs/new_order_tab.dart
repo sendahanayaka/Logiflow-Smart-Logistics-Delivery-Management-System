@@ -10,7 +10,7 @@ import '../controllers/orders_controller.dart';
 
 /// Create a delivery order — POST /orders. Validation mirrors the backend
 /// (required address/city/description, pickup date ≥ today, weight & dims > 0,
-/// priority Standard|Express, recipient contact ≥ 3 chars when given).
+/// priority Standard|Express, recipient name required + 10-digit recipient contact).
 class NewOrderTab extends ConsumerStatefulWidget {
   const NewOrderTab({super.key});
 
@@ -62,6 +62,14 @@ class _NewOrderTabState extends ConsumerState<NewOrderTab> {
     return null;
   }
 
+  // Recipient contact must be exactly 10 digits (matches the backend validator).
+  String? _phone(String? v, String field) {
+    final t = v?.trim() ?? '';
+    if (t.isEmpty) return '$field is required.';
+    if (!RegExp(r'^\d{10}$').hasMatch(t)) return '$field must be a 10-digit phone number.';
+    return null;
+  }
+
   Future<void> _pickDate() async {
     final now = DateTime.now();
     final picked = await showDatePicker(
@@ -98,8 +106,8 @@ class _NewOrderTabState extends ConsumerState<NewOrderTab> {
         lengthCm: double.parse(_length.text.trim()),
         widthCm: double.parse(_width.text.trim()),
         heightCm: double.parse(_height.text.trim()),
-        recipientName: _recipientName.text.trim().isEmpty ? null : _recipientName.text.trim(),
-        recipientContact: _recipientContact.text.trim().isEmpty ? null : _recipientContact.text.trim(),
+        recipientName: _recipientName.text.trim(),
+        recipientContact: _recipientContact.text.trim(),
       );
 
       final order = await ref.read(customerRepositoryProvider).createOrder(request);
@@ -190,13 +198,9 @@ class _NewOrderTabState extends ConsumerState<NewOrderTab> {
               ),
             ]),
           ]),
-          _section('Recipient (optional)', [
-            _field(_recipientName, 'Recipient name', maxLength: 255),
-            _field(_recipientContact, 'Recipient contact', maxLength: 100, validator: (v) {
-              final t = v?.trim() ?? '';
-              if (t.isNotEmpty && t.length < 3) return 'Contact looks too short.';
-              return null;
-            }),
+          _section('Recipient', [
+            _field(_recipientName, 'Recipient name', maxLength: 255, validator: (v) => _required(v, 'Recipient name')),
+            _field(_recipientContact, 'Recipient contact (10-digit phone)', maxLength: 10, number: true, validator: (v) => _phone(v, 'Recipient contact')),
           ]),
           if (_error != null)
             Padding(

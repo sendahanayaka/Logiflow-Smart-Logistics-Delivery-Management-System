@@ -12,7 +12,10 @@ interface DriverFormProps {
   onSuccess?: () => void;
 }
 
-const phonePattern = /^\+?[0-9][0-9\s().-]{6,30}$/;
+// Name must be letters only (allow spaces, apostrophes, hyphens, dots); phone must
+// be exactly 10 digits.
+const namePattern = /^[A-Za-z][A-Za-z\s.'-]*$/;
+const phonePattern = /^\d{10}$/;
 
 interface FormErrors {
   fullName?: string;
@@ -77,6 +80,8 @@ export const DriverForm: React.FC<DriverFormProps> = ({
       newErrors.fullName = 'Full Name is required.';
     } else if (trimmedName.length > 100) {
       newErrors.fullName = 'Full Name cannot exceed 100 characters.';
+    } else if (!namePattern.test(trimmedName)) {
+      newErrors.fullName = 'Full Name can only contain letters, spaces, apostrophes, hyphens, and dots.';
     }
 
     const trimmedLicense = values.licenseNumber.trim();
@@ -89,16 +94,25 @@ export const DriverForm: React.FC<DriverFormProps> = ({
     if (!values.licenseExpiryDate) {
       newErrors.licenseExpiryDate = 'License Expiry Date is required.';
     } else {
-      const date = new Date(values.licenseExpiryDate);
-      if (isNaN(date.getTime())) {
+      const expiry = new Date(values.licenseExpiryDate);
+      if (isNaN(expiry.getTime())) {
         newErrors.licenseExpiryDate = 'Please enter a valid date.';
+      } else {
+        // License must be valid for strictly more than one month from today.
+        const minExpiry = new Date();
+        minExpiry.setHours(0, 0, 0, 0);
+        minExpiry.setMonth(minExpiry.getMonth() + 1);
+        if (expiry <= minExpiry) {
+          newErrors.licenseExpiryDate = 'License expiry must be more than 1 month from today.';
+        }
       }
     }
 
-    if (values.phoneNumber && values.phoneNumber.trim()) {
-      if (!phonePattern.test(values.phoneNumber.trim())) {
-        newErrors.phoneNumber = 'Enter a valid phone number format.';
-      }
+    const trimmedPhone = values.phoneNumber?.trim() ?? '';
+    if (!trimmedPhone) {
+      newErrors.phoneNumber = 'Phone number is required.';
+    } else if (!phonePattern.test(trimmedPhone)) {
+      newErrors.phoneNumber = 'Phone number must be exactly 10 digits.';
     }
 
     setErrors(newErrors);
@@ -254,11 +268,13 @@ export const DriverForm: React.FC<DriverFormProps> = ({
             </div>
 
             <div className="form-field">
-              <label htmlFor="driver-phone">Phone Number</label>
+              <label htmlFor="driver-phone">Phone Number *</label>
               <input
                 id="driver-phone"
                 name="phoneNumber"
                 type="tel"
+                inputMode="numeric"
+                maxLength={10}
                 value={values.phoneNumber || ''}
                 onChange={handleChange}
                 placeholder="e.g. 0771234567"

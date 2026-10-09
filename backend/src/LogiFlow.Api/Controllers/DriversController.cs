@@ -1,3 +1,6 @@
+using System.Linq;
+using FluentValidation;
+using FluentValidation.Results;
 using LogiFlow.Application.Fleet;
 using LogiFlow.Application.Fleet.DTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +14,25 @@ namespace LogiFlow.Api.Controllers;
 public class DriversController : ControllerBase
 {
     private readonly IFleetService _fleetService;
+    private readonly IValidator<CreateDriverRequest> _createValidator;
+    private readonly IValidator<UpdateDriverRequest> _updateValidator;
 
-    public DriversController(IFleetService fleetService)
+    public DriversController(
+        IFleetService fleetService,
+        IValidator<CreateDriverRequest> createValidator,
+        IValidator<UpdateDriverRequest> updateValidator)
     {
         _fleetService = fleetService;
+        _createValidator = createValidator;
+        _updateValidator = updateValidator;
+    }
+
+    private ActionResult ValidationFailure(ValidationResult validationResult)
+    {
+        var errors = validationResult.Errors
+            .GroupBy(error => error.PropertyName)
+            .ToDictionary(group => group.Key, group => group.Select(error => error.ErrorMessage).ToArray());
+        return BadRequest(new ValidationProblemDetails(errors));
     }
 
     [HttpGet]
@@ -39,6 +57,12 @@ public class DriversController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<DriverResponse>> Create([FromBody] CreateDriverRequest request, CancellationToken cancellationToken)
     {
+        var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return ValidationFailure(validationResult);
+        }
+
         try
         {
             var created = await _fleetService.CreateDriverAsync(request, cancellationToken);
@@ -57,6 +81,12 @@ public class DriversController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<DriverResponse>> Update(Guid id, [FromBody] UpdateDriverRequest request, CancellationToken cancellationToken)
     {
+        var validationResult = await _updateValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return ValidationFailure(validationResult);
+        }
+
         try
         {
             var updated = await _fleetService.UpdateDriverAsync(id, request, cancellationToken);

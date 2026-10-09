@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
+import { createPortal } from 'react-dom'
 
 import { useUpdatePackageMutation, type StorageZone, type WarehousePackage } from '../warehouseApi'
 import { ApiMessage, userFacingApiError } from './ApiMessage'
@@ -19,6 +20,22 @@ export function EditPackageForm({ pkg, zones, onClose }: EditPackageFormProps) {
     specialHandling: pkg.specialHandling ?? '',
   })
   const [error, setError] = useState<string>()
+
+  // Keep the dialog stable: lock background scroll while it is open, and close on
+  // Escape. Rendering through a portal (below) keeps its fixed positioning from
+  // being affected by any transformed/overflow ancestor in the page layout.
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [onClose])
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -52,9 +69,15 @@ export function EditPackageForm({ pkg, zones, onClose }: EditPackageFormProps) {
     }
   }
 
-  return (
-    <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="edit-package-heading">
-      <section className="create-warehouse-card modal-card">
+  return createPortal(
+    <div
+      className="modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-package-heading"
+      onClick={(event) => { if (event.target === event.currentTarget && !isLoading) onClose() }}
+    >
+      <section className="create-warehouse-card modal-card" onClick={(event) => event.stopPropagation()}>
         <div>
           <p className="eyebrow">Edit package</p>
           <h2 id="edit-package-heading">{pkg.trackingCode}</h2>
@@ -92,6 +115,7 @@ export function EditPackageForm({ pkg, zones, onClose }: EditPackageFormProps) {
         </form>
         {error && <ApiMessage kind="error">{error}</ApiMessage>}
       </section>
-    </div>
+    </div>,
+    document.body,
   )
 }

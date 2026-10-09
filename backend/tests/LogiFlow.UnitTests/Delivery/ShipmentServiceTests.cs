@@ -190,6 +190,18 @@ public sealed class ShipmentServiceTests : IAsyncLifetime
         Assert.Equal(RouteStopStatus.EnRoute, firstStop.Status);
     }
 
+    // BE-SH-09 (boundary/failure): a run in a terminal state cannot be started again.
+    [Fact]
+    public async Task StartRun_WhenShipmentAlreadyDelivered_Throws()
+    {
+        var shipmentId = await SeedShipmentAsync();
+        var seeded = await _context.Shipments.SingleAsync(s => s.Id == shipmentId);
+        seeded.Status = ShipmentStatus.Delivered;
+        await _context.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.StartRunAsync(shipmentId));
+    }
+
     // --- seed -----------------------------------------------------------------
 
     private async Task<Guid> SeedShipmentAsync(Guid? driverId = null, string shipmentCode = "SHP-TEST-0001")

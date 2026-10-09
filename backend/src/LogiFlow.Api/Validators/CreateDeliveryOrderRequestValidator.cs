@@ -47,9 +47,14 @@ public class CreateDeliveryOrderRequestValidator : AbstractValidator<CreateDeliv
         RuleFor(x => x.Priority)
             .Must(BeAValidPriority).WithMessage("Priority must be a valid DeliveryPriority value.");
 
+        // Recipient details are mandatory: a delivery must have someone to receive it.
+        RuleFor(x => x.RecipientName)
+            .NotEmpty().WithMessage("Recipient name is required.")
+            .MaximumLength(255).WithMessage("Recipient name cannot exceed 255 characters.");
+
         RuleFor(x => x.RecipientContact)
-            .MinimumLength(3).WithMessage("Recipient contact format is invalid.")
-            .When(x => !string.IsNullOrWhiteSpace(x.RecipientContact));
+            .NotEmpty().WithMessage("Recipient contact is required.")
+            .Matches(@"^\d{10}$").WithMessage("Recipient contact must be a 10-digit phone number.");
     }
 
     private bool BeAValidPriority(string priority)

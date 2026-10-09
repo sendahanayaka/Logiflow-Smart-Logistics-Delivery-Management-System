@@ -1,7 +1,7 @@
 // [S4]  driver run detail — ordered stops + arrive/depart progress.
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useGetDriverRunQuery, useRecordStopEventMutation, useStartRunMutation } from '../deliveryApi';
+import { useGetDriverRunQuery, useRecordStopEventMutation, useStartRunMutation, useEndMyAssignmentMutation } from '../deliveryApi';
 import { shipmentBadgeClass, stopBadgeClass } from '../statusBadge';
 import { activeStopSequence, deliveredCount } from '../driverRun';
 import { PodForm } from './PodForm';
@@ -22,7 +22,9 @@ export const DriverRunDetail: React.FC<{ shipmentId: string }> = ({ shipmentId }
   const { data: run, isLoading, isError, refetch } = useGetDriverRunQuery(shipmentId);
   const [recordEvent, { isLoading: saving }] = useRecordStopEventMutation();
   const [startRun, { isLoading: starting }] = useStartRunMutation();
+  const [endAssignment, { isLoading: ending }] = useEndMyAssignmentMutation();
   const [error, setError] = useState<string | null>(null);
+  const [assignmentEnded, setAssignmentEnded] = useState(false);
 
   if (isLoading) {
     return <div className="driver-state">Loading run…</div>;
@@ -64,6 +66,19 @@ export const DriverRunDetail: React.FC<{ shipmentId: string }> = ({ shipmentId }
       const message =
         (err as { data?: { message?: string } })?.data?.message ??
         'Could not start the run. Please try again.';
+      setError(message);
+    }
+  };
+
+  const finishAssignment = async () => {
+    setError(null);
+    try {
+      await endAssignment(shipmentId).unwrap();
+      setAssignmentEnded(true);
+    } catch (err) {
+      const message =
+        (err as { data?: { message?: string } })?.data?.message ??
+        'Could not end the assignment. Please try again.';
       setError(message);
     }
   };
@@ -112,7 +127,24 @@ export const DriverRunDetail: React.FC<{ shipmentId: string }> = ({ shipmentId }
       )}
 
       {activeSeq === null && (
-        <div className="run-detail__done">✓ Run complete — all stops delivered.</div>
+        <div className="run-detail__done">
+          <p style={{ margin: 0 }}>✓ Run complete — all stops delivered.</p>
+          {assignmentEnded ? (
+            <p style={{ margin: '0.75rem 0 0', fontWeight: 600 }}>
+              Assignment ended — you and your vehicle are now available.
+            </p>
+          ) : (
+            <button
+              type="button"
+              className="stop__btn stop__btn--primary"
+              style={{ marginTop: '0.75rem' }}
+              disabled={ending || notStarted}
+              onClick={finishAssignment}
+            >
+              {ending ? 'Ending…' : 'End assignment — free me & my vehicle'}
+            </button>
+          )}
+        </div>
       )}
 
       <ol className="stop-list">

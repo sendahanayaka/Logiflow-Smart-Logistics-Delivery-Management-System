@@ -1,0 +1,71 @@
+Summary - LogiFlow S4 Backend Coverage
+  Generated on: 2026-10-08 - 13:03:07
+  Coverage date: 2026-10-08 - 13:02:32
+  Parser: MultiReport (2x Cobertura)
+  Assemblies: 1
+  Classes: 49
+  Files: 16
+  Line coverage: 63.1%
+  Covered lines: 1430
+  Uncovered lines: 835
+  Coverable lines: 2265
+  Total lines: 3368
+  Branch coverage: 46.4% (310 of 667)
+  Covered branches: 310
+  Total branches: 667
+  Method coverage: 75.4% (292 of 387)
+  Full method coverage: 65.3% (253 of 387)
+  Covered methods: 292
+  Fully covered methods: 253
+  Total methods: 387
+
+LogiFlow.Application                                             63.1%
+  LogiFlow.Application.Delivery.DTOs.CustomerOrderTrackingView      0%
+  LogiFlow.Application.Delivery.DTOs.DriverRunView                100%
+  LogiFlow.Application.Delivery.DTOs.EtaStop                      100%
+  LogiFlow.Application.Delivery.DTOs.PlanValidation               100%
+  LogiFlow.Application.Delivery.DTOs.RecordPodCommand             100%
+  LogiFlow.Application.Delivery.DTOs.RecordStopEventCommand       100%
+  LogiFlow.Application.Delivery.DTOs.ShipmentSummary             36.3%
+  LogiFlow.Application.Delivery.DTOs.StopEta                       80%
+  LogiFlow.Application.Delivery.DTOs.TimelineEntry                100%
+  LogiFlow.Application.Delivery.DTOs.TimelineEvent                 80%
+  LogiFlow.Application.Delivery.DTOs.TimelineStop                 100%
+  LogiFlow.Application.Delivery.DTOs.TrackingView                 100%
+  LogiFlow.Application.Delivery.EtaEngine                        91.9%
+  LogiFlow.Application.Delivery.ShipmentService                  68.3%
+  LogiFlow.Application.Delivery.TimelineBuilder                   100%
+  LogiFlow.Application.Fleet.FleetService                        46.1%
+  LogiFlow.Application.Messaging.ConversationSummary                0%
+  LogiFlow.Application.Messaging.MessageDto                        50%
+  LogiFlow.Application.Messaging.MessagingService                47.1%
+  LogiFlow.Application.Notifications.NotificationFactory          100%
+  LogiFlow.Application.Notifications.NotificationResponse          50%
+  LogiFlow.Application.Notifications.NotificationService         64.6%
+  LogiFlow.Application.Workflows.AgentServiceException             80%
+  LogiFlow.Application.Workflows.AgentWorkflowService            70.4%
+  LogiFlow.Application.Workflows.ApprovalService                 84.9%
+  LogiFlow.Application.Workflows.DriverMessageRequest               0%
+  LogiFlow.Application.Workflows.DriverMessageResponse              0%
+  LogiFlow.Application.Workflows.DTOs.AgentAllocationCandidate     80%
+  LogiFlow.Application.Workflows.DTOs.AgentAllocationOutput       100%
+  LogiFlow.Application.Workflows.DTOs.AgentApprovalRequest         60%
+  LogiFlow.Application.Workflows.DTOs.AgentApprovalResponse        60%
+  LogiFlow.Application.Workflows.DTOs.AgentAuditEntry             100%
+  LogiFlow.Application.Workflows.DTOs.AgentError                  100%
+  LogiFlow.Application.Workflows.DTOs.AgentNotification           100%
+  LogiFlow.Application.Workflows.DTOs.AgentProposal               100%
+  LogiFlow.Application.Workflows.DTOs.AgentRoutingOutput          100%
+  LogiFlow.Application.Workflows.DTOs.AgentRunPayload             100%
+  LogiFlow.Application.Workflows.DTOs.AgentRunRequest               0%
+  LogiFlow.Application.Workflows.DTOs.AgentRunResponse            100%
+  LogiFlow.Application.Workflows.DTOs.AgentSequencedStop          100%
+  LogiFlow.Application.Workflows.DTOs.AgentStepResponse           100%
+  LogiFlow.Application.Workflows.DTOs.AgentStop                   100%
+  LogiFlow.Application.Workflows.DTOs.ApprovalResult              100%
+  LogiFlow.Application.Workflows.DTOs.ApproveWorkflowCommand      100%
+  LogiFlow.Application.Workflows.DTOs.RouteStopResponse           100%
+  LogiFlow.Application.Workflows.DTOs.RunWorkflowCommand          100%
+  LogiFlow.Application.Workflows.DTOs.RunWorkflowStop             100%
+  LogiFlow.Application.Workflows.DTOs.WorkflowResponse            100%
+  LogiFlow.Application.Workflows.DTOs.WorkflowSummary               0%

@@ -1,0 +1,201 @@
+{
+  "info": {
+    "name": "LogiFlow S4 — Delivery E2E",
+    "_postman_id": "a4e2e000-s4de-4liv-ery0-logiflowe2e1",
+    "description": "End-to-end API workflow across the LogiFlow components (auth -> order -> ops/agent reads -> driver runs -> tracking) plus authorization negatives. Base URL and seeded credentials come from the environment.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Customer registers",
+      "event": [
+        { "listen": "prerequest", "script": { "exec": ["pm.collectionVariables.set('custEmail', 'cust_' + Date.now() + '@e2e.test');"], "type": "text/javascript" } },
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('registration accepted (200/201)', function () { pm.expect([200,201]).to.include(pm.response.code); });"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] },
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"E2E Customer\",\n  \"email\": \"{{custEmail}}\",\n  \"password\": \"Passw0rd!\"\n}" }
+      }
+    },
+    {
+      "name": "2. Customer logs in",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('login 200', function () { pm.response.to.have.status(200); });",
+          "var t = pm.response.json().token; pm.expect(t, 'token').to.be.a('string').and.not.empty;",
+          "pm.collectionVariables.set('custToken', t);"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{custEmail}}\",\n  \"password\": \"Passw0rd!\"\n}" }
+      }
+    },
+    {
+      "name": "3. Customer creates a delivery order",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('order created (201)', function () { pm.response.to.have.status(201); });",
+          "var id = pm.response.json().id; pm.expect(id, 'order id').to.be.a('string').and.not.empty;",
+          "pm.collectionVariables.set('orderId', id);"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{custToken}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] },
+        "body": { "mode": "raw", "raw": "{\n  \"pickupAddress\": \"12 Hub Road\",\n  \"pickupCity\": \"Colombo\",\n  \"deliveryAddress\": \"88 Galle Road\",\n  \"deliveryCity\": \"Kandy\",\n  \"packageDescription\": \"E2E test parcel\",\n  \"specialHandling\": null,\n  \"preferredPickupDate\": \"2027-01-01T00:00:00Z\",\n  \"preferredPickupTime\": \"10:00:00\",\n  \"priority\": \"Standard\",\n  \"weightKg\": 2.5,\n  \"lengthCm\": 20,\n  \"widthCm\": 15,\n  \"heightCm\": 10,\n  \"recipientName\": \"Kasun Perera\",\n  \"recipientContact\": \"0771234567\"\n}" }
+      }
+    },
+    {
+      "name": "4. Customer reads the order back",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('order fetched (200)', function () { pm.response.to.have.status(200); });",
+          "pm.test('status is Pending', function () { pm.expect(pm.response.json().status).to.eql('Pending'); });"
+        ] } }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{custToken}}" }],
+        "url": { "raw": "{{baseUrl}}/orders/{{orderId}}", "host": ["{{baseUrl}}"], "path": ["orders", "{{orderId}}"] }
+      }
+    },
+    {
+      "name": "5. Admin logs in",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('admin login 200', function () { pm.response.to.have.status(200); });",
+          "pm.collectionVariables.set('adminToken', pm.response.json().token);"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}" }
+      }
+    },
+    {
+      "name": "6. Admin lists agent workflows",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('workflows 200', function () { pm.response.to.have.status(200); });",
+          "pm.test('returns an array', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+        ] } }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+        "url": { "raw": "{{baseUrl}}/workflows", "host": ["{{baseUrl}}"], "path": ["workflows"] }
+      }
+    },
+    {
+      "name": "7. Admin lists shipments",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('shipments 200', function () { pm.response.to.have.status(200); });",
+          "var list = pm.response.json(); pm.expect(list).to.be.an('array');",
+          "if (list.length) { pm.collectionVariables.set('shipmentId', list[0].id); }"
+        ] } }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+        "url": { "raw": "{{baseUrl}}/shipments", "host": ["{{baseUrl}}"], "path": ["shipments"] }
+      }
+    },
+    {
+      "name": "8. Admin tracks a shipment",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "if (!pm.collectionVariables.get('shipmentId')) { pm.test.skip('no shipment to track'); } else {",
+          "  pm.test('tracking 200', function () { pm.response.to.have.status(200); });",
+          "  pm.test('tracking has stops', function () { pm.expect(pm.response.json()).to.have.property('stops'); });",
+          "}"
+        ] } }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+        "url": { "raw": "{{baseUrl}}/tracking/{{shipmentId}}", "host": ["{{baseUrl}}"], "path": ["tracking", "{{shipmentId}}"] }
+      }
+    },
+    {
+      "name": "9. Driver logs in",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('driver login 200', function () { pm.response.to.have.status(200); });",
+          "pm.collectionVariables.set('driverToken', pm.response.json().token);"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{driverEmail}}\",\n  \"password\": \"{{driverPassword}}\"\n}" }
+      }
+    },
+    {
+      "name": "10. Driver reads own runs",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('my runs 200', function () { pm.response.to.have.status(200); });",
+          "pm.test('returns an array', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+        ] } }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{driverToken}}" }],
+        "url": { "raw": "{{baseUrl}}/shipments/mine", "host": ["{{baseUrl}}"], "path": ["shipments", "mine"] }
+      }
+    },
+    {
+      "name": "11. Authz: driver cannot trigger a workflow (403)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('driver is forbidden (403)', function () { pm.response.to.have.status(403); });"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{driverToken}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/workflows", "host": ["{{baseUrl}}"], "path": ["workflows"] },
+        "body": { "mode": "raw", "raw": "{\n  \"dispatchBatchId\": \"00000000-0000-0000-0000-000000000000\",\n  \"objective\": \"blocked\",\n  \"deliveryWindowStart\": \"2027-01-01T00:00:00Z\",\n  \"stops\": []\n}" }
+      }
+    },
+    {
+      "name": "12. Authz: unauthenticated cannot list shipments (401)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('unauthenticated is rejected (401)', function () { pm.response.to.have.status(401); });"
+        ] } }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/shipments", "host": ["{{baseUrl}}"], "path": ["shipments"] }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "custEmail", "value": "" },
+    { "key": "custToken", "value": "" },
+    { "key": "orderId", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "driverToken", "value": "" },
+    { "key": "shipmentId", "value": "" }
+  ]
+}

@@ -18,6 +18,24 @@
     margin: 0;
 }
 
+/* Page title/subtitle used across the order pages (checkout, details, create,
+   list, success). Previously undefined, so headings fell back to default <h1>/<p>
+   margins and looked misaligned next to the header's Back button. */
+.orders-page-title {
+    color: #08006C;
+    margin: 0 0 0.35rem 0;
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.orders-page-subtitle {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
 .orders-btn-primary {
     background-color: #FD5901;
     color: #FFFFFF;

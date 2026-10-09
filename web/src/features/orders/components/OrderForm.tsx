@@ -45,8 +45,13 @@ export const OrderForm: React.FC<Props> = ({ onSubmit, isLoading }) => {
             return;
         }
 
-        if (formData.recipientContact && formData.recipientContact.length < 3) {
-            setError('Recipient contact format is invalid.');
+        if (!formData.recipientName?.trim()) {
+            setError('Recipient name is required.');
+            return;
+        }
+
+        if (!/^\d{10}$/.test((formData.recipientContact ?? '').trim())) {
+            setError('Recipient contact must be a 10-digit phone number.');
             return;
         }
 
@@ -164,12 +169,12 @@ export const OrderForm: React.FC<Props> = ({ onSubmit, isLoading }) => {
                 </div>
                 <div className="orders-grid">
                     <div className="orders-form-group">
-                        <label>Recipient Name</label>
-                        <input type="text" name="recipientName" value={formData.recipientName} onChange={handleChange} className="orders-form-control" placeholder="Optional" disabled={isLoading} />
+                        <label>Recipient Name *</label>
+                        <input type="text" name="recipientName" value={formData.recipientName} onChange={handleChange} required className="orders-form-control" placeholder="Full name" disabled={isLoading} />
                     </div>
                     <div className="orders-form-group">
-                        <label>Recipient Contact</label>
-                        <input type="text" name="recipientContact" value={formData.recipientContact} onChange={handleChange} className="orders-form-control" placeholder="Optional" disabled={isLoading} />
+                        <label>Recipient Contact *</label>
+                        <input type="tel" name="recipientContact" value={formData.recipientContact} onChange={handleChange} required inputMode="numeric" maxLength={10} pattern="\d{10}" className="orders-form-control" placeholder="10-digit phone" disabled={isLoading} />
                     </div>
                 </div>
             </div>
